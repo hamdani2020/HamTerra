@@ -1,0 +1,165 @@
+#!/usr/bin/env bash
+# stub-aws: a fake `aws` CLI for testing scripts/create-state-bucket.sh and
+# scripts/check-state-bucket.sh. It never contacts AWS and needs no credentials.
+#
+# Environment:
+#   STUB_DIR   (required) directory for calls.log and the bucket state files
+#   STUB_MODE  head-bucket behaviour: absent (default; exit 254, 404 Not Found),
+#              own (exit 0), other (exit 254, 403 Forbidden)
+#
+# State files in $STUB_DIR (written by put-*, read by get-*; tests may also write them
+# directly to build a wrong or partial bucket):
+#   versioning (text: Enabled), encryption.json, pab.json, ownership (text),
+#   policy.json (the policy document), lifecycle.json, tags.json ({"TagSet": [...]}),
+#   bucket (written by create-bucket: region and location constraint)
+#
+# Every call appends one line to $STUB_DIR/calls.log: the arguments joined by spaces.
+# Unsupported calls are logged, print a message on stderr and exit 1.
+set -euo pipefail
+
+: "${STUB_DIR:?STUB_DIR must be set}"
+mkdir -p "$STUB_DIR"
+echo "$*" >>"$STUB_DIR/calls.log"
+
+MODE="${STUB_MODE:-absent}"
+
+fail() { # fail <exit> <message>
+  echo "$2" >&2
+  exit "$1"
+}
+no_such() { fail 254 "An error occurred ($1) when calling the $2 operation: The $3 does not exist"; }
+
+# --- parse: [--region R] s3api <command> [options] -----------------------------
+REGION=""
+while [ $# -gt 0 ] && [ "$1" = "--region" ]; do
+  REGION="${2:-}"
+  shift 2
+done
+[ "${1:-}" = "s3api" ] || fail 1 "stub-aws: unsupported service '${1:-}'"
+shift
+while [ $# -gt 0 ] && [ "$1" = "--region" ]; do
+  REGION="${2:-}"
+  shift 2
+done
+[ $# -ge 1 ] || fail 1 "stub-aws: missing command"
+CMD="$1"
+shift
+
+BUCKET="" QUERY="" OUTPUT="json" VERSIONING="" ENCRYPTION="" PAB="" OWNERSHIP="" POLICY=""
+LIFECYCLE="" TAGGING="" CREATE_CFG=""
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --region) REGION="$2" ;;
+    --bucket) BUCKET="$2" ;;
+    --query) QUERY="$2" ;;
+    --output) OUTPUT="$2" ;;
+    --versioning-configuration) VERSIONING="$2" ;;
+    --server-side-encryption-configuration) ENCRYPTION="$2" ;;
+    --public-access-block-configuration) PAB="$2" ;;
+    --ownership-controls) OWNERSHIP="$2" ;;
+    --policy) POLICY="$2" ;;
+    --lifecycle-configuration) LIFECYCLE="$2" ;;
+    --tagging) TAGGING="$2" ;;
+    --create-bucket-configuration) CREATE_CFG="$2" ;;
+    *) fail 1 "stub-aws: unsupported option '$1'" ;;
+  esac
+  shift 2
+done
+[ -n "$BUCKET" ] || fail 1 "stub-aws: --bucket is required"
+
+S="$STUB_DIR"
+
+# AWS CLI prints "None" for --output text when the queried value is missing.
+text_or_none() { # reads stdin (a jq result), prints it or None
+  local v
+  v="$(cat)"
+  if [ -z "$v" ] || [ "$v" = "null" ]; then echo None; else echo "$v"; fi
+}
+
+case "$CMD" in
+  head-bucket)
+    case "$MODE" in
+      own) exit 0 ;;
+      absent) fail 254 "An error occurred (404) when calling the HeadBucket operation: Not Found" ;;
+      other) fail 254 "An error occurred (403) when calling the HeadBucket operation: Forbidden" ;;
+      *) fail 1 "stub-aws: unknown STUB_MODE '$MODE'" ;;
+    esac
+    ;;
+  create-bucket)
+    printf 'region=%s\nconfig=%s\n' "$REGION" "$CREATE_CFG" >"$S/bucket"
+    echo '{"Location": "/'"$BUCKET"'"}'
+    ;;
+
+  put-bucket-versioning)
+    printf '%s\n' "${VERSIONING#Status=}" >"$S/versioning"
+    ;;
+  get-bucket-versioning)
+    [ -f "$S/versioning" ] || { echo None; exit 0; }
+    if [ "$OUTPUT" = "text" ]; then cat "$S/versioning"; else jq -n --arg s "$(cat "$S/versioning")" '{Status: $s}'; fi
+    ;;
+
+  put-bucket-encryption)
+    printf '%s\n' "$ENCRYPTION" | jq -c '{ServerSideEncryptionConfiguration: .}' >"$S/encryption.json"
+    ;;
+  get-bucket-encryption)
+    [ -f "$S/encryption.json" ] ||
+      no_such ServerSideEncryptionConfigurationNotFoundError GetBucketEncryption "server side encryption configuration"
+    if [ -n "$QUERY" ] && [ "$OUTPUT" = "text" ]; then
+      jq -r '.ServerSideEncryptionConfiguration.Rules[0].ApplyServerSideEncryptionByDefault.SSEAlgorithm' "$S/encryption.json" | text_or_none
+    else
+      cat "$S/encryption.json"
+    fi
+    ;;
+
+  put-public-access-block)
+    # Shorthand: BlockPublicAcls=true,IgnorePublicAcls=true,...
+    printf '%s\n' "$PAB" | tr ',' '\n' | jq -R -s -c '
+      {PublicAccessBlockConfiguration:
+        (split("\n") | map(select(length > 0) | split("=") | {(.[0]): (.[1] == "true")}) | add)}' >"$S/pab.json"
+    ;;
+  get-public-access-block)
+    [ -f "$S/pab.json" ] || no_such NoSuchPublicAccessBlockConfiguration GetPublicAccessBlock "public access block configuration"
+    cat "$S/pab.json"
+    ;;
+
+  put-bucket-ownership-controls)
+    # Shorthand: Rules=[{ObjectOwnership=BucketOwnerEnforced}]
+    printf '%s\n' "$OWNERSHIP" | sed -e 's/.*ObjectOwnership=//' -e 's/[^A-Za-z].*//' >"$S/ownership"
+    ;;
+  get-bucket-ownership-controls)
+    [ -f "$S/ownership" ] || no_such OwnershipControlsNotFoundError GetBucketOwnershipControls "bucket ownership controls"
+    if [ "$OUTPUT" = "text" ]; then
+      cat "$S/ownership"
+    else
+      jq -n --arg o "$(cat "$S/ownership")" '{OwnershipControls: {Rules: [{ObjectOwnership: $o}]}}'
+    fi
+    ;;
+
+  put-bucket-policy)
+    printf '%s\n' "$POLICY" >"$S/policy.json"
+    ;;
+  get-bucket-policy)
+    [ -f "$S/policy.json" ] || no_such NoSuchBucketPolicy GetBucketPolicy "bucket policy"
+    # AWS returns the policy as a JSON string inside {"Policy": "..."}.
+    jq -c -n --arg p "$(jq -c . "$S/policy.json")" '{Policy: $p}'
+    ;;
+
+  put-bucket-lifecycle-configuration)
+    printf '%s\n' "$LIFECYCLE" >"$S/lifecycle.json"
+    ;;
+  get-bucket-lifecycle-configuration)
+    [ -f "$S/lifecycle.json" ] ||
+      no_such NoSuchLifecycleConfiguration GetBucketLifecycleConfiguration "lifecycle configuration"
+    jq -c '{Rules: .Rules, TransitionDefaultMinimumObjectSize: "all_storage_classes_128K"}' "$S/lifecycle.json"
+    ;;
+
+  put-bucket-tagging)
+    printf '%s\n' "$TAGGING" >"$S/tags.json"
+    ;;
+  get-bucket-tagging)
+    [ -f "$S/tags.json" ] || no_such NoSuchTagSet GetBucketTagging "TagSet"
+    cat "$S/tags.json"
+    ;;
+
+  *) fail 1 "stub-aws: unsupported command '$CMD'" ;;
+esac

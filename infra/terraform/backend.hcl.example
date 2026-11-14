@@ -1,0 +1,3 @@
+bucket = "<state-bucket-name>"
+key    = "eco-sentinel/<environment>/cognito.tfstate"
+region = "<aws-region>"
