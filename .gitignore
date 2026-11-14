@@ -13,3 +13,18 @@ __pycache__/
 htmlcov/
 node_modules/
 .DS_Store
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
+*.tfvars
+*.tfvars.json
+*.tfplan
+tfplan
+backend.hcl
+!terraform.tfvars.example
+!backend.hcl.example
+!.terraform.lock.hcl

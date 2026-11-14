@@ -1,0 +1,475 @@
+{
+  "pbtResults": {},
+  "executionHistory": {
+    "1.1 Create the directory layout and `.gitignore` entries": [
+      {
+        "executionId": "c3ca4066-cc55-492f-af21-e9a537361b54",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794663104716
+      },
+      {
+        "executionId": "c3ca4066-cc55-492f-af21-e9a537361b54",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794663111910
+      },
+      {
+        "executionId": "c3ca4066-cc55-492f-af21-e9a537361b54",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794663552792
+      }
+    ],
+    "1.2 Write `versions.tf`, `backend.tf` and `providers.tf`": [
+      {
+        "executionId": "c3ca4066-cc55-492f-af21-e9a537361b54",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794663104774
+      },
+      {
+        "executionId": "c3ca4066-cc55-492f-af21-e9a537361b54",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794663560656
+      },
+      {
+        "executionId": "c3ca4066-cc55-492f-af21-e9a537361b54",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794663639835
+      }
+    ],
+    "1.3 Write `backend.hcl.example` and `terraform.tfvars.example`": [
+      {
+        "executionId": "c3ca4066-cc55-492f-af21-e9a537361b54",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794663104798
+      },
+      {
+        "executionId": "c3ca4066-cc55-492f-af21-e9a537361b54",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794663560738
+      },
+      {
+        "executionId": "c3ca4066-cc55-492f-af21-e9a537361b54",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794663640617
+      }
+    ],
+    "2.1 Write root `variables.tf`": [
+      {
+        "executionId": "c3ca4066-cc55-492f-af21-e9a537361b54",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794663104840
+      },
+      {
+        "executionId": "c3ca4066-cc55-492f-af21-e9a537361b54",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794663560774
+      },
+      {
+        "executionId": "c3ca4066-cc55-492f-af21-e9a537361b54",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794663641158
+      }
+    ],
+    "3.1 Write module `variables.tf`": [
+      {
+        "executionId": "c3ca4066-cc55-492f-af21-e9a537361b54",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794663104874
+      },
+      {
+        "executionId": "c3ca4066-cc55-492f-af21-e9a537361b54",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794663561039
+      },
+      {
+        "executionId": "c3ca4066-cc55-492f-af21-e9a537361b54",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794663641983
+      }
+    ],
+    "3.2 Write the user pool in module `main.tf`": [
+      {
+        "executionId": "c3ca4066-cc55-492f-af21-e9a537361b54",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794663104904
+      },
+      {
+        "executionId": "c3ca4066-cc55-492f-af21-e9a537361b54",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794663789339
+      },
+      {
+        "executionId": "c3ca4066-cc55-492f-af21-e9a537361b54",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794663836252
+      }
+    ],
+    "3.3 Add the app client, domain and groups to module `main.tf`": [
+      {
+        "executionId": "c3ca4066-cc55-492f-af21-e9a537361b54",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794663104931
+      },
+      {
+        "executionId": "c3ca4066-cc55-492f-af21-e9a537361b54",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794663840057
+      },
+      {
+        "executionId": "c3ca4066-cc55-492f-af21-e9a537361b54",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794663957141
+      }
+    ],
+    "3.4 Add the optional IAM policy to module `main.tf`": [
+      {
+        "executionId": "c3ca4066-cc55-492f-af21-e9a537361b54",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794663104983
+      },
+      {
+        "executionId": "c3ca4066-cc55-492f-af21-e9a537361b54",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794663960730
+      },
+      {
+        "executionId": "c3ca4066-cc55-492f-af21-e9a537361b54",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794664032651
+      }
+    ],
+    "3.5 Write module `outputs.tf`": [
+      {
+        "executionId": "c3ca4066-cc55-492f-af21-e9a537361b54",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794663105009
+      },
+      {
+        "executionId": "c3ca4066-cc55-492f-af21-e9a537361b54",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794664035745
+      },
+      {
+        "executionId": "c3ca4066-cc55-492f-af21-e9a537361b54",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794664096774
+      }
+    ],
+    "4. Checkpoint - Terraform static checks": [
+      {
+        "executionId": "c3ca4066-cc55-492f-af21-e9a537361b54",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794663105039
+      }
+    ],
+    "5.1 Write root `main.tf`": [
+      {
+        "executionId": "c3ca4066-cc55-492f-af21-e9a537361b54",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794663105064
+      },
+      {
+        "executionId": "c3ca4066-cc55-492f-af21-e9a537361b54",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794664101096
+      },
+      {
+        "executionId": "c3ca4066-cc55-492f-af21-e9a537361b54",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794664159598
+      }
+    ],
+    "5.2 Write root `outputs.tf` with `env_lines`": [
+      {
+        "executionId": "c3ca4066-cc55-492f-af21-e9a537361b54",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794663105091
+      },
+      {
+        "executionId": "c3ca4066-cc55-492f-af21-e9a537361b54",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794664163443
+      },
+      {
+        "executionId": "c3ca4066-cc55-492f-af21-e9a537361b54",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794664207819
+      }
+    ],
+    "6.1 Write `scripts/print-env.sh`": [
+      {
+        "executionId": "c3ca4066-cc55-492f-af21-e9a537361b54",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794663105122
+      },
+      {
+        "executionId": "c3ca4066-cc55-492f-af21-e9a537361b54",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794663561382
+      },
+      {
+        "executionId": "c3ca4066-cc55-492f-af21-e9a537361b54",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794663642306
+      }
+    ],
+    "6.2 Write `scripts/check-backend.sh`": [
+      {
+        "executionId": "c3ca4066-cc55-492f-af21-e9a537361b54",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794663105155
+      },
+      {
+        "executionId": "c3ca4066-cc55-492f-af21-e9a537361b54",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794663652872
+      },
+      {
+        "executionId": "c3ca4066-cc55-492f-af21-e9a537361b54",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794663785800
+      }
+    ],
+    "6.3 Write `scripts/create-state-bucket.sh`": [
+      {
+        "executionId": "c3ca4066-cc55-492f-af21-e9a537361b54",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794663105182
+      },
+      {
+        "executionId": "c3ca4066-cc55-492f-af21-e9a537361b54",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794663652907
+      },
+      {
+        "executionId": "c3ca4066-cc55-492f-af21-e9a537361b54",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794663786216
+      }
+    ],
+    "6.4 Write `scripts/check-state-bucket.sh`": [
+      {
+        "executionId": "c3ca4066-cc55-492f-af21-e9a537361b54",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794663105213
+      },
+      {
+        "executionId": "c3ca4066-cc55-492f-af21-e9a537361b54",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794663789825
+      },
+      {
+        "executionId": "c3ca4066-cc55-492f-af21-e9a537361b54",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794663836505
+      }
+    ],
+    "7. Checkpoint - Scripts and Terraform static checks": [
+      {
+        "executionId": "c3ca4066-cc55-492f-af21-e9a537361b54",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794663105239
+      }
+    ],
+    "8.1 Write `modules/cognito/tests/client.tftest.hcl` default-client assertions": [
+      {
+        "executionId": "c3ca4066-cc55-492f-af21-e9a537361b54",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794663105270
+      },
+      {
+        "executionId": "c3ca4066-cc55-492f-af21-e9a537361b54",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794664217592
+      },
+      {
+        "executionId": "8e88018f-5592-4f86-8d7e-c958e870d0b4",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794667745681
+      }
+    ],
+    "9.1 Create `tests/scripts/stub-aws` and the `tests/scripts/run.sh` harness": [
+      {
+        "executionId": "c3ca4066-cc55-492f-af21-e9a537361b54",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794663105301
+      },
+      {
+        "executionId": "c3ca4066-cc55-492f-af21-e9a537361b54",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794664217627
+      },
+      {
+        "executionId": "8e88018f-5592-4f86-8d7e-c958e870d0b4",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794667095720
+      }
+    ],
+    "10.1 Write sections 1 to 4: prerequisites, quick start, variable table, output table": [
+      {
+        "executionId": "c3ca4066-cc55-492f-af21-e9a537361b54",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794663105333
+      },
+      {
+        "executionId": "c3ca4066-cc55-492f-af21-e9a537361b54",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794664218581
+      },
+      {
+        "executionId": "8e88018f-5592-4f86-8d7e-c958e870d0b4",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794667095953
+      }
+    ],
+    "10.2 Write sections 5 to 7: first administrator, self-sign-up decision, feature plan and cost notes": [
+      {
+        "executionId": "c3ca4066-cc55-492f-af21-e9a537361b54",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794663105366
+      },
+      {
+        "executionId": "8e88018f-5592-4f86-8d7e-c958e870d0b4",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794667753507
+      },
+      {
+        "executionId": "8e88018f-5592-4f86-8d7e-c958e870d0b4",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794667814362
+      }
+    ],
+    "10.3 Write sections 8 to 10: state bucket and backend, optional group policy, uncertainties": [
+      {
+        "executionId": "c3ca4066-cc55-492f-af21-e9a537361b54",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794663105395
+      },
+      {
+        "executionId": "8e88018f-5592-4f86-8d7e-c958e870d0b4",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794667814843
+      },
+      {
+        "executionId": "8e88018f-5592-4f86-8d7e-c958e870d0b4",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794667968695
+      }
+    ],
+    "11.1 Generate and verify `.terraform.lock.hcl`": [
+      {
+        "executionId": "c3ca4066-cc55-492f-af21-e9a537361b54",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794663105422
+      },
+      {
+        "executionId": "c3ca4066-cc55-492f-af21-e9a537361b54",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794664218616
+      },
+      {
+        "executionId": "8e88018f-5592-4f86-8d7e-c958e870d0b4",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794667202443
+      },
+      {
+        "executionId": "8e88018f-5592-4f86-8d7e-c958e870d0b4",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794667745488
+      }
+    ],
+    "12.1 Check open items against current documentation and record results in `design.md`": [
+      {
+        "executionId": "c3ca4066-cc55-492f-af21-e9a537361b54",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794663105448
+      },
+      {
+        "executionId": "c3ca4066-cc55-492f-af21-e9a537361b54",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794663112513
+      },
+      {
+        "executionId": "c3ca4066-cc55-492f-af21-e9a537361b54",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794663553151
+      }
+    ],
+    "13. Final checkpoint - All checks": [
+      {
+        "executionId": "c3ca4066-cc55-492f-af21-e9a537361b54",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794663105475
+      }
+    ],
+    "12. Verify open design items (non-blocking)": [
+      {
+        "executionId": "c3ca4066-cc55-492f-af21-e9a537361b54",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794663553180
+      }
+    ],
+    "1. Repository scaffolding": [
+      {
+        "executionId": "c3ca4066-cc55-492f-af21-e9a537361b54",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794663640647
+      }
+    ],
+    "2. Root variables": [
+      {
+        "executionId": "c3ca4066-cc55-492f-af21-e9a537361b54",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794663641187
+      }
+    ],
+    "6. Operator scripts": [
+      {
+        "executionId": "c3ca4066-cc55-492f-af21-e9a537361b54",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794663836537
+      }
+    ],
+    "3. Cognito module": [
+      {
+        "executionId": "c3ca4066-cc55-492f-af21-e9a537361b54",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794664096810
+      }
+    ],
+    "5. Root wiring": [
+      {
+        "executionId": "c3ca4066-cc55-492f-af21-e9a537361b54",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794664207854
+      }
+    ],
+    "9. Script tests with a stubbed `aws`": [
+      {
+        "executionId": "8e88018f-5592-4f86-8d7e-c958e870d0b4",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794667095756
+      }
+    ],
+    "11. Lock file generation": [
+      {
+        "executionId": "8e88018f-5592-4f86-8d7e-c958e870d0b4",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794667745525
+      }
+    ],
+    "8. Terraform tests (`mock_provider \"aws\"`, plan by default, apply only where computed values are needed)": [
+      {
+        "executionId": "8e88018f-5592-4f86-8d7e-c958e870d0b4",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794667745704
+      }
+    ],
+    "10. README (`infra/terraform/README.md`)": [
+      {
+        "executionId": "8e88018f-5592-4f86-8d7e-c958e870d0b4",
+        "chatSessionId": "sess_a3193174-3cc8-4642-8140-c4c624f89323",
+        "timestamp": 1794667968733
+      }
+    ]
+  }
+}

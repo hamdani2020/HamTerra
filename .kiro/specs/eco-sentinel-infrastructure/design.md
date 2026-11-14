@@ -1130,3 +1130,121 @@ Ten top-level sections in this order (Req. 15.1):
 - Requirement 10.9 says print the output unchanged. `print-env.sh` prints no trailing newline, so the README append command adds one.
 - The AWS CLI argument shapes, the `get-bucket-*` command names, the 403/404 error text and the IAM action names for encryption and lifecycle are not fully verified (T4 to T6). Verify them against a sandbox account before the first real run.
 - The `environment` variable and the state key cannot be tied together by Terraform. This stays a documented Operator rule.
+
+## Verification Results
+
+Task 12.1. Checked against public documentation only. No command was run against an AWS account, and no Terraform command was run for this task. The scripts, README and tests did not exist when this was written, so the "Action" column lists what the later tasks must apply. Content below is paraphrased from the cited pages.
+
+### Summary
+
+| Item | Result | Status | Action for later tasks |
+|---|---|---|---|
+| s3api names and arguments | All 16 subcommands in the table below exist with the arguments the design uses | Confirmed | None to the commands. See "Output shapes" for the lifecycle probe. |
+| T6 IAM action names | All names correct; `head-bucket` needs `s3:ListBucket` | Confirmed | Use the table below in README section 8 and Design (c). |
+| T4 `head-bucket` 403/404 | Reference documents only the status codes, and adds `400`. Exact CLI error text is not documented. | Partly confirmed | Match on the status code in the error text, treat 400 like "cannot tell". Keep the stub text as an assumption. |
+| T5 names and normalisation | `get-*` names confirmed. Filter `{}` vs `{"Prefix": ""}` and policy key order are not documented. | Names confirmed, normalisation open | Keep both-forms tolerance and semantic policy compare. |
+| T2 `expect_failures` and a missing variable | Docs say it applies to custom conditions only. A missing required variable has no condition. | Inferred from docs, not run | Task 8.16: use the shell fallback. Re-check once with `terraform test` before deleting the `expect_failures` attempt. |
+| T3 TOTP MFA on `LITE` | Authenticator-app MFA is listed for Lite, Essentials and Plus. Only email MFA needs Essentials. | Confirmed (docs) | None. Provider behaviour on Lite is still untested. |
+| New: managed login on `LITE` | Managed login is Essentials and Plus only. Lite has the classic hosted UI. | Confirmed (docs) | See finding F1. |
+
+### s3api subcommands and arguments (T5)
+
+Source: [AWS CLI s3api reference](https://docs.aws.amazon.com/cli/latest/reference/s3api/), AWS CLI 2.40.3 pages. Each page below was read for its synopsis.
+
+| Subcommand | Required arguments confirmed | Page |
+|---|---|---|
+| `head-bucket` | `--bucket`; optional `--expected-bucket-owner` | [head-bucket](https://docs.aws.amazon.com/cli/latest/reference/s3api/head-bucket.html) |
+| `create-bucket` | `--bucket`; optional `--create-bucket-configuration` (`LocationConstraint`) | [create-bucket](https://docs.aws.amazon.com/cli/latest/reference/s3api/create-bucket.html) |
+| `put-bucket-versioning` | `--bucket`, `--versioning-configuration` | [put-bucket-versioning](https://docs.aws.amazon.com/cli/latest/reference/s3api/put-bucket-versioning.html) |
+| `put-bucket-encryption` | `--bucket`, `--server-side-encryption-configuration`. Documented example: `{"Rules": [{"ApplyServerSideEncryptionByDefault": {"SSEAlgorithm": "AES256"}}]}` | [put-bucket-encryption](https://docs.aws.amazon.com/cli/latest/reference/s3api/put-bucket-encryption.html) |
+| `put-public-access-block` | `--bucket`, `--public-access-block-configuration` | [put-public-access-block](https://docs.aws.amazon.com/cli/latest/reference/s3api/put-public-access-block.html) |
+| `put-bucket-ownership-controls` | `--bucket`, `--ownership-controls` | [put-bucket-ownership-controls](https://docs.aws.amazon.com/cli/latest/reference/s3api/put-bucket-ownership-controls.html) |
+| `put-bucket-policy` | `--bucket`, `--policy` | [put-bucket-policy](https://docs.aws.amazon.com/cli/latest/reference/s3api/put-bucket-policy.html) |
+| `put-bucket-lifecycle-configuration` | `--bucket`; `--lifecycle-configuration` (`Rules[]` with `ID`, `Status`, `Filter`, `NoncurrentVersionExpiration.NoncurrentDays`, `AbortIncompleteMultipartUpload.DaysAfterInitiation`) | [put-bucket-lifecycle-configuration](https://docs.aws.amazon.com/cli/latest/reference/s3api/put-bucket-lifecycle-configuration.html) |
+| `put-bucket-tagging` | `--bucket`, `--tagging` | [put-bucket-tagging](https://docs.aws.amazon.com/cli/latest/reference/s3api/put-bucket-tagging.html) |
+| `get-bucket-versioning` | `--bucket` | [get-bucket-versioning](https://docs.aws.amazon.com/cli/latest/reference/s3api/get-bucket-versioning.html) |
+| `get-bucket-encryption` | `--bucket` | [get-bucket-encryption](https://docs.aws.amazon.com/cli/latest/reference/s3api/get-bucket-encryption.html) |
+| `get-public-access-block` | `--bucket` | [get-public-access-block](https://docs.aws.amazon.com/cli/latest/reference/s3api/get-public-access-block.html) |
+| `get-bucket-ownership-controls` | `--bucket` | [get-bucket-ownership-controls](https://docs.aws.amazon.com/cli/latest/reference/s3api/get-bucket-ownership-controls.html) |
+| `get-bucket-policy` | `--bucket` | [get-bucket-policy](https://docs.aws.amazon.com/cli/latest/reference/s3api/get-bucket-policy.html) |
+| `get-bucket-lifecycle-configuration` | `--bucket` | [get-bucket-lifecycle-configuration](https://docs.aws.amazon.com/cli/latest/reference/s3api/get-bucket-lifecycle-configuration.html) |
+| `get-bucket-tagging` | `--bucket` | [get-bucket-tagging](https://docs.aws.amazon.com/cli/latest/reference/s3api/get-bucket-tagging.html) |
+
+All `get-*` commands also accept `--expected-bucket-owner`. The create script could pass it on every call once the account ID is known, but the design does not require this.
+
+**Output shapes the probes depend on**
+
+- `get-bucket-versioning` returns `Status` (`Enabled` or `Suspended`). The page does not say what a never-versioned bucket returns. The design's `--query Status --output text` comparison to `Enabled` is safe either way.
+- `get-bucket-encryption` returns `ServerSideEncryptionConfiguration.Rules[].ApplyServerSideEncryptionByDefault.SSEAlgorithm`.
+- `get-bucket-policy` returns `Policy` as a JSON **string**, not an object. A `jq` comparison must decode it first, for example `jq -r .Policy | jq -S .`, before comparing with the expected document. This matters for Property 14 and 15 stubs: the stub must print the string form.
+- `get-bucket-tagging` returns `TagSet[]` of `Key` and `Value`.
+- `get-public-access-block` returns `PublicAccessBlockConfiguration` with the four booleans.
+- `get-bucket-ownership-controls` returns `OwnershipControls.Rules[].ObjectOwnership`.
+- `get-bucket-lifecycle-configuration` returns `Rules` **and** a top-level `TransitionDefaultMinimumObjectSize` (`varies_by_storage_class` or `all_storage_classes_128K`). The put command accepts the same field as `--transition-default-minimum-object-size`. The lifecycle probe must compare `.Rules` only, not the whole response, or a server-added default makes every run report a difference.
+- Documented "absent" errors: `NoSuchLifecycleConfiguration` (404) and `NoSuchTagSet`. The pages read did not name the error codes for a missing policy, public access block or ownership controls, so the scripts must treat any non-zero `get-*` exit as "not correct" (as the design already does) and not match on specific codes.
+
+**Lifecycle `Filter` (T5).** The reference says a `Filter` must have exactly one of `Prefix`, `Tag`, `ObjectSizeGreaterThan`, `ObjectSizeLessThan` or `And`, and that `Filter` is required when the rule has no top-level `Prefix`. It also recommends `Filter` over the legacy `Prefix` for new PUTs. It does not describe how an empty filter is stored or returned. The design's choice to accept both `{}` and `{"Prefix": ""}` on read stays correct. The create script should send `"Filter": {"Prefix": ""}`, which satisfies the "exactly one member" wording.
+
+**Policy normalisation (T5).** Not documented. `get-bucket-policy` returns a string, and key order and whitespace are not promised. Compare after `jq -S` on both sides. Whether S3 rewrites a single-element `Action` or `Resource` array to a bare string is not documented either. Normalise those to arrays in the `jq` filter before comparing, or write the expected policy so that it round-trips (for example, use scalar form where only one value exists, and test it on a scratch bucket in an Operator-run session).
+
+**`us-east-1` and `LocationConstraint`.** The `create-bucket` page says that without a Region the bucket goes to `us-east-1`. It does not state that `LocationConstraint=us-east-1` is rejected in the text read. Omitting the argument for `us-east-1`, as the design does, is the documented path and stays.
+
+### IAM action names (T6)
+
+Source: [S3 policy actions for bucket operations](https://docs.aws.amazon.com/AmazonS3/latest/userguide/using-with-s3-policy-actions.html), mapping table of API operation to policy action. The Service Authorization Reference page could not be fetched (it redirected), so this table is the source.
+
+| CLI call | IAM action | Status |
+|---|---|---|
+| `create-bucket` | `s3:CreateBucket` (plus `s3:PutBucketOwnershipControls` only if ownership is given at creation, `s3:PutBucketAcl` only if an ACL is given) | Confirmed |
+| `head-bucket` | `s3:ListBucket` | Confirmed |
+| `put-bucket-versioning` / `get-bucket-versioning` | `s3:PutBucketVersioning` / `s3:GetBucketVersioning` | Confirmed |
+| `put-bucket-encryption` / `get-bucket-encryption` | `s3:PutEncryptionConfiguration` / `s3:GetEncryptionConfiguration` | Confirmed. Names differ from the CLI name pattern. |
+| `put-public-access-block` / `get-public-access-block` | `s3:PutBucketPublicAccessBlock` / `s3:GetBucketPublicAccessBlock` | Confirmed |
+| `put-bucket-ownership-controls` / `get-bucket-ownership-controls` | `s3:PutBucketOwnershipControls` / `s3:GetBucketOwnershipControls` | Confirmed |
+| `put-bucket-policy` / `get-bucket-policy` | `s3:PutBucketPolicy` / `s3:GetBucketPolicy` | Confirmed |
+| `put-bucket-lifecycle-configuration` / `get-bucket-lifecycle-configuration` | `s3:PutLifecycleConfiguration` / `s3:GetLifecycleConfiguration` | Confirmed. Names differ from the CLI name pattern. |
+| `put-bucket-tagging` / `get-bucket-tagging` | `s3:PutBucketTagging` / `s3:GetBucketTagging` | Confirmed |
+
+The design's names for encryption and lifecycle are correct. The `put-bucket-lifecycle-configuration` page also confirms `s3:PutLifecycleConfiguration` as the permission, and `put-bucket-encryption` confirms `s3:PutEncryptionConfiguration`. The statement in Data Models (c) can drop "unverified".
+
+Terraform state access itself (`s3:ListBucket`, `s3:GetObject`, `s3:PutObject`, `s3:DeleteObject` for the `.tflock` file) is covered by the Terraform backend documentation cited in the requirements and was not re-read.
+
+### `head-bucket` 403 and 404 (T4)
+
+Source: [head-bucket](https://docs.aws.amazon.com/cli/latest/reference/s3api/head-bucket.html).
+
+- If the bucket does not exist, or the caller has no access, the request returns a generic `400 Bad Request`, `403 Forbidden` or `404 Not Found`. There is no message body, so the exception cannot be told apart beyond the code.
+- The permission needed is `s3:ListBucket`. A caller who owns the bucket but lacks it gets an error, which confirms the design's note that 403 does not prove "another account".
+- `--expected-bucket-owner` makes a mismatch return `403`. This is a way to tell "mine" from "not mine" if the Operator's account ID is known, at the cost of one more required input. Not adopted. Recorded as an option.
+- The CLI's printed error text (for example the string around "Not Found") is not in the reference. The scripts should match on the numeric code or the words `Not Found` and `Forbidden`, case-insensitively, and the stub should print both the code and the word.
+
+**Finding F2 (script change, apply in task 6.3):** the design handles 404 (create), 403 (other account) and success. A `400` can also mean "name unusable". Treat `400` and any unrecognised error as exit 3 with the raw message, never as "absent", so the script does not attempt `create-bucket` on an error it does not understand.
+
+### `expect_failures` and a missing variable (T2)
+
+Source: [Terraform tests](https://developer.hashicorp.com/terraform/language/tests).
+
+- `expect_failures` takes checkable objects (resources, data sources, check blocks, input variables, outputs) that should fail their **custom conditions**. The page states that expected failures apply only to user-defined custom conditions, and that other failures still fail the test. It gives a wrong variable type as the example.
+- A missing required variable has no custom condition. By this reading, `expect_failures = [var.aws_region]` does not catch it. This is inferred from the page, not run. `terraform test` was not executed, because the configuration does not exist yet.
+- Missing values for required variables are also not something a test file's `variables` block can express as "absent" except by leaving the variable out, which then fails the run for a different reason than the one listed.
+
+**Decision:** task 8.16 uses the shell fallback described in Testing Strategy for the two missing-variable cases, and checks the error text for the variable name. Task 8.16 may try `expect_failures` once as a confirmation. If it passes, keep both.
+
+### TOTP MFA on `LITE` (T3)
+
+Sources: [User pool feature plans](https://docs.aws.amazon.com/cognito/latest/developerguide/cognito-sign-in-feature-plans.html), [Adding MFA to a user pool](https://docs.aws.amazon.com/cognito/latest/developerguide/user-pool-settings-mfa.html).
+
+- The feature plan table lists "MFA with authenticator apps and SMS one-time codes" under Lite, Essentials and Plus. "MFA with email one-time codes" is Essentials and Plus only. TOTP on Lite is therefore supported, and the design's TOTP-only choice (Req. 5.5 to 5.7) needs no change.
+- Whether the AWS provider accepts `software_token_mfa_configuration` with `mfa_configuration = "OPTIONAL"` on `user_pool_tier = "LITE"` without an API error is still unproven. It can only be seen in a plan or apply against AWS. Terraform tests under `mock_provider` do not exercise this. Leave T3 open for the Operator's first `apply`.
+
+**Finding F1 (affects D9 and U1):** the same page says managed login is available on Essentials and Plus, and the classic hosted UI on all plans. The module defaults are `ESSENTIALS` and `managed_login_version = 2`, which is consistent. But `user_pool_tier = "LITE"` with `managed_login_version = 2` is an invalid combination, and the variables accept it. Options, none applied here because variables are outside this task:
+1. Add a root and module validation: `var.user_pool_tier != "LITE" || var.managed_login_version == 1`. Needs a test case in tasks 8.12 and 8.16.
+2. Only document it in README section 7 and section 10. Cheaper, but the failure then appears at apply time.
+
+Recommendation: option 1 when task 2.1 and 3.1 are done, since it follows the pattern of D3. The README section 7 should state the rule either way. This needs a user decision because it adds a validation not in Requirements 3 to 7.
+
+### Gaps that remain
+
+- T3 on the provider (above) and the real shape of `Filter` and policy responses (T5) need an Operator-run check on a scratch bucket. These are not testable under the Plan_Stop_Rule.
+- The Terraform S3 backend arguments (`use_lockfile`, `encrypt`) were not re-read in this task.
+- Page versions: CLI pages are from the AWS CLI 2.40.3 reference at the time of reading. Re-check if the Operator's CLI is much older.
