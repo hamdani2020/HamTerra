@@ -1,0 +1,15 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "API contract sync check",
+      "trigger": "PostFileSave",
+      "matcher": "(backend/app/api/(schemas|routers)/.*\\.py|backend/app/core/errors\\.py|frontend/src/types/api\\.ts|frontend/src/lib/messages\\.ts|frontend/tests/msw/handlers\\.ts)$",
+      "action": {
+        "type": "agent",
+        "prompt": "An API contract file was saved. Compare the change with the API Contract section of .kiro/specs/eco-sentinel-backend/design.md and its counterparts: backend Pydantic schemas and routers, backend/app/core/errors.py, frontend/src/types/api.ts, frontend/src/lib/messages.ts and frontend/tests/msw/handlers.ts. List any mismatch in paths, methods, roles, field names, types, nullability, error codes or warning codes. Do not edit files; report the mismatches and propose the smallest change that restores agreement, noting which spec document would need updating."
+      },
+      "enabled": true
+    }
+  ]
+}

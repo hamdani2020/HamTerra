@@ -1,0 +1,65 @@
+[project]
+name = "eco-sentinel-backend"
+version = "0.1.0"
+description = "Eco Sentinel Backend API"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "fastapi",
+    "uvicorn[standard]",
+    "pydantic>=2",
+    "pydantic-settings",
+    "sqlalchemy[asyncio]>=2",
+    "asyncpg",
+    "geoalchemy2",
+    "alembic",
+    "httpx",
+    "shapely>=2",
+    "geopandas",
+    "numpy",
+    "pyjwt[crypto]",
+    "cryptography",
+    "boto3",
+]
+
+[dependency-groups]
+dev = [
+    "pytest",
+    "pytest-asyncio",
+    "pytest-socket",
+    "hypothesis",
+    "ruff",
+    "mypy",
+    "boto3-stubs[cognito-idp]",
+    "pandas-stubs",
+    "types-shapely",
+]
+
+[tool.uv]
+package = false
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "S", "ASYNC"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+disallow_untyped_defs = true
+plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+module = ["geopandas.*", "geoalchemy2.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+addopts = "--allow-hosts=postgis --allow-unix-socket"

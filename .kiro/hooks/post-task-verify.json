@@ -1,0 +1,13 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Verify after spec task",
+      "trigger": "PostTaskExec",
+      "action": {
+        "type": "agent",
+        "prompt": "A spec task was just completed. Before moving on: (1) Run the checks for the service you changed: `docker compose exec backend make test` for backend/, and `docker compose exec frontend npm run test -- --run` plus `docker compose exec frontend npm run check` for frontend/. If the containers are not running, say so and ask the user to start them with `docker compose up -d` instead of starting long-running processes yourself. (2) Run `bash .kiro/hooks/scripts/check-evidence-language.sh` and fix any forbidden evidence wording outside the allowed list files. (3) Confirm no credential, API key or token was added to code, tests, docs or logs, and that the frontend still calls only the backend API. (4) If you changed an endpoint, field, error code or warning code, confirm the backend design API Contract, frontend/src/types/api.ts, the MSW handlers and frontend/src/lib/messages.ts still agree. Report the results briefly; do not mark the work complete while a check fails."
+      }
+    }
+  ]
+}
