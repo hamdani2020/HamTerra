@@ -80,9 +80,12 @@ export default function MapPage(): JSX.Element {
           {listLink}
         </div>
       ) : (
-        <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_22rem]">
+        // The details column is reserved only while an area is selected, so the map
+        // otherwise uses the full content width.
+        <div className={feature ? "grid gap-4 lg:grid-cols-[minmax(0,1fr)_22rem]" : "grid gap-4"}>
           <div className="min-w-0 space-y-3">
-            <div className="relative h-[60vh] min-h-[320px] overflow-hidden rounded-lg border bg-card">
+            {/* Fills the window below the page header, leaving room for the legend. */}
+            <div className="relative h-[calc(100dvh-17rem)] min-h-[360px] overflow-hidden rounded-lg border bg-card">
               {/* Sized with h-full/w-full, not absolute inset-0: MapLibre's CSS sets
                   `.maplibregl-map { position: relative }` on this element, which overrides
                   `absolute` and collapsed the map to zero height. */}
