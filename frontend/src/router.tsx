@@ -66,6 +66,7 @@ export function appRoutes(): RouteObject[] {
         { path: ROUTES.callback, element: <CallbackPage />, handle: handle(PAGE_TITLE.callback) },
         { path: ROUTES.signedOut, element: <SignedOutPage />, handle: handle(PAGE_TITLE.signedOut) },
         { path: ROUTES.authError, element: <AuthErrorPage />, handle: handle(PAGE_TITLE.authError) },
+        { path: ROUTES.about, lazy: page(() => import("@/pages/AboutPage")), handle: handle(PAGE_TITLE.about) },
         {
           element: <ProtectedLayout />,
           errorElement: <RouteErrorBoundary />,

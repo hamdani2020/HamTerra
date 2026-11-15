@@ -1,0 +1,20 @@
+# Production override for the EC2 backend host (infra/terraform/modules/ec2).
+# Used only by infra/deploy/deploy-backend.sh:
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+# Runs postgis and backend. The frontend is served by AWS Amplify and pgAdmin is not
+# deployed, so both sit behind the "local" profile here and do not start.
+# Ports stay bound to 127.0.0.1 (BIND_ADDRESS is never set on the host); nginx proxies
+# HTTPS to the backend on 127.0.0.1:8000.
+services:
+  postgis:
+    restart: unless-stopped
+  backend:
+    # The prod image copies the source in and runs uvicorn without --reload.
+    build: { context: ./backend, target: prod }
+    command: !reset null
+    volumes: !reset []
+    restart: unless-stopped
+  frontend:
+    profiles: [local]
+  pgadmin:
+    profiles: [local]

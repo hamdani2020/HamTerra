@@ -2,7 +2,8 @@
 export const APP_TITLE_SUFFIX = "Eco-Sentinel";
 
 export const PAGE_TITLE = {
-  landing: "Sign in",
+  landing: "Home",
+  about: "About the project",
   callback: "Completing sign-in",
   signedOut: "Signed out",
   authError: "Sign-in problem",

@@ -2,6 +2,7 @@ import { act, render, screen, within } from "@testing-library/react";
 import { createRoot } from "react-dom/client";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
+import { PITCH_TEXT } from "@/features/pitch/content";
 import { bootstrap } from "@/bootstrap";
 import { loadConfig } from "@/core/config";
 import { ConfigErrorPage } from "@/pages/ConfigErrorPage";
@@ -53,7 +54,7 @@ describe("configuration error page (Requirements 2.2, 2.3)", () => {
   it("renders the application, not the error page, for a valid configuration", async () => {
     await boot(buildEnv());
     expect(screen.queryByText(/not configured/i)).not.toBeInTheDocument();
-    expect(screen.getByRole("heading", { level: 1, name: "Eco-Sentinel Ghana" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 1, name: PITCH_TEXT.headline })).toBeInTheDocument();
   });
 
   it("never shows a configured value on the page", () => {

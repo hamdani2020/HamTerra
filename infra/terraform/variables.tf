@@ -226,3 +226,21 @@ variable "backend_instance_type" {
   description = "EC2 instance type for the backend host."
   default     = "t3.small"
 }
+
+variable "github_repository" {
+  type        = string
+  description = "GitHub repository (owner/name) whose workflows may deploy the backend."
+  default     = "hamdani2020/HamTerra"
+}
+
+variable "github_branch" {
+  type        = string
+  description = "Branch whose workflow runs may deploy the backend."
+  default     = "main"
+}
+
+variable "create_github_oidc_provider" {
+  type        = bool
+  description = "Create the account's GitHub OIDC provider. Set false if it already exists."
+  default     = true
+}

@@ -4,16 +4,19 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/core/auth/AuthProvider";
 import { AUTH_TEXT } from "@/lib/messages";
 import { safeLog } from "@/lib/safeLog";
+import { cn } from "@/lib/utils";
 
 export interface SignInButtonProps {
   label?: string;
   /** In-app path to open after sign-in; unsafe values fall back to the dashboard. */
   returnTo?: string | undefined;
   disabled?: boolean;
+  /** Extra classes for the button, for example a size or a colour on a dark band. */
+  className?: string;
 }
 
 /** Starts the PKCE redirect (Requirement 3.1). Disabled while the redirect is pending. */
-export function SignInButton({ label = AUTH_TEXT.signIn, returnTo, disabled = false }: SignInButtonProps): JSX.Element {
+export function SignInButton({ label = AUTH_TEXT.signIn, returnTo, disabled = false, className }: SignInButtonProps): JSX.Element {
   const auth = useAuth();
   const [phase, setPhase] = useState<"idle" | "redirecting" | "failed">("idle");
 
@@ -29,7 +32,7 @@ export function SignInButton({ label = AUTH_TEXT.signIn, returnTo, disabled = fa
 
   return (
     <div className="space-y-2">
-      <Button type="button" className="w-full" disabled={disabled || phase === "redirecting"} onClick={() => void start()}>
+      <Button type="button" className={cn("w-full", className)} disabled={disabled || phase === "redirecting"} onClick={() => void start()}>
         {phase === "redirecting" ? AUTH_TEXT.redirecting : label}
       </Button>
       {phase === "failed" && (

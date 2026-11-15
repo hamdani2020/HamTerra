@@ -29,3 +29,14 @@ module "ec2" {
   attach_group_admin_policy = var.enable_group_admin_policy
   group_admin_policy_arn    = module.cognito.group_admin_policy_arn
 }
+
+module "github_deploy" {
+  source = "./modules/github_deploy"
+
+  project_name         = var.project_name
+  environment          = var.environment
+  github_repository    = var.github_repository
+  github_branch        = var.github_branch
+  create_oidc_provider = var.create_github_oidc_provider
+  instance_id          = module.ec2.instance_id
+}

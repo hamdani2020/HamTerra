@@ -82,3 +82,8 @@ output "backend_ssm_parameter_path" {
 output "backend_app_dir" {
   value = module.ec2.app_dir
 }
+
+output "github_deploy_role_arn" {
+  description = "Set as the GitHub repository variable AWS_DEPLOY_ROLE_ARN."
+  value       = module.github_deploy.role_arn
+}

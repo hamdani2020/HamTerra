@@ -54,11 +54,12 @@ resource "aws_security_group" "backend" {
 
 resource "aws_vpc_security_group_ingress_rule" "http" {
   security_group_id = aws_security_group.backend.id
-  description       = "HTTP for the Let's Encrypt challenge and the redirect to HTTPS"
-  ip_protocol       = "tcp"
-  from_port         = 80
-  to_port           = 80
-  cidr_ipv4         = "0.0.0.0/0"
+  # EC2 rule descriptions allow only a-zA-Z0-9. _-:/()#,@[]+=&;{}!$* (no apostrophe).
+  description = "HTTP for the Lets Encrypt challenge and the redirect to HTTPS"
+  ip_protocol = "tcp"
+  from_port   = 80
+  to_port     = 80
+  cidr_ipv4   = "0.0.0.0/0"
 }
 
 resource "aws_vpc_security_group_ingress_rule" "https" {

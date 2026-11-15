@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { delay, HttpResponse } from "msw";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { PITCH_TEXT } from "@/features/pitch/content";
 import { STORAGE_KEYS } from "@/core/auth/storage";
 import { TOKEN_TIMEOUT_MS } from "@/core/auth/tokenEndpoint";
 import { AUTH_FAILURE_TEXT, AUTH_TEXT } from "@/lib/messages";
@@ -43,7 +44,7 @@ afterEach(() => {
 describe("sign-in redirect (Requirement 3.1)", () => {
   it("redirects to the Cognito authorize endpoint with PKCE parameters", async () => {
     const { redirect, config } = await renderApp("/");
-    expect(screen.getByRole("heading", { level: 1, name: AUTH_TEXT.appName })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 1, name: PITCH_TEXT.headline })).toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: AUTH_TEXT.signIn }));
     await waitFor(() => expect(redirect).toHaveBeenCalledTimes(1));
 

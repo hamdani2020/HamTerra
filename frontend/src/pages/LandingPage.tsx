@@ -1,14 +1,14 @@
 import { Navigate, useLocation } from "react-router";
 
-import { AuthCard } from "@/components/common/AuthCard";
-import { WarningBanner } from "@/components/common/WarningBanner";
 import { safeReturnTo } from "@/core/auth/authModule";
 import { useAuthState } from "@/core/auth/AuthProvider";
-import { SignInButton } from "@/features/auth/SignInButton";
-import { AUTH_TEXT } from "@/lib/messages";
+import { ExpiredNotice, PitchLayout } from "@/features/pitch/PitchLayout";
 import { readState } from "@/lib/routes";
 
-/** `/`: the sign-in control and, after an ended Session, the expired notice (3.8). */
+/**
+ * `/`: the public project page with the sign-in control and, after an ended Session, the
+ * expired notice (3.8). A signed-in user goes on to the saved path or the dashboard.
+ */
 export default function LandingPage(): JSX.Element {
   const { status } = useAuthState();
   const location = useLocation();
@@ -18,16 +18,9 @@ export default function LandingPage(): JSX.Element {
   if (status === "signed_in") return <Navigate to={safeReturnTo(from)} replace />;
 
   return (
-    <AuthCard title={AUTH_TEXT.appName}>
-      {expired && <WarningBanner title={AUTH_TEXT.sessionEndedTitle} messages={[AUTH_TEXT.sessionExpired]} />}
-      <p>{AUTH_TEXT.landingIntro}</p>
-      {status === "renewing" ? (
-        <p role="status" aria-busy="true">
-          {AUTH_TEXT.restoring}
-        </p>
-      ) : (
-        <SignInButton returnTo={from} />
-      )}
-    </AuthCard>
+    <PitchLayout
+      access={status === "renewing" ? { kind: "restoring" } : { kind: "sign_in", returnTo: from }}
+      notice={expired ? <ExpiredNotice /> : undefined}
+    />
   );
 }

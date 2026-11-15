@@ -1,0 +1,1107 @@
+{
+ "exported_at": "2026-11-15T23:19:35+00:00",
+ "period": {
+  "from": "2026-01-01",
+  "to": "2026-04-30"
+ },
+ "area": {
+  "id": "a54fab5d-97e9-4609-bf74-82c93c06fe54",
+  "name": "Eco-Sentinel Prestea Test",
+  "description": "Linked to the existing AgroMonitoring polygon for verification.",
+  "status": "active",
+  "area_ha": 122.55,
+  "geometry": {
+   "type": "Polygon",
+   "coordinates": [
+    [
+     [
+      -1.985,
+      5.445
+     ],
+     [
+      -1.975,
+      5.445
+     ],
+     [
+      -1.975,
+      5.455
+     ],
+     [
+      -1.985,
+      5.455
+     ],
+     [
+      -1.985,
+      5.445
+     ]
+    ]
+   ]
+  },
+  "external_polygon_id": "6aea6f0f4e13cb67dafaf7d0",
+  "latest_observation_date": "2026-04-30",
+  "created_at": "2026-11-15T15:51:53.506674Z",
+  "updated_at": "2026-11-15T15:51:53.506674Z"
+ },
+ "settings": {
+  "ndvi_diff_threshold": 0.1,
+  "cloud_limit_pct": 20.0,
+  "data_coverage_min_pct": 80.0,
+  "gap_threshold_days": 30,
+  "default_page_size": 50
+ },
+ "timeseries": {
+  "sentinel-2": {
+   "area_id": "a54fab5d-97e9-4609-bf74-82c93c06fe54",
+   "source": "sentinel-2",
+   "points": [
+    {
+     "date": "2026-01-05",
+     "ndvi_mean": 0.599,
+     "cloud_coverage_pct": 14.91,
+     "data_coverage_pct": 100.0,
+     "quality": {
+      "level": "limited",
+      "cloud_coverage_pct": 14.91,
+      "data_coverage_pct": 100.0,
+      "warnings": []
+     },
+     "gap_days_from_previous": null,
+     "weather": null
+    },
+    {
+     "date": "2026-01-10",
+     "ndvi_mean": 0.1638,
+     "cloud_coverage_pct": 99.06,
+     "data_coverage_pct": 100.0,
+     "quality": {
+      "level": "poor",
+      "cloud_coverage_pct": 99.06,
+      "data_coverage_pct": 100.0,
+      "warnings": []
+     },
+     "gap_days_from_previous": 5,
+     "weather": null
+    },
+    {
+     "date": "2026-01-12",
+     "ndvi_mean": 0.0796,
+     "cloud_coverage_pct": 100.0,
+     "data_coverage_pct": 100.0,
+     "quality": {
+      "level": "poor",
+      "cloud_coverage_pct": 100.0,
+      "data_coverage_pct": 100.0,
+      "warnings": []
+     },
+     "gap_days_from_previous": 2,
+     "weather": null
+    },
+    {
+     "date": "2026-01-15",
+     "ndvi_mean": 0.1677,
+     "cloud_coverage_pct": 100.0,
+     "data_coverage_pct": 100.0,
+     "quality": {
+      "level": "poor",
+      "cloud_coverage_pct": 100.0,
+      "data_coverage_pct": 100.0,
+      "warnings": []
+     },
+     "gap_days_from_previous": 3,
+     "weather": null
+    },
+    {
+     "date": "2026-01-20",
+     "ndvi_mean": 0.0703,
+     "cloud_coverage_pct": 100.0,
+     "data_coverage_pct": 100.0,
+     "quality": {
+      "level": "poor",
+      "cloud_coverage_pct": 100.0,
+      "data_coverage_pct": 100.0,
+      "warnings": []
+     },
+     "gap_days_from_previous": 5,
+     "weather": null
+    },
+    {
+     "date": "2026-01-25",
+     "ndvi_mean": 0.5206,
+     "cloud_coverage_pct": 4.95,
+     "data_coverage_pct": 100.0,
+     "quality": {
+      "level": "good",
+      "cloud_coverage_pct": 4.95,
+      "data_coverage_pct": 100.0,
+      "warnings": []
+     },
+     "gap_days_from_previous": 5,
+     "weather": null
+    },
+    {
+     "date": "2026-01-30",
+     "ndvi_mean": 0.3657,
+     "cloud_coverage_pct": 59.07,
+     "data_coverage_pct": 100.0,
+     "quality": {
+      "level": "poor",
+      "cloud_coverage_pct": 59.07,
+      "data_coverage_pct": 100.0,
+      "warnings": []
+     },
+     "gap_days_from_previous": 5,
+     "weather": null
+    },
+    {
+     "date": "2026-02-04",
+     "ndvi_mean": 0.1134,
+     "cloud_coverage_pct": 100.0,
+     "data_coverage_pct": 100.0,
+     "quality": {
+      "level": "poor",
+      "cloud_coverage_pct": 100.0,
+      "data_coverage_pct": 100.0,
+      "warnings": []
+     },
+     "gap_days_from_previous": 5,
+     "weather": null
+    },
+    {
+     "date": "2026-02-09",
+     "ndvi_mean": 0.2287,
+     "cloud_coverage_pct": 75.04,
+     "data_coverage_pct": 100.0,
+     "quality": {
+      "level": "poor",
+      "cloud_coverage_pct": 75.04,
+      "data_coverage_pct": 100.0,
+      "warnings": []
+     },
+     "gap_days_from_previous": 5,
+     "weather": null
+    },
+    {
+     "date": "2026-02-14",
+     "ndvi_mean": 0.136,
+     "cloud_coverage_pct": 100.0,
+     "data_coverage_pct": 100.0,
+     "quality": {
+      "level": "poor",
+      "cloud_coverage_pct": 100.0,
+      "data_coverage_pct": 100.0,
+      "warnings": []
+     },
+     "gap_days_from_previous": 5,
+     "weather": null
+    },
+    {
+     "date": "2026-02-19",
+     "ndvi_mean": 0.236,
+     "cloud_coverage_pct": 100.0,
+     "data_coverage_pct": 100.0,
+     "quality": {
+      "level": "poor",
+      "cloud_coverage_pct": 100.0,
+      "data_coverage_pct": 100.0,
+      "warnings": []
+     },
+     "gap_days_from_previous": 5,
+     "weather": null
+    },
+    {
+     "date": "2026-02-24",
+     "ndvi_mean": 0.1016,
+     "cloud_coverage_pct": 98.1,
+     "data_coverage_pct": 100.0,
+     "quality": {
+      "level": "poor",
+      "cloud_coverage_pct": 98.1,
+      "data_coverage_pct": 100.0,
+      "warnings": []
+     },
+     "gap_days_from_previous": 5,
+     "weather": null
+    },
+    {
+     "date": "2026-03-01",
+     "ndvi_mean": 0.4033,
+     "cloud_coverage_pct": 99.88,
+     "data_coverage_pct": 100.0,
+     "quality": {
+      "level": "poor",
+      "cloud_coverage_pct": 99.88,
+      "data_coverage_pct": 100.0,
+      "warnings": []
+     },
+     "gap_days_from_previous": 5,
+     "weather": null
+    },
+    {
+     "date": "2026-03-06",
+     "ndvi_mean": 0.5222,
+     "cloud_coverage_pct": 5.64,
+     "data_coverage_pct": 100.0,
+     "quality": {
+      "level": "good",
+      "cloud_coverage_pct": 5.64,
+      "data_coverage_pct": 100.0,
+      "warnings": []
+     },
+     "gap_days_from_previous": 5,
+     "weather": null
+    },
+    {
+     "date": "2026-03-11",
+     "ndvi_mean": 0.2515,
+     "cloud_coverage_pct": 100.0,
+     "data_coverage_pct": 100.0,
+     "quality": {
+      "level": "poor",
+      "cloud_coverage_pct": 100.0,
+      "data_coverage_pct": 100.0,
+      "warnings": []
+     },
+     "gap_days_from_previous": 5,
+     "weather": null
+    },
+    {
+     "date": "2026-03-16",
+     "ndvi_mean": 0.5943,
+     "cloud_coverage_pct": 0.06,
+     "data_coverage_pct": 100.0,
+     "quality": {
+      "level": "good",
+      "cloud_coverage_pct": 0.06,
+      "data_coverage_pct": 100.0,
+      "warnings": []
+     },
+     "gap_days_from_previous": 5,
+     "weather": null
+    },
+    {
+     "date": "2026-03-21",
+     "ndvi_mean": 0.5865,
+     "cloud_coverage_pct": 0.23,
+     "data_coverage_pct": 100.0,
+     "quality": {
+      "level": "good",
+      "cloud_coverage_pct": 0.23,
+      "data_coverage_pct": 100.0,
+      "warnings": []
+     },
+     "gap_days_from_previous": 5,
+     "weather": null
+    },
+    {
+     "date": "2026-03-26",
+     "ndvi_mean": 0.5498,
+     "cloud_coverage_pct": 13.3,
+     "data_coverage_pct": 100.0,
+     "quality": {
+      "level": "limited",
+      "cloud_coverage_pct": 13.3,
+      "data_coverage_pct": 100.0,
+      "warnings": []
+     },
+     "gap_days_from_previous": 5,
+     "weather": null
+    },
+    {
+     "date": "2026-03-31",
+     "ndvi_mean": 0.6591,
+     "cloud_coverage_pct": 0.13,
+     "data_coverage_pct": 100.0,
+     "quality": {
+      "level": "good",
+      "cloud_coverage_pct": 0.13,
+      "data_coverage_pct": 100.0,
+      "warnings": []
+     },
+     "gap_days_from_previous": 5,
+     "weather": null
+    },
+    {
+     "date": "2026-04-02",
+     "ndvi_mean": 0.2733,
+     "cloud_coverage_pct": 74.37,
+     "data_coverage_pct": 100.0,
+     "quality": {
+      "level": "poor",
+      "cloud_coverage_pct": 74.37,
+      "data_coverage_pct": 100.0,
+      "warnings": []
+     },
+     "gap_days_from_previous": 2,
+     "weather": null
+    },
+    {
+     "date": "2026-04-05",
+     "ndvi_mean": 0.5375,
+     "cloud_coverage_pct": 15.48,
+     "data_coverage_pct": 100.0,
+     "quality": {
+      "level": "limited",
+      "cloud_coverage_pct": 15.48,
+      "data_coverage_pct": 100.0,
+      "warnings": []
+     },
+     "gap_days_from_previous": 3,
+     "weather": null
+    },
+    {
+     "date": "2026-04-10",
+     "ndvi_mean": 0.5656,
+     "cloud_coverage_pct": 14.2,
+     "data_coverage_pct": 100.0,
+     "quality": {
+      "level": "limited",
+      "cloud_coverage_pct": 14.2,
+      "data_coverage_pct": 100.0,
+      "warnings": []
+     },
+     "gap_days_from_previous": 5,
+     "weather": null
+    },
+    {
+     "date": "2026-04-15",
+     "ndvi_mean": 0.6809,
+     "cloud_coverage_pct": 0.0,
+     "data_coverage_pct": 100.0,
+     "quality": {
+      "level": "good",
+      "cloud_coverage_pct": 0.0,
+      "data_coverage_pct": 100.0,
+      "warnings": []
+     },
+     "gap_days_from_previous": 5,
+     "weather": null
+    },
+    {
+     "date": "2026-04-20",
+     "ndvi_mean": 0.3424,
+     "cloud_coverage_pct": 100.0,
+     "data_coverage_pct": 100.0,
+     "quality": {
+      "level": "poor",
+      "cloud_coverage_pct": 100.0,
+      "data_coverage_pct": 100.0,
+      "warnings": []
+     },
+     "gap_days_from_previous": 5,
+     "weather": null
+    },
+    {
+     "date": "2026-04-22",
+     "ndvi_mean": 0.6307,
+     "cloud_coverage_pct": 0.0,
+     "data_coverage_pct": 100.0,
+     "quality": {
+      "level": "good",
+      "cloud_coverage_pct": 0.0,
+      "data_coverage_pct": 100.0,
+      "warnings": []
+     },
+     "gap_days_from_previous": 2,
+     "weather": null
+    },
+    {
+     "date": "2026-04-25",
+     "ndvi_mean": 0.2244,
+     "cloud_coverage_pct": 100.0,
+     "data_coverage_pct": 100.0,
+     "quality": {
+      "level": "poor",
+      "cloud_coverage_pct": 100.0,
+      "data_coverage_pct": 100.0,
+      "warnings": []
+     },
+     "gap_days_from_previous": 3,
+     "weather": null
+    },
+    {
+     "date": "2026-04-30",
+     "ndvi_mean": 0.6958,
+     "cloud_coverage_pct": 0.0,
+     "data_coverage_pct": 100.0,
+     "quality": {
+      "level": "good",
+      "cloud_coverage_pct": 0.0,
+      "data_coverage_pct": 100.0,
+      "warnings": []
+     },
+     "gap_days_from_previous": 5,
+     "weather": null
+    }
+   ],
+   "summary": {
+    "count": 27,
+    "first_date": "2026-01-05",
+    "last_date": "2026-04-30",
+    "min": 0.0703,
+    "max": 0.6958,
+    "mean_of_means": 0.3815,
+    "trend_per_30d": 0.096
+   },
+   "meta": {
+    "excluded_by_cloud": 0,
+    "resolution_class": "10 m nominal sensor resolution"
+   },
+   "warnings": [],
+   "limitations": [
+    "NDVI values are polygon-level aggregates. They say nothing about where inside the polygon a difference occurs.",
+    "Seasonality is not removed. NDVI changes with the season, rainfall and acquisition conditions.",
+    "Weather is not controlled. Weather values, when shown, are context only and do not establish causation."
+   ]
+  },
+  "landsat-8": {
+   "area_id": "a54fab5d-97e9-4609-bf74-82c93c06fe54",
+   "source": "landsat-8",
+   "points": [
+    {
+     "date": "2026-01-01",
+     "ndvi_mean": 0.0833,
+     "cloud_coverage_pct": 100.0,
+     "data_coverage_pct": 100.0,
+     "quality": {
+      "level": "poor",
+      "cloud_coverage_pct": 100.0,
+      "data_coverage_pct": 100.0,
+      "warnings": []
+     },
+     "gap_days_from_previous": null,
+     "weather": null
+    },
+    {
+     "date": "2026-01-09",
+     "ndvi_mean": 0.6391,
+     "cloud_coverage_pct": 0.0,
+     "data_coverage_pct": 100.0,
+     "quality": {
+      "level": "good",
+      "cloud_coverage_pct": 0.0,
+      "data_coverage_pct": 100.0,
+      "warnings": []
+     },
+     "gap_days_from_previous": 8,
+     "weather": null
+    },
+    {
+     "date": "2026-01-17",
+     "ndvi_mean": 0.4537,
+     "cloud_coverage_pct": 100.0,
+     "data_coverage_pct": 100.0,
+     "quality": {
+      "level": "poor",
+      "cloud_coverage_pct": 100.0,
+      "data_coverage_pct": 100.0,
+      "warnings": []
+     },
+     "gap_days_from_previous": 8,
+     "weather": null
+    },
+    {
+     "date": "2026-01-25",
+     "ndvi_mean": 0.5627,
+     "cloud_coverage_pct": 0.58,
+     "data_coverage_pct": 100.0,
+     "quality": {
+      "level": "good",
+      "cloud_coverage_pct": 0.58,
+      "data_coverage_pct": 100.0,
+      "warnings": []
+     },
+     "gap_days_from_previous": 8,
+     "weather": null
+    },
+    {
+     "date": "2026-02-02",
+     "ndvi_mean": 0.5072,
+     "cloud_coverage_pct": 19.05,
+     "data_coverage_pct": 100.0,
+     "quality": {
+      "level": "limited",
+      "cloud_coverage_pct": 19.05,
+      "data_coverage_pct": 100.0,
+      "warnings": []
+     },
+     "gap_days_from_previous": 8,
+     "weather": null
+    },
+    {
+     "date": "2026-02-10",
+     "ndvi_mean": 0.203,
+     "cloud_coverage_pct": 100.0,
+     "data_coverage_pct": 100.0,
+     "quality": {
+      "level": "poor",
+      "cloud_coverage_pct": 100.0,
+      "data_coverage_pct": 100.0,
+      "warnings": []
+     },
+     "gap_days_from_previous": 8,
+     "weather": null
+    },
+    {
+     "date": "2026-02-18",
+     "ndvi_mean": 0.3256,
+     "cloud_coverage_pct": 100.0,
+     "data_coverage_pct": 100.0,
+     "quality": {
+      "level": "poor",
+      "cloud_coverage_pct": 100.0,
+      "data_coverage_pct": 100.0,
+      "warnings": []
+     },
+     "gap_days_from_previous": 8,
+     "weather": null
+    },
+    {
+     "date": "2026-02-26",
+     "ndvi_mean": 0.2353,
+     "cloud_coverage_pct": 100.0,
+     "data_coverage_pct": 100.0,
+     "quality": {
+      "level": "poor",
+      "cloud_coverage_pct": 100.0,
+      "data_coverage_pct": 100.0,
+      "warnings": []
+     },
+     "gap_days_from_previous": 8,
+     "weather": null
+    },
+    {
+     "date": "2026-03-06",
+     "ndvi_mean": 0.553,
+     "cloud_coverage_pct": 62.39,
+     "data_coverage_pct": 100.0,
+     "quality": {
+      "level": "poor",
+      "cloud_coverage_pct": 62.39,
+      "data_coverage_pct": 100.0,
+      "warnings": []
+     },
+     "gap_days_from_previous": 8,
+     "weather": null
+    },
+    {
+     "date": "2026-03-14",
+     "ndvi_mean": 0.5743,
+     "cloud_coverage_pct": 18.67,
+     "data_coverage_pct": 100.0,
+     "quality": {
+      "level": "limited",
+      "cloud_coverage_pct": 18.67,
+      "data_coverage_pct": 100.0,
+      "warnings": []
+     },
+     "gap_days_from_previous": 8,
+     "weather": null
+    },
+    {
+     "date": "2026-03-22",
+     "ndvi_mean": 0.1975,
+     "cloud_coverage_pct": 100.0,
+     "data_coverage_pct": 100.0,
+     "quality": {
+      "level": "poor",
+      "cloud_coverage_pct": 100.0,
+      "data_coverage_pct": 100.0,
+      "warnings": []
+     },
+     "gap_days_from_previous": 8,
+     "weather": null
+    },
+    {
+     "date": "2026-03-30",
+     "ndvi_mean": 0.0596,
+     "cloud_coverage_pct": 100.0,
+     "data_coverage_pct": 100.0,
+     "quality": {
+      "level": "poor",
+      "cloud_coverage_pct": 100.0,
+      "data_coverage_pct": 100.0,
+      "warnings": []
+     },
+     "gap_days_from_previous": 8,
+     "weather": null
+    },
+    {
+     "date": "2026-04-07",
+     "ndvi_mean": 0.5896,
+     "cloud_coverage_pct": 3.8,
+     "data_coverage_pct": 100.0,
+     "quality": {
+      "level": "good",
+      "cloud_coverage_pct": 3.8,
+      "data_coverage_pct": 100.0,
+      "warnings": []
+     },
+     "gap_days_from_previous": 8,
+     "weather": null
+    },
+    {
+     "date": "2026-04-15",
+     "ndvi_mean": 0.7225,
+     "cloud_coverage_pct": 0.0,
+     "data_coverage_pct": 100.0,
+     "quality": {
+      "level": "good",
+      "cloud_coverage_pct": 0.0,
+      "data_coverage_pct": 100.0,
+      "warnings": []
+     },
+     "gap_days_from_previous": 8,
+     "weather": null
+    },
+    {
+     "date": "2026-04-23",
+     "ndvi_mean": 0.193,
+     "cloud_coverage_pct": 100.0,
+     "data_coverage_pct": 100.0,
+     "quality": {
+      "level": "poor",
+      "cloud_coverage_pct": 100.0,
+      "data_coverage_pct": 100.0,
+      "warnings": []
+     },
+     "gap_days_from_previous": 8,
+     "weather": null
+    }
+   ],
+   "summary": {
+    "count": 15,
+    "first_date": "2026-01-01",
+    "last_date": "2026-04-23",
+    "min": 0.0596,
+    "max": 0.7225,
+    "mean_of_means": 0.3933,
+    "trend_per_30d": -0.0003
+   },
+   "meta": {
+    "excluded_by_cloud": 0,
+    "resolution_class": "30 m nominal sensor resolution"
+   },
+   "warnings": [],
+   "limitations": [
+    "NDVI values are polygon-level aggregates. They say nothing about where inside the polygon a difference occurs.",
+    "Seasonality is not removed. NDVI changes with the season, rainfall and acquisition conditions.",
+    "Weather is not controlled. Weather values, when shown, are context only and do not establish causation."
+   ]
+  }
+ },
+ "comparisons": [
+  {
+   "area_id": "a54fab5d-97e9-4609-bf74-82c93c06fe54",
+   "source": "sentinel-2",
+   "a": {
+    "id": "0069e7a6-2ff3-4fd1-8163-d8132cbd8509",
+    "area_id": "a54fab5d-97e9-4609-bf74-82c93c06fe54",
+    "date": "2026-04-15",
+    "source": "sentinel-2",
+    "ndvi": {
+     "mean": 0.6809,
+     "min": 0.3335,
+     "max": 0.7744,
+     "std": 0.0518,
+     "median": 0.6912
+    },
+    "quality": {
+     "level": "good",
+     "cloud_coverage_pct": 0.0,
+     "data_coverage_pct": 100.0,
+     "warnings": []
+    },
+    "preview": {
+     "url": "/api/v1/observations/0069e7a6-2ff3-4fd1-8163-d8132cbd8509/preview",
+     "width_px": null,
+     "height_px": null,
+     "note": "Preview images are low resolution (117 x 117 px in validated tests) and are for visual orientation only."
+    },
+    "geometry_status": "current"
+   },
+   "b": {
+    "id": "fc7b54b1-6f25-411e-9a91-81cc49db14a5",
+    "area_id": "a54fab5d-97e9-4609-bf74-82c93c06fe54",
+    "date": "2026-04-20",
+    "source": "sentinel-2",
+    "ndvi": {
+     "mean": 0.3424,
+     "min": 0.2479,
+     "max": 0.3992,
+     "std": 0.0208,
+     "median": 0.3449
+    },
+    "quality": {
+     "level": "poor",
+     "cloud_coverage_pct": 100.0,
+     "data_coverage_pct": 100.0,
+     "warnings": []
+    },
+    "preview": {
+     "url": "/api/v1/observations/fc7b54b1-6f25-411e-9a91-81cc49db14a5/preview",
+     "width_px": 117,
+     "height_px": 117,
+     "note": "Preview images are low resolution (117 x 117 px in validated tests) and are for visual orientation only."
+    },
+    "geometry_status": "current"
+   },
+   "ndvi_diff": -0.3385,
+   "ndvi_diff_pct": -49.71,
+   "interval_days": 5,
+   "flag": "flagged",
+   "thresholds_applied": {
+    "ndvi_diff": 0.1,
+    "max_cloud": 20.0,
+    "min_data_coverage": 80.0
+   },
+   "quality": {
+    "level": "poor",
+    "cloud_coverage_pct": 100.0,
+    "data_coverage_pct": 100.0,
+    "warnings": [
+     {
+      "code": "LOW_QUALITY_OBSERVATION",
+      "message": "At least one observation is outside the quality limits."
+     }
+    ]
+   },
+   "spatial_analysis_available": false,
+   "summary_text": "Difference flagged for investigation: mean NDVI changed by -0.3385 between 2026-04-15 and 2026-04-20. This is a polygon-level aggregate; no spatial change is inferred and the cause of any change is not identified.",
+   "weather": null,
+   "warnings": [
+    {
+     "code": "SEASONALITY_NOT_CONTROLLED",
+     "message": "The interval is not a whole number of years, so seasonal differences are not controlled."
+    },
+    {
+     "code": "LOW_QUALITY_OBSERVATION",
+     "message": "At least one observation is outside the quality limits."
+    }
+   ],
+   "limitations": [
+    "NDVI values are polygon-level aggregates. They say nothing about where inside the polygon a difference occurs.",
+    "Seasonality is not removed. NDVI changes with the season, rainfall and acquisition conditions.",
+    "Weather is not controlled. Weather values, when shown, are context only and do not establish causation."
+   ]
+  },
+  {
+   "area_id": "a54fab5d-97e9-4609-bf74-82c93c06fe54",
+   "source": "sentinel-2",
+   "a": {
+    "id": "310ccd0e-6893-4cf0-b140-16ea958d8a7f",
+    "area_id": "a54fab5d-97e9-4609-bf74-82c93c06fe54",
+    "date": "2026-01-05",
+    "source": "sentinel-2",
+    "ndvi": {
+     "mean": 0.599,
+     "min": 0.1075,
+     "max": 0.7281,
+     "std": 0.0948,
+     "median": 0.6253
+    },
+    "quality": {
+     "level": "limited",
+     "cloud_coverage_pct": 14.91,
+     "data_coverage_pct": 100.0,
+     "warnings": []
+    },
+    "preview": {
+     "url": "/api/v1/observations/310ccd0e-6893-4cf0-b140-16ea958d8a7f/preview",
+     "width_px": null,
+     "height_px": null,
+     "note": "Preview images are low resolution (117 x 117 px in validated tests) and are for visual orientation only."
+    },
+    "geometry_status": "current"
+   },
+   "b": {
+    "id": "878e76b7-ed78-43fa-96ce-3a4743650559",
+    "area_id": "a54fab5d-97e9-4609-bf74-82c93c06fe54",
+    "date": "2026-04-30",
+    "source": "sentinel-2",
+    "ndvi": {
+     "mean": 0.6958,
+     "min": 0.3729,
+     "max": 0.7868,
+     "std": 0.0528,
+     "median": 0.7066
+    },
+    "quality": {
+     "level": "good",
+     "cloud_coverage_pct": 0.0,
+     "data_coverage_pct": 100.0,
+     "warnings": []
+    },
+    "preview": {
+     "url": "/api/v1/observations/878e76b7-ed78-43fa-96ce-3a4743650559/preview",
+     "width_px": 117,
+     "height_px": 117,
+     "note": "Preview images are low resolution (117 x 117 px in validated tests) and are for visual orientation only."
+    },
+    "geometry_status": "current"
+   },
+   "ndvi_diff": 0.0968,
+   "ndvi_diff_pct": 16.16,
+   "interval_days": 115,
+   "flag": "not_flagged",
+   "thresholds_applied": {
+    "ndvi_diff": 0.1,
+    "max_cloud": 20.0,
+    "min_data_coverage": 80.0
+   },
+   "quality": {
+    "level": "limited",
+    "cloud_coverage_pct": 14.91,
+    "data_coverage_pct": 100.0,
+    "warnings": []
+   },
+   "spatial_analysis_available": false,
+   "summary_text": "Mean NDVI difference of +0.0968 between 2026-01-05 and 2026-04-30 is below the investigation threshold of 0.1. This is a polygon-level aggregate; no spatial change is inferred and the cause of any change is not identified.",
+   "weather": null,
+   "warnings": [
+    {
+     "code": "SEASONALITY_NOT_CONTROLLED",
+     "message": "The interval is not a whole number of years, so seasonal differences are not controlled."
+    }
+   ],
+   "limitations": [
+    "NDVI values are polygon-level aggregates. They say nothing about where inside the polygon a difference occurs.",
+    "Seasonality is not removed. NDVI changes with the season, rainfall and acquisition conditions.",
+    "Weather is not controlled. Weather values, when shown, are context only and do not establish causation."
+   ]
+  }
+ ],
+ "previews": [
+  {
+   "file": "preview-sentinel-2-2026-01-05.png",
+   "observation": {
+    "id": "310ccd0e-6893-4cf0-b140-16ea958d8a7f",
+    "area_id": "a54fab5d-97e9-4609-bf74-82c93c06fe54",
+    "date": "2026-01-05",
+    "source": "sentinel-2",
+    "ndvi": {
+     "mean": 0.599,
+     "min": 0.1075,
+     "max": 0.7281,
+     "std": 0.0948,
+     "median": 0.6253
+    },
+    "quality": {
+     "level": "limited",
+     "cloud_coverage_pct": 14.91,
+     "data_coverage_pct": 100.0,
+     "warnings": []
+    },
+    "preview": {
+     "url": "/api/v1/observations/310ccd0e-6893-4cf0-b140-16ea958d8a7f/preview",
+     "width_px": null,
+     "height_px": null,
+     "note": "Preview images are low resolution (117 x 117 px in validated tests) and are for visual orientation only."
+    },
+    "geometry_status": "current"
+   }
+  },
+  {
+   "file": "preview-sentinel-2-2026-03-16.png",
+   "observation": {
+    "id": "2999362e-9a93-4c34-811b-06c68bf3896a",
+    "area_id": "a54fab5d-97e9-4609-bf74-82c93c06fe54",
+    "date": "2026-03-16",
+    "source": "sentinel-2",
+    "ndvi": {
+     "mean": 0.5943,
+     "min": 0.3512,
+     "max": 0.6761,
+     "std": 0.0432,
+     "median": 0.6028
+    },
+    "quality": {
+     "level": "good",
+     "cloud_coverage_pct": 0.06,
+     "data_coverage_pct": 100.0,
+     "warnings": []
+    },
+    "preview": {
+     "url": "/api/v1/observations/2999362e-9a93-4c34-811b-06c68bf3896a/preview",
+     "width_px": null,
+     "height_px": null,
+     "note": "Preview images are low resolution (117 x 117 px in validated tests) and are for visual orientation only."
+    },
+    "geometry_status": "current"
+   }
+  },
+  {
+   "file": "preview-sentinel-2-2026-03-31.png",
+   "observation": {
+    "id": "712bf87b-70a7-4f58-bd3f-7b74d710db32",
+    "area_id": "a54fab5d-97e9-4609-bf74-82c93c06fe54",
+    "date": "2026-03-31",
+    "source": "sentinel-2",
+    "ndvi": {
+     "mean": 0.6591,
+     "min": 0.3582,
+     "max": 0.7455,
+     "std": 0.0554,
+     "median": 0.6722
+    },
+    "quality": {
+     "level": "good",
+     "cloud_coverage_pct": 0.13,
+     "data_coverage_pct": 100.0,
+     "warnings": []
+    },
+    "preview": {
+     "url": "/api/v1/observations/712bf87b-70a7-4f58-bd3f-7b74d710db32/preview",
+     "width_px": null,
+     "height_px": null,
+     "note": "Preview images are low resolution (117 x 117 px in validated tests) and are for visual orientation only."
+    },
+    "geometry_status": "current"
+   }
+  },
+  {
+   "file": "preview-sentinel-2-2026-04-15.png",
+   "observation": {
+    "id": "0069e7a6-2ff3-4fd1-8163-d8132cbd8509",
+    "area_id": "a54fab5d-97e9-4609-bf74-82c93c06fe54",
+    "date": "2026-04-15",
+    "source": "sentinel-2",
+    "ndvi": {
+     "mean": 0.6809,
+     "min": 0.3335,
+     "max": 0.7744,
+     "std": 0.0518,
+     "median": 0.6912
+    },
+    "quality": {
+     "level": "good",
+     "cloud_coverage_pct": 0.0,
+     "data_coverage_pct": 100.0,
+     "warnings": []
+    },
+    "preview": {
+     "url": "/api/v1/observations/0069e7a6-2ff3-4fd1-8163-d8132cbd8509/preview",
+     "width_px": null,
+     "height_px": null,
+     "note": "Preview images are low resolution (117 x 117 px in validated tests) and are for visual orientation only."
+    },
+    "geometry_status": "current"
+   }
+  },
+  {
+   "file": "preview-sentinel-2-2026-04-20.png",
+   "observation": {
+    "id": "fc7b54b1-6f25-411e-9a91-81cc49db14a5",
+    "area_id": "a54fab5d-97e9-4609-bf74-82c93c06fe54",
+    "date": "2026-04-20",
+    "source": "sentinel-2",
+    "ndvi": {
+     "mean": 0.3424,
+     "min": 0.2479,
+     "max": 0.3992,
+     "std": 0.0208,
+     "median": 0.3449
+    },
+    "quality": {
+     "level": "poor",
+     "cloud_coverage_pct": 100.0,
+     "data_coverage_pct": 100.0,
+     "warnings": []
+    },
+    "preview": {
+     "url": "/api/v1/observations/fc7b54b1-6f25-411e-9a91-81cc49db14a5/preview",
+     "width_px": 117,
+     "height_px": 117,
+     "note": "Preview images are low resolution (117 x 117 px in validated tests) and are for visual orientation only."
+    },
+    "geometry_status": "current"
+   }
+  },
+  {
+   "file": "preview-sentinel-2-2026-04-30.png",
+   "observation": {
+    "id": "878e76b7-ed78-43fa-96ce-3a4743650559",
+    "area_id": "a54fab5d-97e9-4609-bf74-82c93c06fe54",
+    "date": "2026-04-30",
+    "source": "sentinel-2",
+    "ndvi": {
+     "mean": 0.6958,
+     "min": 0.3729,
+     "max": 0.7868,
+     "std": 0.0528,
+     "median": 0.7066
+    },
+    "quality": {
+     "level": "good",
+     "cloud_coverage_pct": 0.0,
+     "data_coverage_pct": 100.0,
+     "warnings": []
+    },
+    "preview": {
+     "url": "/api/v1/observations/878e76b7-ed78-43fa-96ce-3a4743650559/preview",
+     "width_px": 117,
+     "height_px": 117,
+     "note": "Preview images are low resolution (117 x 117 px in validated tests) and are for visual orientation only."
+    },
+    "geometry_status": "current"
+   }
+  },
+  {
+   "file": "preview-landsat-8-2026-04-15.png",
+   "observation": {
+    "id": "59245513-35f6-4a6c-b59c-0df81118043c",
+    "area_id": "a54fab5d-97e9-4609-bf74-82c93c06fe54",
+    "date": "2026-04-15",
+    "source": "landsat-8",
+    "ndvi": {
+     "mean": 0.7225,
+     "min": 0.4651,
+     "max": 0.8011,
+     "std": 0.036,
+     "median": 0.7287
+    },
+    "quality": {
+     "level": "good",
+     "cloud_coverage_pct": 0.0,
+     "data_coverage_pct": 100.0,
+     "warnings": []
+    },
+    "preview": {
+     "url": "/api/v1/observations/59245513-35f6-4a6c-b59c-0df81118043c/preview",
+     "width_px": null,
+     "height_px": null,
+     "note": "Preview images are low resolution (117 x 117 px in validated tests) and are for visual orientation only."
+    },
+    "geometry_status": "current"
+   }
+  },
+  {
+   "file": "preview-landsat-8-2026-04-23.png",
+   "observation": {
+    "id": "fe509dbc-bda0-49d2-be98-bb2e6b7e2080",
+    "area_id": "a54fab5d-97e9-4609-bf74-82c93c06fe54",
+    "date": "2026-04-23",
+    "source": "landsat-8",
+    "ndvi": {
+     "mean": 0.193,
+     "min": 0.1225,
+     "max": 0.2733,
+     "std": 0.0353,
+     "median": 0.1989
+    },
+    "quality": {
+     "level": "poor",
+     "cloud_coverage_pct": 100.0,
+     "data_coverage_pct": 100.0,
+     "warnings": []
+    },
+    "preview": {
+     "url": "/api/v1/observations/fe509dbc-bda0-49d2-be98-bb2e6b7e2080/preview",
+     "width_px": null,
+     "height_px": null,
+     "note": "Preview images are low resolution (117 x 117 px in validated tests) and are for visual orientation only."
+    },
+    "geometry_status": "current"
+   }
+  }
+ ]
+}

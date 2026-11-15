@@ -1,0 +1,129 @@
+name: Backend deploy
+# Deploys the backend to the EC2 host (infra/terraform/modules/ec2) through SSM Run Command.
+# AWS access uses GitHub OIDC and the role from infra/terraform/modules/github_deploy; no
+# AWS keys are stored in GitHub. Repository variables (Settings > Secrets and variables >
+# Actions > Variables), all non-secret:
+#   AWS_REGION, AWS_DEPLOY_ROLE_ARN, BACKEND_INSTANCE_ID   required
+#   BACKEND_APP_DIR, BACKEND_SSM_PARAMETER_PATH            optional, defaults below
+#   BACKEND_DOMAIN                                         optional, enables the HTTPS check
+on:
+  # After Backend CI passes on main.
+  workflow_run:
+    workflows: ["Backend CI"]
+    types: [completed]
+    branches: [main]
+  # Deployment files that Backend CI does not watch.
+  push:
+    branches: [main]
+    paths:
+      - "docker-compose.yml"
+      - "docker-compose.prod.yml"
+      - "infra/deploy/**"
+      - ".github/workflows/backend-deploy.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+  id-token: write # OIDC token for AWS
+concurrency:
+  # One deploy at a time; a newer one waits instead of cancelling a running one.
+  group: backend-deploy
+  cancel-in-progress: false
+jobs:
+  deploy:
+    name: Deploy to EC2 via SSM
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      AWS_REGION: ${{ vars.AWS_REGION }}
+      INSTANCE_ID: ${{ vars.BACKEND_INSTANCE_ID }}
+      APP_DIR: ${{ vars.BACKEND_APP_DIR || '/opt/eco-sentinel' }}
+      PARAM_PATH: ${{ vars.BACKEND_SSM_PARAMETER_PATH || '/eco-sentinel/dev/backend' }}
+      REPO_URL: ${{ github.server_url }}/${{ github.repository }}.git
+      DEPLOY_SHA: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
+    steps:
+      - name: Check configuration
+        run: |
+          missing=""
+          [ -n "$AWS_REGION" ] || missing="$missing AWS_REGION"
+          [ -n "$INSTANCE_ID" ] || missing="$missing BACKEND_INSTANCE_ID"
+          [ -n "${{ vars.AWS_DEPLOY_ROLE_ARN }}" ] || missing="$missing AWS_DEPLOY_ROLE_ARN"
+          if [ -n "$missing" ]; then
+            echo "::error::Missing repository variables:$missing"
+            exit 1
+          fi
+          [[ "$DEPLOY_SHA" =~ ^[0-9a-f]{40}$ ]] || { echo "::error::Unexpected commit SHA"; exit 1; }
+          [[ "$INSTANCE_ID" =~ ^i-[0-9a-f]{8,17}$ ]] || { echo "::error::BACKEND_INSTANCE_ID is not an instance ID"; exit 1; }
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+          role-session-name: backend-deploy-${{ github.run_id }}
+
+      - name: Send deploy command
+        id: send
+        run: |
+          # Values reach the remote script through jq --arg, already validated above.
+          commands="$(jq -n \
+            --arg region "$AWS_REGION" --arg app "$APP_DIR" --arg path "$PARAM_PATH" \
+            --arg repo "$REPO_URL" --arg sha "$DEPLOY_SHA" '
+            [ "set -eu",
+              "export AWS_REGION=" + ($region | @sh),
+              "APP_DIR=" + ($app | @sh),
+              "mkdir -p \"$APP_DIR\" && cd \"$APP_DIR\"",
+              "if [ ! -d .git ]; then git init -q && git remote add origin " + ($repo | @sh) + "; fi",
+              "git fetch --depth 1 origin " + ($sha | @sh),
+              "git checkout --force --detach FETCH_HEAD",
+              "bash infra/deploy/deploy-backend.sh \"$APP_DIR\" " + ($path | @sh)
+            ] | {commands: ., executionTimeout: ["1500"]}')"
+          command_id="$(aws ssm send-command \
+            --instance-ids "$INSTANCE_ID" \
+            --document-name AWS-RunShellScript \
+            --comment "backend deploy ${DEPLOY_SHA:0:12}" \
+            --timeout-seconds 600 \
+            --parameters "$commands" \
+            --query Command.CommandId --output text)"
+          echo "command_id=$command_id" >> "$GITHUB_OUTPUT"
+          echo "SSM command $command_id sent for commit $DEPLOY_SHA"
+
+      - name: Wait for the deploy to finish
+        env:
+          COMMAND_ID: ${{ steps.send.outputs.command_id }}
+        run: |
+          status="Pending"
+          for _ in $(seq 1 300); do
+            sleep 5
+            status="$(aws ssm get-command-invocation --command-id "$COMMAND_ID" --instance-id "$INSTANCE_ID" \
+              --query Status --output text 2>/dev/null || echo Pending)"
+            case "$status" in
+              Pending | InProgress | Delayed) continue ;;
+              *) break ;;
+            esac
+          done
+          echo "::group::Instance output"
+          aws ssm get-command-invocation --command-id "$COMMAND_ID" --instance-id "$INSTANCE_ID" \
+            --query StandardOutputContent --output text || true
+          echo "::endgroup::"
+          echo "::group::Instance errors"
+          aws ssm get-command-invocation --command-id "$COMMAND_ID" --instance-id "$INSTANCE_ID" \
+            --query StandardErrorContent --output text || true
+          echo "::endgroup::"
+          echo "Final status: $status"
+          [ "$status" = "Success" ]
+
+      - name: Check the public health endpoint
+        if: vars.BACKEND_DOMAIN != ''
+        env:
+          BACKEND_DOMAIN: ${{ vars.BACKEND_DOMAIN }}
+        run: |
+          for _ in $(seq 1 12); do
+            if curl -fsS --max-time 10 "https://$BACKEND_DOMAIN/health/ready" > /dev/null; then
+              echo "https://$BACKEND_DOMAIN/health/ready is up"
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "::error::https://$BACKEND_DOMAIN/health/ready did not answer with 2xx"
+          exit 1

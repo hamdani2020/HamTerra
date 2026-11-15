@@ -7,6 +7,7 @@ export const ROUTES = {
   callback: "/auth/callback",
   signedOut: "/signed-out",
   authError: "/auth/error",
+  about: "/about",
   dashboard: "/dashboard",
   map: "/map",
   areas: "/areas",
@@ -43,6 +44,7 @@ export const PUBLIC_ROUTES: readonly string[] = [
   ROUTES.callback,
   ROUTES.signedOut,
   ROUTES.authError,
+  ROUTES.about,
 ];
 
 /** Router state read by the landing page: the requested path and the expired notice. */

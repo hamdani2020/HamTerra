@@ -16,7 +16,7 @@ set -euo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TF_ROOT="$(cd "$HERE/../.." && pwd)"
 SCRIPTS_DIR="$TF_ROOT/scripts"
-SCRIPT_FILES=(create-state-bucket.sh check-state-bucket.sh check-backend.sh print-env.sh)
+SCRIPT_FILES=(create-state-bucket.sh check-state-bucket.sh check-backend.sh print-env.sh put-backend-params.sh)
 
 # --- environment: stub first on PATH, no credentials -------------------------
 WORK="$(mktemp -d "${TMPDIR:-/tmp}/eco-script-tests.XXXXXX")"
