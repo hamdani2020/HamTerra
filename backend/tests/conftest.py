@@ -30,6 +30,29 @@ DUMMY_ENV: dict[str, str] = {
     "WEATHER_API_KEY": "",
 }
 
+
+def _default_test_database_url() -> str | None:
+    """In the backend container, use the Compose database server with a separate
+    ``eco_test`` database, so ``make test`` also runs the PostGIS integration tests.
+    The application database itself is never used by the tests."""
+    real = os.environ.get("DATABASE_URL")
+    if not real or "TEST_DATABASE_URL" in os.environ:
+        return None
+    from sqlalchemy.engine import make_url
+
+    try:
+        url = make_url(real)
+    except Exception:  # noqa: BLE001 - an unusable URL just means no default
+        return None
+    if url.host != "postgis" or not url.drivername.startswith("postgresql+asyncpg"):
+        return None
+    return url.set(database="eco_test").render_as_string(hide_password=False)
+
+
+_test_db = _default_test_database_url()
+if _test_db is not None:
+    os.environ["TEST_DATABASE_URL"] = _test_db
+
 # Applied at import time so module-level Settings loading sees dummy values.
 os.environ.update(DUMMY_ENV)
 

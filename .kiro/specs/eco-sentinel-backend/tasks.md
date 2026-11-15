@@ -250,145 +250,145 @@ Out of scope: ML, illegal-mining classification, raster processing, production A
     - Partial success keeps stored sources, total failure leaves data unchanged, empty result records `empty`, concurrent refresh returns 409, 120 s deadline returns 504 with earlier data intact, stale `running` record expiry, preview proxy denies before contacting the provider, no key in responses.
     - _Requirements: 6.12, 6.13, 6.15, 6.16, 17.7, 17.8, 23.5_
 
-- [ ] 11. NDVI time series
-  - [ ] 11.1 Implement the time-series domain
+- [x] 11. NDVI time series
+  - [x] 11.1 Implement the time-series domain
     - `app/domain/timeseries.py`: `build_series` (sort, cloud filter, `excluded_by_cloud`, gaps, `IRREGULAR_SAMPLING` when a gap exceeds the threshold, `INSUFFICIENT_OBSERVATIONS`), summary with 4-decimal rounding, and `trend_per_30d` as the OLS slope times 30.
     - _Requirements: 7.1, 7.6, 7.8, 7.9, 7.10, 7.11, 7.12_
 
-  - [ ]* 11.2 Write property test for series selection and ordering
+  - [x]* 11.2 Write property test for series selection and ordering
     - **Property 19: Series selection and ordering**
     - **Validates: Requirements 7.1, 7.6, 7.12**
 
-  - [ ]* 11.3 Write property test for gaps and irregular sampling
+  - [x]* 11.3 Write property test for gaps and irregular sampling
     - **Property 20: Gaps and irregular sampling**
     - **Validates: Requirements 7.9, 7.10**
 
-  - [ ]* 11.4 Write property test for series summary and trend
+  - [x]* 11.4 Write property test for series summary and trend
     - **Property 21: Series summary and trend**
     - **Validates: Requirements 7.8, 7.11**
 
-  - [ ] 11.5 Implement the time-series service and endpoint
+  - [x] 11.5 Implement the time-series service and endpoint
     - `app/services/timeseries.py` and `app/api/routers/timeseries.py` for `GET /areas/{area_id}/ndvi/timeseries`: validate `source` (required), date span (at most 3660 days), `max_cloud_coverage`, 404 for a missing area, read only stored data (no provider call), always return the three limitations and `meta`. `include_weather` returns `weather: null` with `WEATHER_DISABLED` until task 13.3 wires the provider.
     - _Requirements: 7.1, 7.2, 7.3, 7.4, 7.5, 7.6, 7.7, 7.12, 7.16, 9.7, 23.3_
 
-  - [ ]* 11.6 Write time-series reference tests
+  - [x]* 11.6 Write time-series reference tests
     - The eight reference points come back in ascending order with exact 4-decimal means and the expected summary, one-point and zero-point series, gap warning at 30 versus 31 days, and reads succeed with the provider mock set to fail.
     - _Requirements: 7.8, 7.10, 7.15, 7.16, 22.8_
 
-- [ ] 12. Comparisons
-  - [ ] 12.1 Implement the comparison domain and constants
+- [x] 12. Comparisons
+  - [x] 12.1 Implement the comparison domain and constants
     - `app/domain/comparison.py` with `compare` (`ndvi_diff = b - a` rounded to 4 decimals, percent relative to `date_a` rounded to 2 decimals or `None` with `PERCENT_DIFFERENCE_UNDEFINED`, absolute interval days, flag with `>=` on the unrounded difference), the seasonality rule (`k >= 1` and `abs(interval - 365k) <= 15`), cross-sensor refusal, fixed summary templates, and `constants.py` with `LIMITATIONS`, `CAVEATS`, `FORBIDDEN_TERMS` and `spatial_analysis_available = False`.
     - _Requirements: 8.1, 8.2, 8.3, 8.7, 8.13, 8.14, 8.15, 8.19, 21.1, 21.2, 21.5_
 
-  - [ ]* 12.2 Write property test for comparison arithmetic and symmetry
+  - [x]* 12.2 Write property test for comparison arithmetic and symmetry
     - **Property 22: Comparison arithmetic and symmetry**
     - **Validates: Requirements 8.1, 8.2, 8.18, 8.19, 22.9**
 
-  - [ ]* 12.3 Write property test for flag threshold
+  - [x]* 12.3 Write property test for flag threshold
     - **Property 23: Flag threshold**
     - **Validates: Requirements 8.7**
 
-  - [ ]* 12.4 Write property test for seasonality warning
+  - [x]* 12.4 Write property test for seasonality warning
     - **Property 24: Seasonality warning**
     - **Validates: Requirements 8.13**
 
-  - [ ]* 12.5 Write property test for neutral wording and no spatial claim
+  - [x]* 12.5 Write property test for neutral wording and no spatial claim
     - **Property 26: Neutral wording and no spatial claim**
     - **Validates: Requirements 8.14, 8.15, 21.1, 21.2, 21.5**
 
-  - [ ] 12.6 Implement the comparison service and endpoint
+  - [x] 12.6 Implement the comparison service and endpoint
     - `app/services/comparisons.py` and `app/api/routers/comparisons.py` for `POST /areas/{area_id}/comparisons`: check order (equal dates 422 first, then missing observation 404 naming the date, then cross-sensor), request threshold overrides validated against ranges and echoed in `thresholds_applied` without changing stored settings, quality and warnings, `spatial_analysis_available: false`, `weather: null` with `WEATHER_DISABLED` until task 13.3.
     - _Requirements: 8.1, 8.3, 8.4, 8.5, 8.6, 8.8, 8.10, 8.11, 8.12, 8.13, 8.14, 21.2_
 
-  - [ ]* 12.7 Write comparison tests and cross-sensor property test
+  - [x]* 12.7 Write comparison tests and cross-sensor property test
     - **Property 25: Cross-sensor and equal-date refusal**
     - **Validates: Requirements 8.3, 8.4, 8.6**
     - Also unit tests with the reference series: pair (2026-03-06, 2026-04-30), sign flip when swapped, zero mean percent handling, override out of range 422, equal dates beat missing observation.
     - _Requirements: 8.1, 8.2, 8.5, 8.6, 8.11, 22.8_
 
-- [ ] 13. Weather provider (disabled by default)
-  - [ ] 13.1 Implement weather provider interface and implementations
+- [x] 13. Weather provider (disabled by default)
+  - [x] 13.1 Implement weather provider interface and implementations
     - `app/integrations/weather/base.py` (`WeatherProvider` protocol, `WeatherBatch`), `null.py` (default, `WEATHER_PROVIDER=none`), `agro_weather.py` (candidate provider, reuses `HttpTransport`, Kelvin to °C, precipitation in mm, unconvertible values discarded, chunking by `WEATHER_MAX_RANGE_DAYS`). Missing key or base URL means not configured and does not stop startup.
     - _Requirements: 10.1, 10.2, 10.3, 10.4, 10.5, 10.6_
 
-  - [ ]* 13.2 Write property test for weather normalisation
+  - [x]* 13.2 Write property test for weather normalisation
     - **Property 28: Weather normalisation**
     - **Validates: Requirements 10.5, 10.6**
 
-  - [ ] 13.3 Implement weather service and wire into series and comparisons
+  - [x] 13.3 Implement weather service and wire into series and comparisons
     - `app/services/weather.py`: `WEATHER_DISABLED` when not configured or `weather_enabled` is false, point on surface for lat/lon, 10 s timeout, `WEATHER_UNAVAILABLE` on failure, `WEATHER_INVALID_DATA` on discarded values, provider name, period and the correlation note on every context, Retrieval_Record per call, no correlation computed. Wire it into `timeseries.py` and `comparisons.py` services (points, and `a`, `b`, `between`).
     - _Requirements: 7.13, 7.14, 8.16, 8.17, 10.6, 10.7, 10.8, 10.9, 10.10_
 
-  - [ ]* 13.4 Write weather tests
+  - [x]* 13.4 Write weather tests
     - Disabled, unconfigured, provider failure leaves NDVI values and summary unchanged, invalid values produce the warning, timeout at 10 s, context labels present.
     - _Requirements: 7.14, 8.17, 10.2, 10.7, 10.8, 10.9_
 
-- [ ] 14. Reports
-  - [ ] 14.1 Implement the report service
+- [x] 14. Reports
+  - [x] 14.1 Implement the report service
     - `app/services/reports.py`: validate request (source, `date_from <= date_to`, span at most 1826 days), `NO_OBSERVATIONS` 422, build the JSON snapshot (area, geometry, observations with quality, summary, selected comparisons through `compare`, thresholds applied, optional weather, fixed `CAVEATS` and `LIMITATIONS`), insert `reports`, `comparisons` copies and the Audit_Event in one transaction, retrieval reads only the stored `content`, listing scoped to the creator for Researchers, identical 404 for missing and foreign reports, PDF returns 501, unsupported `format` returns 422.
     - _Requirements: 11.1, 11.2, 11.3, 11.4, 11.5, 11.7, 11.8, 11.9, 11.10, 11.12, 18.1_
 
-  - [ ] 14.2 Implement report router
+  - [x] 14.2 Implement report router
     - `app/api/routers/reports.py` with `POST /reports` (201), `GET /reports` (`area_id`, admin-only `created_by`, pagination) and `GET /reports/{report_id}` (`format=json|pdf`).
     - _Requirements: 11.1, 11.5, 11.8, 11.9, 11.10, 11.12_
 
-  - [ ]* 14.3 Write property test for report content and snapshot
+  - [x]* 14.3 Write property test for report content and snapshot
     - **Property 29: Report content and snapshot**
     - **Validates: Requirements 11.2, 11.3, 11.4**
 
-  - [ ]* 14.4 Write property test for report visibility
+  - [x]* 14.4 Write property test for report visibility
     - **Property 30: Report visibility**
     - **Validates: Requirements 11.9, 11.10**
 
-  - [ ]* 14.5 Write property test that sources are never mixed
+  - [x]* 14.5 Write property test that sources are never mixed
     - **Property 17: Sources are never mixed**
     - **Validates: Requirements 6.14, 7.3, 9.6**
 
-  - [ ]* 14.6 Write report unit and integration tests
+  - [x]* 14.6 Write report unit and integration tests
     - Caveats text identical across reports, `NO_OBSERVATIONS` stores nothing, span over 5 years rejected, PDF returns 501 and JSON still works, a report keeps its content after a later refresh and area edit.
     - _Requirements: 11.3, 11.4, 11.7, 11.8, 11.12_
 
-- [ ] 15. Admin: users, roles, operations
-  - [ ] 15.1 Implement Cognito admin client and user administration service
+- [x] 15. Admin: users, roles, operations
+  - [x] 15.1 Implement Cognito admin client and user administration service
     - `app/integrations/cognito/admin.py` (`CognitoAdmin` protocol, boto3 `cognito-idp` group calls only, worker thread, 10 s timeout, never creates or changes pools, clients, groups or users) and `app/services/users.py`: list and get with page size default 50 and max 100, role change with order of checks (501 when `COGNITO_ADMIN_ENABLED` is false or access denied, 404 unknown user, 409 `SELF_ROLE_CHANGE`, 409 `LAST_ADMIN`), local roles updated only after Cognito succeeds, success and failure Audit_Events, response with `effective_after_next_login: true` and a message.
     - _Requirements: 12.1, 12.2, 12.3, 12.4, 12.5, 12.6, 12.7, 12.8, 12.9, 12.10, 20.14_
 
-  - [ ]* 15.2 Write property test for admin count never reaching zero
+  - [x]* 15.2 Write property test for admin count never reaching zero
     - **Property 31: Admin count never reaches zero**
     - **Validates: Requirements 12.6, 12.7**
 
-  - [ ] 15.3 Implement user admin routers
+  - [x] 15.3 Implement user admin routers
     - `app/api/routers/admin_users.py` with `GET /admin/users`, `GET /admin/users/{sub}` and `PUT /admin/users/{sub}/roles`. Request models reject extra fields, and no user-creation endpoint exists.
     - _Requirements: 12.1, 12.2, 12.8, 12.9_
 
-  - [ ] 15.4 Implement admin operations service and routers
+  - [x] 15.4 Implement admin operations service and routers
     - `app/services/admin_ops.py` and `app/api/routers/admin_ops.py`: `GET /admin/retrievals` (filters, default 25, max 100, 422 on bad values), `GET /admin/integrations/status` (`probe=true` makes one call per provider with a 10 s timeout, writes a `probe` record, never exposes keys), `GET /admin/activity` (filters, same paging), `GET /admin/dashboard` (areas, observations, reports, users by role, retrievals by status over 168 hours).
     - _Requirements: 13.1, 13.2, 13.3, 13.4, 13.5, 13.6, 13.7, 13.8_
 
-  - [ ]* 15.5 Write admin tests
+  - [x]* 15.5 Write admin tests
     - Role change with a fake `CognitoAdmin`: success, failure, timeout, not enabled, last admin, self change, audit events for each. Researcher gets 403 on every admin route. Retrieval and activity filters, probe failure still returns status and counts toward failures, no key material in the integration response, dashboard counts.
     - _Requirements: 12.2, 12.3, 12.4, 12.5, 12.6, 12.7, 13.1, 13.2, 13.4, 13.5, 13.6, 13.8_
 
-- [ ] 16. Cross-cutting verification and documentation
-  - [ ]* 16.1 Write the authorization matrix test
+- [x] 16. Cross-cutting verification and documentation
+  - [x]* 16.1 Write the authorization matrix test
     - Walk `app.routes`, call every non-health endpoint with no token, a Researcher token and an Admin token, assert the documented status for each, and fail if a route is missing from the matrix or lacks a guard.
     - _Requirements: 3.2, 3.3, 22.5_
 
-  - [ ]* 16.2 Write error-handling and secret-leak tests
+  - [x]* 16.2 Write error-handling and secret-leak tests
     - **Property 3: Error envelope shape and secrecy**
     - **Validates: Requirements 1.5, 1.6, 12.9, 17.4, 22.7**
     - Also example tests for the envelope shape for validation, authentication, authorization, not-found, upstream and unexpected errors, and a scan of bodies, headers and captured logs for configured secrets.
     - _Requirements: 1.5, 1.6, 17.3, 17.4, 17.5, 22.7_
 
-  - [ ]* 16.3 Write OpenAPI check and performance and Compose smoke scripts
+  - [x]* 16.3 Write OpenAPI check and performance and Compose smoke scripts
     - A test that OpenAPI lists every contract endpoint. `scripts/perf_check.py` seeds 500 observations and 1000 areas and reports p95 for area reads, map data and a 100-observation report, also with the provider mock failing. `scripts/compose_smoke.sh` checks healthy within 120 s, startup failure on a missing variable, and ports bound to `127.0.0.1`.
     - _Requirements: 1.2, 11.11, 20.4, 20.11, 20.15, 23.1, 23.2, 23.3_
 
-  - [ ] 16.4 Write README documentation
+  - [x] 16.4 Write README documentation
     - Commands for start, stop, rebuild, logs, PostgreSQL shell, manual migrations and running `make test` in the container. Cognito local-dev configuration (callback and logout URLs, allowed origins, app client settings, group names, token variables, example values), first-Admin provisioning through the console or CLI with a note that no API route grants `admin`, and the open provider items from the design.
     - _Requirements: 20.10, 20.12, 20.13_
 
-- [ ] 17. Final checkpoint - Ensure all tests pass
+- [x] 17. Final checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
 ## Notes

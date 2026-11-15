@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import uuid
 from datetime import date as Date
-from typing import Annotated, Any
+from typing import Annotated
 
 from fastapi import APIRouter, Depends, Query, Response
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -18,68 +18,28 @@ from app.api.deps import (
     pagination_params,
 )
 from app.api.schemas.observations import (
-    NdviStatsOut,
     ObservationMeta,
     ObservationOut,
     ObservationPage,
-    PreviewOut,
-    QualityOut,
     RefreshOut,
     RefreshRequest,
     Source,
     WarningOut,
 )
+from app.api.serializers import observation_out
 from app.core.config import Settings
 from app.core.errors import ValidationFailed
 from app.core.permissions import Permission
 from app.core.security import Principal
-from app.domain.constants import PREVIEW_NOTE, WARNING_MESSAGES
 from app.integrations.agro.models import AgroClient
 from app.services import observations as observation_service
 from app.services import refresh as refresh_service
-from app.services.observations import ObservationFilters, ObservationView
+from app.services.observations import ObservationFilters
 
 router = APIRouter(tags=["observations"])
 
 Session = Annotated[AsyncSession, Depends(get_session)]
 Config = Annotated[Settings, Depends(get_settings)]
-
-
-def observation_out(view: ObservationView) -> ObservationOut:
-    obs = view.observation
-    quality = view.quality
-
-    def num(value: Any) -> float | None:
-        return None if value is None else float(value)
-
-    return ObservationOut(
-        id=obs.id,
-        area_id=obs.area_id,
-        date=obs.acquired_on,
-        source=obs.source,
-        ndvi=NdviStatsOut(
-            mean=float(obs.ndvi_mean),
-            min=num(obs.ndvi_min),
-            max=num(obs.ndvi_max),
-            std=num(obs.ndvi_std),
-            median=num(obs.ndvi_median),
-        ),
-        quality=QualityOut(
-            level=quality.level,
-            cloud_coverage_pct=quality.cloud_coverage_pct,
-            data_coverage_pct=quality.data_coverage_pct,
-            warnings=[
-                WarningOut(code=w.value, message=WARNING_MESSAGES[w]) for w in quality.warnings
-            ],
-        ),
-        preview=PreviewOut(
-            url=f"/api/v1/observations/{obs.id}/preview" if obs.preview_ref else None,
-            width_px=obs.preview_width_px,
-            height_px=obs.preview_height_px,
-            note=PREVIEW_NOTE,
-        ),
-        geometry_status=obs.geometry_status,
-    )
 
 
 def observation_filters(

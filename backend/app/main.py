@@ -10,6 +10,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import APIRouter, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy.engine import make_url
 from starlette.types import ASGIApp
 
 from app.api.middleware import BodySizeLimitMiddleware, RequestIdMiddleware
@@ -20,6 +21,8 @@ from app.core.errors import register_exception_handlers
 from app.core.logging import configure_logging
 from app.db.session import dispose_engine, get_sessionmaker, init_engine
 from app.integrations.agro.client import build_agro_client
+from app.integrations.cognito.admin import build_cognito_admin
+from app.integrations.weather.factory import build_weather_provider
 from app.services.retrievals import expire_stale_running
 
 API_PREFIX = "/api/v1"
@@ -37,6 +40,7 @@ class EcoSentinelApp(FastAPI):
 
 
 def _secret_values(settings: Settings) -> list[str]:
+    """Values the log filter replaces with ``[REDACTED]``, including the bare DB password."""
     candidates = (
         settings.database_url,
         settings.agro_api_key,
@@ -45,7 +49,14 @@ def _secret_values(settings: Settings) -> list[str]:
         settings.aws_secret_access_key,
         settings.aws_session_token,
     )
-    return [c.get_secret_value() for c in candidates if c is not None]
+    values = [c.get_secret_value() for c in candidates if c is not None]
+    try:
+        password = make_url(settings.database_url.get_secret_value()).password
+    except Exception:  # an unparsable URL is rejected elsewhere; never fail logging setup
+        password = None
+    if password:
+        values.append(str(password))
+    return [v for v in values if v]
 
 
 def discover_routers() -> list[tuple[str, APIRouter]]:
@@ -94,9 +105,13 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             logger.warning("stale retrieval cleanup skipped")
         agro_client = build_agro_client(resolved)
         app.state.agro_client = agro_client
+        weather_provider = build_weather_provider(resolved)
+        app.state.weather_provider = weather_provider
+        app.state.cognito_admin = build_cognito_admin(resolved)
         try:
             yield
         finally:
+            await weather_provider.aclose()
             await agro_client.aclose()
             await dispose_engine()
 

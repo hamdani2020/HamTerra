@@ -1,6 +1,6 @@
 # Eco Sentinel
 
-Eco Sentinel is a web platform for monitoring vegetation change (NDVI from Sentinel-2 and Landsat 8) over registered areas in Ghana. The backend is a FastAPI service backed by PostgreSQL/PostGIS. It validates AWS Cognito access tokens and enforces the `admin` and `researcher` roles. It presents numeric evidence for investigation and never classifies a change as illegal mining, destruction or recovery.
+Eco Sentinel is a web platform for monitoring vegetation change (NDVI from Sentinel-2 and Landsat 8) over registered areas in Ghana. The backend is a FastAPI service backed by PostgreSQL/PostGIS. It validates AWS Cognito access tokens and enforces the `admin` and `researcher` roles. It presents numeric evidence and flags differences for investigation. It never classifies a change or states its cause.
 
 Specs live in `.kiro/specs/` (`eco-sentinel-backend`, `eco-sentinel-frontend`, `eco-sentinel-infrastructure`).
 
@@ -8,15 +8,12 @@ Specs live in `.kiro/specs/` (`eco-sentinel-backend`, `eco-sentinel-frontend`, `
 
 | Part | State |
 |---|---|
-| Backend project scaffold (`backend/`: Dockerfile, Makefile, entrypoint, smoke test) | Exists |
-| `docker-compose.yml` (PostGIS, backend, pgAdmin, frontend) | Exists |
-| Backend application code (`app.main:create_app`), API routes | **Not implemented yet**. The backend container cannot start until it exists. |
-| Alembic migrations (`alembic upgrade head`) | **Not implemented yet**. `entrypoint.sh` calls it, so startup fails until migrations exist, unless `MIGRATE_ON_START=false`. |
-| `.env.example` | **Not created yet**. See [Configuration](#configuration). |
-| Frontend (`frontend/`) | **Not implemented yet**. The `frontend` Compose service has no build context. |
-| Terraform (`infra/terraform/`) | **Not implemented yet** |
-
-The commands below describe the intended workflow from the design. Anything that depends on a row marked "Not implemented" will not work today.
+| Backend (`backend/`): API under `/api/v1`, migrations, tests | Implemented (backend spec tasks 1 to 17) |
+| `docker-compose.yml` (PostGIS, backend, pgAdmin, frontend) | Exists. The `frontend` service has no build context until the frontend spec is implemented, so start the stack without it (see Developer commands). |
+| `.env.example` | Exists, placeholders only |
+| Ghana boundary file | Supplied by the project owner (see Configuration) |
+| Frontend (`frontend/`) | **Not implemented yet** |
+| Terraform (`infra/terraform/`) | Cognito configuration, see `infra/terraform/README.md` |
 
 ## Prerequisites
 
@@ -28,9 +25,8 @@ The commands below describe the intended workflow from the design. Anything that
 ## Quick start
 
 ```sh
-cp .env.example .env     # .env.example does not exist yet; create .env by hand, see Configuration
-# edit .env: set every required value
-docker compose up -d
+cp .env.example .env     # then replace every placeholder
+docker compose up -d postgis backend pgadmin
 ```
 
 All published ports bind to `127.0.0.1` by default (`BIND_ADDRESS`). Default ports: backend 8000, frontend 5173, PostgreSQL 5432, pgAdmin 5050.
@@ -41,21 +37,35 @@ All published ports bind to `127.0.0.1` by default (`BIND_ADDRESS`). Default por
 
 `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`, `PGADMIN_DEFAULT_EMAIL`, `PGADMIN_DEFAULT_PASSWORD`, `COGNITO_USER_POOL_ID`, `COGNITO_REGION`, `COGNITO_APP_CLIENT_ID`, `AGRO_API_KEY`.
 
-The backend also requires `GHANA_BOUNDARY_PATH`, the path to a GeoJSON Polygon or MultiPolygon of Ghana (EPSG:4326). The project owner supplies it as `backend/data/ghana_boundary.geojson`; the repository does not ship one. The backend refuses to start when the file is missing or unusable. The boundary is used to check that monitoring areas lie inside Ghana. A coarse boundary is acceptable for the MVP, so an area very close to the border can be accepted slightly beyond it. The full variable list and defaults are in the Settings table of `.kiro/specs/eco-sentinel-backend/design.md`. `.env` is git-ignored. Never commit real secrets or paste them into issues or logs.
+The backend also requires `GHANA_BOUNDARY_PATH`, the path to a GeoJSON Polygon or MultiPolygon of Ghana (EPSG:4326). The project owner supplies it as `backend/data/ghana_boundary.geojson` (for example the geoBoundaries ADM0 file for Ghana, public domain). The backend refuses to start when the file is missing or unusable. The boundary is used to check that monitoring areas lie inside Ghana. A coarse boundary is acceptable for the MVP, so an area very close to the border can be accepted slightly beyond it. The full variable list and defaults are in the Settings table of `.kiro/specs/eco-sentinel-backend/design.md`. `.env` is git-ignored. Never commit real secrets or paste them into issues or logs.
 
 ## Developer commands
 
+Run from the repository root.
+
 | Task | Command |
 |---|---|
-| Start | `docker compose up -d` |
+| Start (without the frontend) | `docker compose up -d postgis backend pgadmin` |
+| Start everything | `docker compose up -d` (needs the frontend project) |
 | Stop | `docker compose down` (add `-v` only to delete data) |
 | Rebuild | `docker compose build backend && docker compose up -d backend` |
 | Logs | `docker compose logs -f backend` |
+| Status and health | `docker compose ps` |
 | PostgreSQL shell | `docker compose exec postgis psql -U $POSTGRES_USER -d $POSTGRES_DB` |
 | Migrations manually | `docker compose exec backend alembic upgrade head` (or `downgrade -1`) |
 | Tests in the container | `docker compose exec backend make test` |
+| Performance check | `docker compose exec backend python scripts/perf_check.py` |
+| Compose smoke check | `sh backend/scripts/compose_smoke.sh` (on the host) |
 
-`make test` runs `ruff check`, `ruff format --check`, `mypy --strict app` and `pytest`, and exits non-zero if any step fails. Migrations run automatically on backend start; set `MIGRATE_ON_START=false` to skip them. Alembic is not set up yet (see Status).
+`make test` runs `ruff check`, `ruff format --check`, `mypy --strict app` and `pytest`, and exits non-zero if any step fails. Migrations run automatically on backend start; set `MIGRATE_ON_START=false` to skip them.
+
+**Tests.** The suite makes no outbound network calls (pytest-socket allows only the `postgis` host) and uses no real credentials: provider clients are mocked and JWTs are signed with keys generated per run. In the backend container the PostGIS integration tests use a separate database, `eco_test`, on the Compose PostgreSQL server; it is created on first use and the application database is never touched. Set `TEST_DATABASE_URL` to use a different test database. Without a reachable database the integration tests are skipped with a message. Audit rows written by tests stay in `eco_test` because that table is append-only.
+
+The image built before this change has no `make`. After pulling it, rebuild once: `docker compose build backend && docker compose up -d backend`.
+
+**Performance check.** `scripts/perf_check.py` seeds 1000 areas and 500 observations into `eco_test`, measures p95 latency in-process (no network hop) for area reads, map data and report generation, with the provider mock working and failing, then removes the seeded rows. It exits non-zero when a limit (500 ms, 1000 ms, 10 s) is exceeded.
+
+**Compose smoke check.** `backend/scripts/compose_smoke.sh` checks that a missing `AGRO_API_KEY` stops Compose with an error naming it, that the backend reports healthy within 120 s, and that published ports bind to `127.0.0.1`. It starts the stack if it is not running and never removes volumes.
 
 ## Cognito local development
 
@@ -88,17 +98,18 @@ After that, an Admin can change roles through `PUT /admin/users/{sub}/roles` onl
 
 ### Terraform alternative
 
-[`infra/terraform/README.md`](infra/terraform/README.md) will describe creating the Cognito resources with Terraform instead of the manual console steps. It is **not yet created**; see `.kiro/specs/eco-sentinel-infrastructure`.
+[`infra/terraform/README.md`](infra/terraform/README.md) describes creating the Cognito resources with Terraform instead of the manual console steps (spec: `.kiro/specs/eco-sentinel-infrastructure`).
 
 ## Open provider items
 
-Still to validate against the owner's accounts (design.md, "Open Items"):
+Still to validate against the owner's accounts (backend `design.md`, "Open Items to Validate Against the Owner's Account"):
 
-1. Real AgroMonitoring `ndvi/history` and `image/search` responses (field names, `type` parameter, `dc` presence, MultiPolygon registration, polygon delete call).
+1. Real AgroMonitoring `ndvi/history` and `image/search` responses (field names, the `type` parameter, `dc` presence, MultiPolygon registration, the polygon delete call).
 2. Provider rate limit, polygon count and area totals, and history depth of the plan.
 3. A downloaded GeoTIFF and tile sample (pixel size, CRS, licence).
-4. Weather provider choice, endpoints, fields, units and limits. Until then `WEATHER_PROVIDER=none`.
+4. Weather provider choice, endpoints, fields, units and limits. Until then `WEATHER_PROVIDER=none`, and weather requests return `WEATHER_DISABLED`.
 5. IAM permissions for Cognito group changes, and whether the frontend shows the email from the ID token (access tokens usually carry no `email`).
+6. The rain field of the AgroMonitoring weather history response (the candidate provider uses `rain["1h"]` only).
 
 ## Layout
 
@@ -111,7 +122,9 @@ Still to validate against the owner's accounts (design.md, "Open Items"):
 │   ├── entrypoint.sh         runs `alembic upgrade head`, then execs the command
 │   ├── Makefile              lint, format-check, typecheck, unit, test
 │   ├── pyproject.toml, uv.lock
-│   ├── app/                  api, core, db, domain, integrations, services (packages only so far)
+│   ├── app/                  api, core, db, domain, integrations, services
+│   ├── data/                 ghana_boundary.geojson (supplied by the owner)
+│   ├── scripts/              perf_check.py, compose_smoke.sh
 │   └── tests/                unit, api, integration, properties
 └── .kiro/specs/              requirements, design and tasks for each spec
 ```

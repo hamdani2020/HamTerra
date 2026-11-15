@@ -23,6 +23,11 @@ EXPOSE 8000
 # Development: adds the dev group (pytest, hypothesis, ruff, mypy).
 # Source arrives through the Compose bind mount, which also provides hot reload.
 FROM base AS dev
+USER root
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends make \
+    && rm -rf /var/lib/apt/lists/*
+USER app
 RUN uv sync --frozen
 CMD ["./entrypoint.sh", "uvicorn", "app.main:create_app", "--factory", \
      "--host", "0.0.0.0", "--port", "8000", "--reload", "--reload-dir", "/app/app"]

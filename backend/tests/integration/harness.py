@@ -11,6 +11,8 @@ from decimal import Decimal
 from typing import Any
 
 import httpx
+from shapely.geometry import shape
+from shapely.prepared import prep
 from sqlalchemy import func, text
 from sqlalchemy.engine import make_url  # noqa: F401
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
@@ -33,6 +35,7 @@ from app.integrations.cognito.jwks import JwksCache
 from app.integrations.cognito.validator import TokenValidator
 from app.main import create_app
 from tests.fixtures.jwt_keys import FAKE_CLIENT_ID, FAKE_ISSUER, FakeKey
+from tests.fixtures.reference import load_ghana_boundary_fixture
 
 KEY = FakeKey("kid-harness")
 
@@ -119,12 +122,18 @@ async def _jwks() -> dict[str, Any]:
     return KEY.jwks()
 
 
-def make_app(agro: Any) -> Any:
+def make_app(agro: Any, weather: Any = None, cognito: Any = None) -> Any:
     app = create_app(Settings())
+    if weather is not None:
+        app.state.weather_provider = weather
+    if cognito is not None:
+        app.state.cognito_admin = cognito
     app.state.token_validator = TokenValidator(
         cache=JwksCache(_jwks), issuer=FAKE_ISSUER, client_id=FAKE_CLIENT_ID
     )
     app.state.agro_client = agro
+    # The small test boundary, so routes that need it work without the lifespan.
+    app.state.ghana_boundary = prep(shape(load_ghana_boundary_fixture()["geometry"]))
     return app
 
 
@@ -239,3 +248,85 @@ class Rows:
     """Plain values of stored observations, for comparisons."""
 
     data: dict[tuple[str, date], tuple[Any, ...]] = field(default_factory=dict)
+
+
+class FakeWeather:
+    """Configured weather provider double returning hourly records or failing."""
+
+    name = "test-weather"
+    configured = True
+
+    def __init__(self) -> None:
+        from app.integrations.weather.base import WeatherRecord
+
+        self.Record = WeatherRecord
+        self.fail: Exception | None = None
+        self.delay_s = 0.0
+        self.discarded = 0
+        self.calls: list[tuple[date, date]] = []
+        self.missing_days: set[date] = set()
+
+    async def history(self, lat: float, lon: float, start: date, end: date) -> Any:
+        from datetime import UTC, datetime, time, timedelta
+
+        from app.integrations.weather.base import WeatherBatch
+
+        self.calls.append((start, end))
+        if self.delay_s:
+            await asyncio.sleep(self.delay_s)
+        if self.fail is not None:
+            raise self.fail
+        records = []
+        day = start
+        while day <= end:
+            if day not in self.missing_days:
+                for hour in (0, 12):
+                    records.append(
+                        self.Record(
+                            observed_at=datetime.combine(day, time(hour), tzinfo=UTC),
+                            temperature_c=25.0 + hour / 12,
+                            precipitation_mm=0.5,
+                            wind_speed_ms=2.0,
+                        )
+                    )
+            day += timedelta(days=1)
+        return WeatherBatch(records=records, discarded_values=self.discarded)
+
+    async def probe(self) -> None:
+        return None
+
+    async def aclose(self) -> None:
+        return None
+
+
+async def set_setting(key: str, value: str | None) -> None:
+    """Set a stored setting (None restores the default)."""
+    async with get_sessionmaker()() as s:
+        if value is None:
+            await s.execute(
+                text("UPDATE app_settings SET value = default_value WHERE key = :k"), {"k": key}
+            )
+        else:
+            await s.execute(
+                text("UPDATE app_settings SET value = :v WHERE key = :k"), {"k": key, "v": value}
+            )
+        await s.commit()
+
+
+class FakeCognito:
+    """Cognito admin double: records group calls, can fail or stall on a chosen call."""
+
+    def __init__(self, enabled: bool = True) -> None:
+        self.enabled = enabled
+        self.calls: list[tuple[str, str, bool]] = []
+        self.fail_on: int | None = None  # index of the call that fails
+        self.error: Exception | None = None
+        self.delay_s = 0.0
+
+    async def set_group_membership(self, username: str, group: Any, add: bool) -> None:
+        index = len(self.calls)
+        self.calls.append((username, str(group), add))
+        if self.delay_s:
+            await asyncio.sleep(self.delay_s)
+        if self.error is not None and (self.fail_on is None or self.fail_on == index):
+            raise self.error

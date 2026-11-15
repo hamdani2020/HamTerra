@@ -737,7 +737,7 @@ ReportSummary {id, title, area_id, area_name, period, source, created_at, create
 
 **AuditEvent** `{id, occurred_at, actor_sub, action, target_type, target_id, request_id, outcome, details}`.
 
-**Differences from the Requirements' API Contract.** (1) `Quality` fields `cloud_coverage_pct` can be null for invalid provider data (Requirement 9.4). (2) `Preview` gains `note`. (3) `GET /settings` gains `gap_threshold_days`. (4) Time-series `summary` is always an object. (5) Error codes `PAYLOAD_TOO_LARGE` and `SERVICE_UNAVAILABLE`, and the warning codes in Research item 9, are added. (6) Retrieval items gain `kind` (`refresh` or `probe`). Everything else matches.
+**Differences from the Requirements' API Contract.** (1) `Quality` fields `cloud_coverage_pct` can be null for invalid provider data (Requirement 9.4). (2) `Preview` gains `note`. (3) `GET /settings` gains `gap_threshold_days`. (4) Time-series `summary` is always an object. (5) Error codes `PAYLOAD_TOO_LARGE` and `SERVICE_UNAVAILABLE`, and the warning codes in Research item 9, are added. (6) Retrieval items gain `kind` (`refresh`, `probe` or `weather`). (7) `GET /areas/{area_id}/observations` returns `Page[Observation]` plus `meta: {resolution_class: {<source>: string}, counts_by_source: {<source>: int}}` for the sources present (Requirements 9.6, 9.7). (8) `Report` gains `warnings: Warning[]` (series warnings such as `IRREGULAR_SAMPLING` and any weather warning), because the contract gives a report no place to carry them. (9) The integration-status `probe` object gains `outcome: "success"|"failure"|"timeout"`, which Requirement 13.5 asks for. (10) A report accepts at most 10 comparison pairs, the limit the Frontend design uses. Items 7 to 10 were added during implementation and are not yet in `frontend/src/types/api.ts`. Everything else matches.
 
 ### Error Codes and HTTP Mapping
 
@@ -1409,3 +1409,4 @@ Run against a real PostGIS database created for the run: migrations apply to an 
 3. A downloaded GeoTIFF and tile sample (pixel size, CRS, licence) to complete the U3 decision.
 4. Weather provider choice, endpoints, fields, units and limits.
 5. IAM permissions for Cognito group changes, and whether the Frontend needs the email shown from the ID token.
+6. The rain field of the AgroMonitoring weather history response. The candidate provider uses only `rain["1h"]` in mm; a record without `rain` reports no precipitation value.

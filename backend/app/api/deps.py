@@ -20,8 +20,11 @@ from app.db.models.users import User
 from app.db.session import get_session
 from app.domain.geometry import Boundary
 from app.integrations.agro.models import AgroClient
+from app.integrations.cognito.admin import CognitoAdmin, DisabledCognitoAdmin
 from app.integrations.cognito.jwks import JwksCache, http_fetcher, jwks_url
 from app.integrations.cognito.validator import TokenValidator, issuer_for
+from app.integrations.weather.base import WeatherProvider
+from app.integrations.weather.null import NullWeatherProvider
 from app.services import audit
 from app.services import settings as settings_service
 
@@ -30,12 +33,15 @@ logger = logging.getLogger(__name__)
 __all__ = [
     "Pagination",
     "default_page_size",
+    "admin_page_params",
     "get_agro_client",
+    "get_cognito_admin",
     "get_ghana_boundary",
     "get_principal",
     "get_session",
     "get_settings",
     "get_token_validator",
+    "get_weather_provider",
     "guard",
     "pagination_params",
 ]
@@ -55,6 +61,18 @@ def get_ghana_boundary(request: Request) -> Boundary:
 def get_agro_client(request: Request) -> AgroClient:
     """The provider client created at startup. Tests override this dependency."""
     return cast(AgroClient, request.app.state.agro_client)
+
+
+def get_weather_provider(request: Request) -> WeatherProvider:
+    """The provider built at startup; without one, weather is simply not configured."""
+    provider = getattr(request.app.state, "weather_provider", None)
+    return cast(WeatherProvider, provider) if provider is not None else NullWeatherProvider()
+
+
+def get_cognito_admin(request: Request) -> CognitoAdmin:
+    """Built at startup from ``COGNITO_ADMIN_ENABLED``; without one, changes are refused."""
+    admin = getattr(request.app.state, "cognito_admin", None)
+    return cast(CognitoAdmin, admin) if admin is not None else DisabledCognitoAdmin()
 
 
 def get_token_validator(request: Request) -> TokenValidator:
@@ -137,9 +155,23 @@ GuardDependency = Callable[..., Awaitable[Principal]]
 
 
 def _route_template(request: Request) -> str:
+    """The full route template, for example ``/api/v1/areas/{area_id}``.
+
+    The matched route's ``path`` is relative to the prefix the router was included with,
+    so the prefix is taken from the request path.
+    """
     route = request.scope.get("route")
-    path = getattr(route, "path", None)
-    return path if isinstance(path, str) else request.url.path
+    template = getattr(route, "path", None)
+    path = request.url.path
+    if not isinstance(template, str):
+        return path
+    params = {k: str(v) for k, v in request.path_params.items()}
+    try:
+        rendered = template.format(**params)
+    except (KeyError, IndexError, ValueError):
+        return template
+    prefix = path[: len(path) - len(rendered)] if path.endswith(rendered) else ""
+    return prefix + template
 
 
 def guard(permission: Permission) -> GuardDependency:
@@ -198,6 +230,18 @@ async def pagination_params(
     offset: Annotated[int, Query(ge=0)] = 0,
 ) -> Pagination:
     return Pagination(limit=limit if limit is not None else default, offset=offset)
+
+
+def admin_page_params(default: int, maximum: int = 100) -> Callable[..., Awaitable[Pagination]]:
+    """Pagination for admin lists, which have their own default and maximum (12.1, 13.1)."""
+
+    async def dependency(
+        limit: int = Query(default, ge=1, le=maximum),
+        offset: int = Query(0, ge=0),
+    ) -> Pagination:
+        return Pagination(limit=limit, offset=offset)
+
+    return dependency
 
 
 def guard_metadata(dependency: Any) -> tuple[Permission, Role | None] | None:

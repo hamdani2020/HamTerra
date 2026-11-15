@@ -59,12 +59,17 @@ def fake_routers(monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
 def test_discovery_finds_health_and_openapi_is_served() -> None:
     assert [name for name, _ in discover_routers()] == [
         "admin_areas",
+        "admin_ops",
         "admin_settings",
+        "admin_users",
         "areas",
+        "comparisons",
         "health",
         "me",
         "observations",
+        "reports",
         "settings",
+        "timeseries",
     ]
     client = make_client()
     assert client.get("/api/v1/openapi.json").status_code == 200
