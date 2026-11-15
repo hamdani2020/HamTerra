@@ -30,6 +30,7 @@ The Backend `design.md` (section "API Contract") is authoritative. This design r
 | Crypto | Web Crypto API (`crypto.subtle.digest`, `crypto.getRandomValues`) | Native PKCE support. No library. |
 | Linting | ESLint (typescript-eslint, react-hooks, jsx-a11y), `tsc --noEmit` | Requirement 22.8, 22.13. |
 | Dependency pinning | `npm ci` with committed `package-lock.json`, exact versions in `package.json` (no `^` or `~`, `.npmrc` `save-exact=true`) | Requirement 22.12. |
+| Runtime | Node 22 LTS (`node:22-alpine`), `engines.node >= 22.12` | Decided in task 1: Node 20 reached end of life in April 2026, and MapLibre GL JS 6 (the release without the critical advisory affecting 4.x) needs Node 22 to install. Tooling versions chosen then: Vite 7, Vitest 4, Recharts 3 (2.x is deprecated), fast-check 4. Lock files are written with npm 11, because npm 10 fails with an internal error when installing Vitest 4. |
 
 Not used on purpose: Redux or other global stores (the Auth_Module is a small module with `useSyncExternalStore`), a Cognito SDK (the authorization code flow is three HTTP calls), a date library, a form library, a CSS-in-JS library.
 
@@ -395,6 +396,7 @@ frontend/
       merge.ts                  # mergeRecentObservations
       format.ts                 # number and date formatting
       ndviRamp.ts               # viridis-like ramp
+      routes.ts                 # the only module that writes in-app route paths (exempt from the API-path scan)
     features/
       areas/  observations/  timeseries/  comparison/  reports/  dashboard/
       map/    admin/         settings/    # each: hooks.ts + components
@@ -814,7 +816,7 @@ Admin pages and the map are `React.lazy` route chunks (Requirement 24.4). MapLib
 **`frontend/Dockerfile`**
 
 ```dockerfile
-FROM node:20-alpine AS base
+FROM node:22-alpine AS base
 WORKDIR /app
 COPY package.json package-lock.json .npmrc ./
 RUN npm ci
@@ -1182,7 +1184,7 @@ Both unit tests and property-based tests are used and are complementary. Propert
 - Each of the 32 properties is implemented by **one** property-based test.
 - Each test has a tag comment: `// Feature: eco-sentinel-frontend, Property N: <property text>`.
 - Arbitraries live in `tests/properties/arbitraries.ts`: calendar dates, date pairs, env maps with missing/blank/invalid values, URL and path strings with `//`, `..` and schemes, Error_Envelope and malformed bodies, Observation and ComparisonResult generators built from the types in `src/types/api.ts`, GeoJSON text (valid, malformed, out-of-range, unclosed rings), task lists with durations for the limiter, and operation sequences for the preview overlay.
-- Properties 3 and 5 use Web Crypto (available in Node 20) and fake timers. Property 16 uses a mocked MapLibre module that records sources, layers and blob URLs.
+- Properties 3 and 5 use Web Crypto (available in Node 22) and fake timers. Property 16 uses a mocked MapLibre module that records sources, layers and blob URLs.
 
 ### Example and Component Tests (Vitest, React Testing Library, user-event)
 
@@ -1198,7 +1200,7 @@ Both unit tests and property-based tests are used and are complementary. Propert
 | Scientific wording | Source scan and rendered-page scan for forbidden terms with Backend text replaced by clean fixtures, one-source chart test, `summary_text`, `limitations` and `caveats` unchanged (23.8). |
 | Responsive | Widths 360, 768, 1280: drawer on mobile, `scrollWidth <= clientWidth`, main content reachable. jsdom does not lay out CSS, so these tests set the viewport width through `matchMedia` and a width stub and also assert the Tailwind class contract (`hidden sm:block` and similar). Real layout is checked by the manual pass described below (23.9). |
 | States | Empty, loading and error states of every page group, each asserting the visible message and the absence of normal content (23.10). |
-| Static guards | A test that fails if any file in `src` references an AgroMonitoring or weather API host, or a variable name containing `SECRET` or `API_KEY`, and names the file (23.11). A test that fails if a path string literal outside `core/api/endpoints.ts` starts with `/areas`, `/admin`, `/reports`, `/observations`, `/settings` or `/me` (no invented endpoints). |
+| Static guards | A test that fails if any file in `src` references an AgroMonitoring or weather API host, or a variable name containing `SECRET` or `API_KEY`, and names the file (23.11). A test that fails if a path string literal outside `core/api/endpoints.ts` starts with `/areas`, `/admin`, `/reports`, `/observations`, `/settings` or `/me` (no invented endpoints). In-app route paths share these prefixes (`/areas/:areaId`), so they are written only in `lib/routes.ts`, which the scan also exempts. |
 | Map | MapLibre mocked. Feature collection to layer sources, selection state, overlay add and remove, no preview source or layer registered after removal (23.12). |
 | Network isolation | MSW `onUnhandledRequest: "error"` with the URL in the message, so any unmocked request fails the test (23.13). |
 | Accessibility | `vitest-axe` on the landing page, dashboard, map, time series, comparison, observation detail, error page and one admin page. Any violation of any impact level fails the test (21.4, 23.14). |
@@ -1228,3 +1230,5 @@ Both unit tests and property-based tests are used and are complementary. Propert
 6. **`PERCENT_DIFFERENCE_UNDEFINED`.** Listed in the Frontend glossary but not in the Backend warning list. The message module defines it. If the Backend never emits it, the mapping stays unused.
 7. **Cognito sign-out URL.** The Backend design uses `http://localhost:5173/` and this spec uses `/signed-out`. Register both on the app client.
 8. **No latest-observation source field.** The dashboard learns a card's source from its observation list, costing one extra call per area. A `latest_observation_source` field on `Area` would remove it. This is a Backend change and is not assumed here.
+9. **React Router 6 advisory.** `npm audit` reports a moderate advisory for `react-router-dom` 6.30.6 whose only fix is React Router 7. This design specifies React Router 6; the upgrade is pending the owner's decision.
+10. **Remaining dev-only advisories.** Moderate `minimatch` advisories reach the build through `typescript-eslint` (lint time only). ESLint stays on 9 because `eslint-plugin-jsx-a11y` 6.10 does not support ESLint 10.

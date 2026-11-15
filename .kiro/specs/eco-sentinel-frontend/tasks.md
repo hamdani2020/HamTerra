@@ -8,8 +8,8 @@ Each feature task creates its page module. The router (task 8.3) registers every
 
 ## Tasks
 
-- [ ] 1. Scaffold the frontend project and test infrastructure
-  - [ ] 1.1 Scaffold `./frontend`
+- [x] 1. Scaffold the frontend project and test infrastructure
+  - [x] 1.1 Scaffold `./frontend`
     - Create Vite + React + TypeScript project with `strict`, `noUncheckedIndexedAccess`, `noImplicitOverride`
     - Add Tailwind CSS, shadcn/ui (`components.json`), React Router, TanStack Query, MapLibre GL JS, Recharts, ESLint (typescript-eslint, react-hooks, jsx-a11y, rules forbidding `dangerouslySetInnerHTML` and direct `console.*` outside `safeLog`), Vitest, React Testing Library, user-event, MSW, vitest-axe, fast-check
     - Pin every dependency to an exact version, add `.npmrc` with `save-exact=true`, commit `package-lock.json`
@@ -18,17 +18,17 @@ Each feature task creates its page module. The router (task 8.3) registers every
     - Create the `src/` and `tests/` folder layout from the design
     - _Requirements: 2.6, 22.12, 22.13_
 
-  - [ ] 1.2 Create the test infrastructure
+  - [x] 1.2 Create the test infrastructure
     - `tests/setup.ts` with jest-dom, vitest-axe matchers, MSW server lifecycle with `onUnhandledRequest` set to throw an error that names the URL
     - `tests/msw/server.ts`, `tests/factories.ts` (typed builders), `tests/properties/propertyConfig.ts` (100 runs)
     - A `renderWithProviders` helper (router, QueryClient with `retry: false`, auth stub)
     - _Requirements: 23.13, 23.15_
 
-  - [ ]* 1.3 Write the network-isolation test
+  - [x]* 1.3 Write the network-isolation test
     - Send an unmocked request and assert the test fails with an error naming the URL
     - _Requirements: 23.13_
 
-  - [ ]* 1.4 Write static guard tests
+  - [x]* 1.4 Write static guard tests
     - Fail and name the file when any module in `src` references an AgroMonitoring or Weather API host, or a variable name containing `SECRET` or `API_KEY`
     - Fail when `package.json` direct dependencies contain a version starting with `^`, `~`, `>`, `<` or `*`
     - Fail when a path literal starting with `/areas`, `/admin`, `/reports`, `/observations`, `/settings` or `/me` appears outside `core/api/endpoints.ts`
