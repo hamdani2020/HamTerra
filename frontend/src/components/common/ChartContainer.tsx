@@ -9,12 +9,14 @@ export interface ChartContainerProps {
   footer?: ReactNode;
   /** Tailwind height class for the plot area; charts need a fixed height. */
   heightClass?: string;
+  /** Heading level of the title, to fit the page outline. */
+  titleAs?: "h2" | "h3";
   className?: string;
   children: ReactNode;
 }
 
 /** A titled figure that gives a chart a fixed-height plot area and a caption. */
-export function ChartContainer({ title, description, footer, heightClass = "h-72", className, children }: ChartContainerProps): JSX.Element {
+export function ChartContainer({ title, description, footer, heightClass = "h-72", titleAs: Title = "h3", className, children }: ChartContainerProps): JSX.Element {
   const titleId = useId();
   const descriptionId = useId();
   return (
@@ -24,9 +26,9 @@ export function ChartContainer({ title, description, footer, heightClass = "h-72
       className={cn("space-y-3 rounded-lg border bg-card p-4 shadow", className)}
     >
       <figcaption>
-        <h3 id={titleId} className="font-semibold text-foreground">
+        <Title id={titleId} className="font-semibold text-foreground">
           {title}
-        </h3>
+        </Title>
         {description && (
           <p id={descriptionId} className="text-sm text-ink-muted">
             {description}

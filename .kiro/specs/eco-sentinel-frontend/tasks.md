@@ -293,47 +293,47 @@ Each feature task creates its page module. The router (task 8.3) registers every
     - Stale geometry badge, null data coverage, null preview URL, preview 404 and 502 message with control still available
     - _Requirements: 9.3, 9.5, 9.9, 9.11_
 
-- [ ] 14. NDVI time series
-  - [ ] 14.1 Implement time-series filters, validation and hook
+- [x] 14. NDVI time series
+  - [x] 14.1 Implement time-series filters, validation and hook
     - Filter state in the URL, source preselection from the latest observation, no request until a source is chosen, `validateTimeSeriesFilters` (range, 3660 days, cloud 0 to 100), query builder with exactly one `source`
     - _Requirements: 10.1, 10.2, 10.3, 10.4, 10.6, 10.18_
 
-  - [ ] 14.2 Implement `NdviChart` and `TimeSeriesPage`
+  - [x] 14.2 Implement `NdviChart` and `TimeSeriesPage`
     - Recharts line with markers, quality-based point style and legend, viridis marker colours with NDVI legend, tooltip fields, points table, summary panel with "Not available" for nulls, warning banner, limitations section, cloud-exclusion note, resolution class, weather display with provider, period and Backend note, insufficient-observation and empty states, 404 state, error with retry, screen-reader summary, minimum height 240 px, aggregate note
     - Replaces the placeholder `TimeSeriesPage`
     - _Requirements: 10.5, 10.7, 10.8, 10.9, 10.10, 10.11, 10.12, 10.13, 10.14, 10.15, 10.16, 10.17, 10.19, 10.20, 10.21, 10.22, 20.3, 20.4, 21.12_
 
-  - [ ]* 14.3 Write property test for one source per request
+  - [x]* 14.3 Write property test for one source per request
     - **Property 17: One source per data request**
     - **Validates: Requirements 10.2, 10.6, 20.5**
 
-  - [ ]* 14.4 Write property test for the chart accessible summary
+  - [x]* 14.4 Write property test for the chart accessible summary
     - **Property 18: Chart accessible summary**
     - **Validates: Requirements 10.22**
 
-  - [ ]* 14.5 Write time-series tests
+  - [x]* 14.5 Write time-series tests
     - Source and date selection, invalid range keeps previous chart, one point, zero points, weather warnings not an error, single-source chart, warnings and limitations unchanged
     - _Requirements: 10.2, 10.14, 10.15, 10.17, 10.18, 23.7, 23.8_
 
-- [ ] 15. Date comparison
-  - [ ] 15.1 Implement threshold override validation and request builder
+- [x] 15. Date comparison
+  - [x] 15.1 Implement threshold override validation and request builder
     - `validateThresholdOverrides` (ranges 0 to 2 and 0 to 100), `buildThresholds(defaults, edited)` returning only changed fields
     - _Requirements: 11.15, 11.16_
 
-  - [ ]* 15.2 Write property test for threshold overrides
+  - [x]* 15.2 Write property test for threshold overrides
     - **Property 20: Threshold override validation and minimal request**
     - **Validates: Requirements 11.15, 11.16**
 
-  - [ ] 15.3 Implement `ComparisonPage` and `ComparisonResultView`
+  - [x] 15.3 Implement `ComparisonPage` and `ComparisonResultView`
     - Source selector, date selectors listing stored dates, ordered `date_a` and `date_b`, advanced options prefilled from `GET /settings`, side-by-side cards, signed difference, percent or "Not defined", flag label with values and thresholds, `summary_text` and limitations verbatim, spatial-analysis statement, weather block, warnings, neutral sign colours, `CROSS_SENSOR_COMPARISON`, `NOT_FOUND` and 5xx handling, disabled submit while pending, session comparison store update
     - Replaces the placeholder `ComparisonPage`
     - _Requirements: 11.1, 11.2, 11.3, 11.4, 11.5, 11.6, 11.7, 11.8, 11.9, 11.10, 11.11, 11.12, 11.13, 11.14, 11.17, 20.2, 20.4_
 
-  - [ ]* 15.4 Write property test for comparison display fidelity
+  - [x]* 15.4 Write property test for comparison display fidelity
     - **Property 19: Backend value display fidelity**
     - **Validates: Requirements 11.8, 11.9, 11.13**
 
-  - [ ]* 15.5 Write comparison tests
+  - [x]* 15.5 Write comparison tests
     - Date ordering sent as `date_a` and `date_b`, equal-date prevention, cross-sensor error, 404 date message, selections kept, summary text unchanged
     - _Requirements: 11.2, 11.3, 11.4, 11.5, 11.9, 23.7, 23.8_
 

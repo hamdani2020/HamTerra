@@ -303,6 +303,108 @@ export const OBSERVATION_TEXT = {
   select: "Show details",
 } as const;
 
+export const TIME_SERIES_TEXT = {
+  filters: "Filters",
+  source: "Source",
+  dateFrom: "From",
+  dateTo: "To",
+  maxCloud: "Maximum cloud coverage (%)",
+  maxCloudHint: "Whole number from 0 to 100. Leave empty for no limit.",
+  maxCloudInvalid: "Enter a whole number from 0 to 100.",
+  weather: "Show weather context",
+  apply: "Apply",
+  chooseSource: "Choose a source to show the NDVI time series.",
+  loading: "Loading the NDVI time series…",
+  chartTitle: "Mean NDVI",
+  chartDescription: "One marker per observation; lines connect consecutive observations.",
+  legend: "Legend",
+  legendPoint: "Observation (Good or Limited quality)",
+  legendPoor: "Observation with Poor quality (hollow diamond)",
+  legendRamp: "Marker colour: NDVI value",
+  summary: "Summary",
+  count: "Observations",
+  firstDate: "First date",
+  lastDate: "Last date",
+  min: "Minimum mean NDVI",
+  max: "Maximum mean NDVI",
+  meanOfMeans: "Mean of the mean NDVI values",
+  limitations: "Limitations",
+  notices: "Notices",
+  pointsTable: "NDVI observations in the series",
+  gap: "Days since previous observation",
+  notApplicable: "Not applicable",
+  weatherColumn: "Weather context",
+  weatherProvider: "Provider",
+  weatherPeriod: "Period",
+  empty: "No observations exist for this sensor, period and cloud limit.",
+  refresh: "Refresh observations",
+  notFound: "This monitoring area was not found.",
+  toAreas: "Go to the area list",
+  errorContext: "The NDVI time series could not be loaded.",
+  mixedSources: "The series contains more than one sensor, so it is not drawn.",
+} as const;
+
+export function excludedByCloudText(count: number): string {
+  return count === 1 ? "1 observation excluded by the cloud filter" : `${count} observations excluded by the cloud filter`;
+}
+
+export function resolutionText(label: string): string {
+  return `Sensor resolution: ${label}`;
+}
+
+export const COMPARISON_TEXT = {
+  form: "Comparison",
+  source: "Source",
+  firstDate: "First date",
+  secondDate: "Second date",
+  chooseDate: "Select a date",
+  noDates: "No stored observations exist for this sensor yet.",
+  loadingDates: "Loading observation dates…",
+  datesError: "The observation dates could not be loaded.",
+  weather: "Show weather context",
+  advanced: "Advanced options",
+  advancedNote: "These thresholds apply to this request only.",
+  ndviDiff: "NDVI difference threshold",
+  ndviDiffHint: "0.00 to 2.00",
+  maxCloud: "Maximum cloud coverage (%)",
+  minDataCoverage: "Minimum data coverage (%)",
+  percentHint: "0 to 100",
+  settingUnavailable: "Default not available",
+  rangeNdvi: "Enter a number from 0.00 to 2.00.",
+  rangePercent: "Enter a number from 0 to 100.",
+  submit: "Compare",
+  submitting: "Comparing…",
+  resultTitle: "Comparison result",
+  dateA: "Date a (earlier)",
+  dateB: "Date b (later)",
+  difference: "NDVI difference (date b minus date a)",
+  percent: "Percentage difference",
+  interval: "Interval",
+  flag: "Investigation flag",
+  thresholdsApplied: "Thresholds applied",
+  thresholdNdvi: "NDVI difference threshold",
+  thresholdCloud: "Maximum cloud coverage",
+  thresholdCoverage: "Minimum data coverage",
+  quality: "Comparison quality",
+  summary: "Summary",
+  weatherTitle: "Weather context",
+  weatherA: "At date a",
+  weatherB: "At date b",
+  weatherBetween: "Between the dates",
+  limitations: "Limitations",
+  notices: "Notices",
+  errorContext: "The comparison could not be completed.",
+  increase: "Later value is higher",
+  decrease: "Later value is lower",
+  noChange: "No difference",
+} as const;
+
+/** Flag texts for a comparison result (Requirement 11.8). */
+export const COMPARISON_FLAG_LABEL: Record<FlagStatus, string> = {
+  flagged: "Difference flagged for investigation",
+  not_flagged: "Difference below investigation threshold",
+};
+
 /** "Flagged" is a numeric difference at or above a threshold, never a finding (20.2). */
 export function flagDescription(flag: FlagStatus, difference: string, threshold: string): string {
   return flag === "flagged"
@@ -366,6 +468,12 @@ export function authoredTextCatalogue(): string[] {
     recentPartialText(1),
     ...Object.values(MAP_TEXT),
     ...Object.values(OBSERVATION_TEXT),
+    ...Object.values(TIME_SERIES_TEXT),
+    ...Object.values(COMPARISON_TEXT),
+    ...Object.values(COMPARISON_FLAG_LABEL),
+    excludedByCloudText(1),
+    excludedByCloudText(4),
+    resolutionText("10 m nominal sensor resolution"),
     previewSizeText(117, null),
     opacityText(70),
     recentPartialText(3),

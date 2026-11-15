@@ -726,6 +726,7 @@ Only the preview route draws bitmaps. No satellite or index tiles are requested 
 
 **Fixed after task 12:**
 - **MapLibre worker.** MapLibre 6 resolves its worker as `./maplibre-gl-worker.mjs` next to its own module file. Vite's dependency pre-bundling moves that module to `node_modules/.vite/deps`, so the browser reported "Worker failed to load". A production build would not emit the worker either, because the URL is built at run time. `useMap.ts` therefore imports `maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url` and calls `setWorkerUrl` before any map is created. A plain `?url` import was tried first and is wrong: in development Vite serves the file as a page module that imports `/@vite/client`, which cannot run in a worker. The worker then never answered, so the map never fired `load` and stayed blank with no console error. `?worker&url` makes the file a Vite worker entry. It is served as `?worker_file&type=module` in development and bundled as an ES-module worker asset in builds, because `vite.config.ts` sets `worker.format` to `"es"` (about 517 kB). The worker is a module worker from the same origin, so a later `worker-src 'self'` CSP covers it.
+- **Map container sizing (owner fix).** MapLibre's stylesheet sets `.maplibregl-map { position: relative }` on the map container, which overrode `absolute inset-0` and collapsed the map to zero height. The container is now sized with `h-full w-full` inside a frame of `calc(100dvh - 17rem)` with a minimum of 360 px. The details column is reserved only while an area is selected. Do not position the map container element itself; position a wrapper instead.
 - **File watching.** Docker Desktop bind mounts deliver no file events to the container, so the dev server served stale code. Setting `VITE_USE_POLLING=true` turns polling on. chokidar lets the `CHOKIDAR_USEPOLLING` variable override Vite's `usePolling` option, and Compose always passes that variable, so `vite.config.ts` reads both variables and then removes `CHOKIDAR_USEPOLLING` from the process environment. `.env.example` now defaults to polling.
 
 #### Area List and Details
@@ -757,6 +758,18 @@ Only the preview route draws bitmaps. No satellite or index tiles are requested 
 - Weather: when `weather` is present on a point, the tooltip and table show each value with its unit, `provider`, `period` and `note` (from the Backend). Weather warning codes show the NDVI data plus the message, never an error state.
 - Screen-reader summary: a visually hidden paragraph `"Chart of N NDVI points for <Source label> from <first_date> to <last_date>."` linked with `aria-describedby` on the chart container (Requirement 10.22). The chart container has `min-h-[240px]` and `min-w-0` to prevent page overflow.
 
+**Implemented in task 14:**
+- **Filters.** `lib/timeseries.ts` holds the filter state and its URL form. `validateTimeSeriesFilters` requires a source. Dates are optional, and when both are given the range is at most 3660 days, counted inclusively. The cloud limit must be a whole number from 0 to 100, or empty for no limit. The weather flag is sent only when it is on.
+- **Source preselection.** On load, the page uses the URL's source, else the newest observation's sensor (a `limit=1` call), and requests the series with it straight away. With neither, it shows "Choose a source…" and sends nothing.
+- **Form and URL.** Applying valid filters writes them to the URL. Invalid input shows field errors and keeps both the URL and the previous chart.
+- **Chart input guard.** `ChartPoint` carries its `source`, and `singleSourceSeries` refuses a mixed or empty input. `NdviChart` then shows a message instead of a series.
+- **Chart drawing.** Dates are plotted on a numeric UTC time axis, so uneven sampling stays visible. A single point is shown with 15 days of padding on each side. Markers are filled circles coloured with `ndviRamp`, and Poor quality is a hollow diamond with a 2 px outline. The ramp legend uses five discrete swatches labelled with the displayed minimum and maximum. It avoids a CSS gradient because Requirement 21.10 allows only one.
+- **Screen-reader summary.** It is the chart's visible description, linked with `aria-describedby`.
+- **Supporting components.** `PointsTable` adds the gap column and, when weather is included, a weather column through `WeatherCell` (values with units, provider, period, and the Backend note unchanged). `SummaryPanel` shows "Not available" for each null. One point, or a null trend, adds the `INSUFFICIENT_OBSERVATIONS` text once. A "Refresh observations" link to the area page appears only with the `observations:refresh` permission (`lib/permissions.ts`).
+- **`ChartContainer`.** It takes `titleAs`, so page-level charts use `h2`.
+- **Bundle.** Recharts is in the `TimeSeriesPage` chunk (389 kB, 115 kB gzip).
+- **Test support.** `tests/mocks/recharts.tsx` gives `ResponsiveContainer` a fixed size in jsdom.
+
 #### Comparison Page
 
 - The date selectors list only dates of stored observations for the chosen source: `useObservationDates(areaId, source)` pages through `GET /areas/{id}/observations?source=...&limit=200` until all pages are read (the first page usually suffices, a loop with a cap of 10 pages handles the rest). The list is deduplicated and sorted.
@@ -776,6 +789,19 @@ Only the preview route draws bitmaps. No satellite or index tiles are requested 
 - The sign indicator uses neutral slate/indigo ramp colours, never the status colours (Requirement 11.14). The flag badge uses the information colour, not warning or error.
 - Errors: `CROSS_SENSOR_COMPARISON`, `NOT_FOUND` naming the date (the message is taken from the Backend `message`, which names the date), 5xx, network. Selections are always kept. The submit control is disabled while pending.
 - On success the result is stored in `sessionComparisons` (a module-level `Map` cleared on sign-out) with `{flag, date_a, date_b}` for the dashboard indicator.
+
+**Implemented in task 15:**
+- **Request building.** `lib/comparison.ts` holds `validateThresholdOverrides`: an empty field means "use the default", and a non-empty field must be a plain decimal within its range. It also holds `buildThresholds(defaults, values)`, which keeps only values that differ from the default. `buildComparisonRequest` orders the dates with `orderDates`: a missing or equal date marks the second selector. The `thresholds` key is omitted when nothing changed.
+- **Prefill.** The override inputs show the `GET /settings` values until the user edits a field. A missing setting leaves the field empty, with the hint "Default not available".
+- **Sensor and dates.** The page waits for the newest sensor (a `limit=1` call) before listing dates, so the default cannot change under a selection. Switching sensor clears both dates. `useObservationDates` uses `keys.observationDates(areaId, source)`, which sits under `"observations"`, so a refresh invalidates it.
+- **Errors.**
+  - `CROSS_SENSOR_COMPARISON` shows the authored text.
+  - A 404 shows the Backend message unchanged, because it names the date.
+  - A 422 maps `details.fields` (`date_a`, `date_b`, `thresholds.<name>`) to the matching fields; other 422 field entries go to the form-level message.
+  - Other errors use `RegionError`, and its retry re-sends the last body.
+  - The selections are always kept.
+- **Result view.** `ComparisonResultView` uses `COMPARISON_FLAG_LABEL` for the badge, through a new `label` prop on `FlagBadge`. It also shows `flagDescription` with the signed difference and the applied threshold. The comparison and quality warnings are merged and each code is shown once. The sign indicator is an arrow with a direction label in the secondary text colour, with no status colour. Heading ids come from `useId`, so a report can show several results.
+- **Session store.** A successful result records `{flag, source, date_a, date_b}` in `sessionComparisons`.
 
 #### Reports
 

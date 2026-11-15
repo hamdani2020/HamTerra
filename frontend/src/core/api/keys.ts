@@ -6,6 +6,7 @@ import type {
   AreaMapParams,
   ObservationListParams,
   ReportListParams,
+  Source,
   RetrievalListParams,
   TimeSeriesParams,
 } from "@/types/api";
@@ -17,6 +18,8 @@ export const keys = {
   area: (id: string) => ["areas", id] as const,
   observations: (areaId: string, params: ObservationListParams) =>
     ["observations", areaId, params] as const,
+  /** All stored dates of one sensor; under "observations" so refreshes invalidate it. */
+  observationDates: (areaId: string, source: Source | null) => ["observations", areaId, { source, dates: true }] as const,
   observation: (id: string) => ["observation", id] as const,
   timeseries: (areaId: string, params: TimeSeriesParams) => ["timeseries", areaId, params] as const,
   reports: (params: ReportListParams) => ["reports", params] as const,
