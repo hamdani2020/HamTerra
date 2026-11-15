@@ -1,4 +1,4 @@
-import { screen } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { useQuery } from "@tanstack/react-query";
 import fc from "fast-check";
 import { http, HttpResponse } from "msw";
@@ -55,7 +55,8 @@ describe("test helpers", () => {
   });
 
   it("axe matchers are installed", async () => {
-    const { container } = renderWithProviders(<App config={buildPublicConfig()} />);
+    // App brings its own router, query client and Auth_Module, so it renders without the wrapper.
+    const { container } = render(<App config={buildPublicConfig()} />);
     expect(await axe(container)).toHaveNoViolations();
   });
 });

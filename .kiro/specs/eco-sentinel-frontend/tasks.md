@@ -91,92 +91,92 @@ Each feature task creates its page module. The router (task 8.3) registers every
     - Status badge, warning banner, form field with Backend field errors, dialog focus-in and focus-return, each with a normal and an empty or error case
     - _Requirements: 23.1, 21.9_
 
-- [ ] 5. Message mapping and evidence language
-  - [ ] 5.1 Implement `lib/evidence.ts` and `lib/messages.ts`
+- [x] 5. Message mapping and evidence language
+  - [x] 5.1 Implement `lib/evidence.ts` and `lib/messages.ts`
     - `FORBIDDEN_TERMS`, `containsForbiddenTerm`
     - `WARNING_TEXT`, `ERROR_TEXT`, `EVIDENCE_TEXT`, `warningText`, `errorText` (known text, else Backend message, else generic notice with the code)
     - Include `PERCENT_DIFFERENCE_UNDEFINED` and every code in the requirements glossary; `AREA_OUT_OF_RANGE` uses the Backend message
     - _Requirements: 20.1, 20.10, 20.11, 10.11, 11.10, 14.8_
 
-  - [ ]* 5.2 Write property test for code-to-text mapping
+  - [x]* 5.2 Write property test for code-to-text mapping
     - **Property 9: Code to text mapping**
     - **Validates: Requirements 20.10, 20.11**
 
-  - [ ]* 5.3 Write property test for forbidden terms
+  - [x]* 5.3 Write property test for forbidden terms
     - **Property 28: Forbidden terms are detected and absent from authored text**
     - **Validates: Requirements 20.1, 11.14, 23.8**
 
-- [ ] 6. API types and API_Client
-  - [ ] 6.1 Create `src/types/api.ts`
+- [x] 6. API types and API_Client
+  - [x] 6.1 Create `src/types/api.ts`
     - Types mirroring the Backend contract exactly as listed in the design, plus the client-side models
     - _Requirements: 5.2, 23.5_
 
-  - [ ] 6.2 Implement `httpGuard`, `errors` and `pagination`
+  - [x] 6.2 Implement `httpGuard`, `errors` and `pagination`
     - `HttpGuard` allows only the API host, Cognito host and basemap host and rejects schemes, `//` and `..`
     - `ApiError`, `NetworkError`, `ApiTimeoutError`, `DisallowedHostError`; `clampLimit`, `clampOffset`
     - _Requirements: 2.5, 5.14, 5.15_
 
-  - [ ]* 6.3 Write property test for the host allow-list
+  - [x]* 6.3 Write property test for the host allow-list
     - **Property 2: Request host allow-list**
     - **Validates: Requirements 2.5**
 
-  - [ ]* 6.4 Write property test for pagination clamping
+  - [x]* 6.4 Write property test for pagination clamping
     - **Property 10: Pagination clamping**
     - **Validates: Requirements 5.14, 5.15**
 
-  - [ ] 6.5 Implement the API client, endpoints, keys and query client
+  - [x] 6.5 Implement the API client, endpoints, keys and query client
     - `apiRequest` with bearer attachment (not for `/health`), 30 s timeout (130 s for refresh), abort handling, 401 renew-and-replay-once through an auth provider interface, 403 handling, Error_Envelope parsing
     - `core/api/endpoints.ts` with one typed function per Backend endpoint (the only place path strings appear), `keys.ts`, `queryClient.ts` (`staleTime` 30 s, `retry: false`, `me` never stale)
     - `describeError` in `lib/messages.ts`, `mapFieldErrors`, `safeLog`
     - _Requirements: 2.7, 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.7, 5.8, 5.9, 5.10, 5.11, 5.12, 5.13, 24.2, 24.3_
 
-  - [ ]* 6.6 Write property test for bearer attachment
+  - [x]* 6.6 Write property test for bearer attachment
     - **Property 7: Bearer attachment**
     - **Validates: Requirements 5.1, 3.11**
 
-  - [ ]* 6.7 Write property test for error description
+  - [x]* 6.7 Write property test for error description
     - **Property 8: Error description is total and hides details**
     - **Validates: Requirements 5.2, 5.7, 5.11, 5.12**
 
-  - [ ] 6.8 Create MSW handlers from the Backend contract
+  - [x] 6.8 Create MSW handlers from the Backend contract
     - Typed handlers for every endpoint group in the contract table, with factories for success and error responses
     - _Requirements: 23.5_
 
-  - [ ]* 6.9 Write API integration tests per endpoint group
+  - [x]* 6.9 Write API integration tests per endpoint group
     - For each group (health, identity, areas, observations, analysis, reports, settings, admin users, admin areas, admin operations): one success and at least one error from that group's error list
     - _Requirements: 23.5_
 
-  - [ ]* 6.10 Write error-handling rule tests
+  - [x]* 6.10 Write error-handling rule tests
     - 401 with exactly one renewal and one replay, 403, 422 field errors, 502, 504, 503, 500 with `request_id`, 413, 501, network failure, unknown code, and the 130 s refresh timeout with fake timers
     - _Requirements: 5.3, 5.4, 5.5, 5.6, 5.7, 5.8, 5.9, 5.10, 5.11, 5.13, 23.6_
 
-- [ ] 7. Auth_Module
-  - [ ] 7.1 Implement PKCE helpers and auth storage
+- [x] 7. Auth_Module
+  - [x] 7.1 Implement PKCE helpers and auth storage
     - `randomString`, `codeChallengeS256`, `buildAuthorizeUrl`, `storage.ts` for `sessionStorage` keys (`eco.pkce.*`, `eco.rt`)
     - _Requirements: 3.1_
 
-  - [ ]* 7.2 Write property test for PKCE and the authorize URL
+  - [x]* 7.2 Write property test for PKCE and the authorize URL
     - **Property 3: PKCE derivation and authorize URL**
     - **Validates: Requirements 3.1**
 
-  - [ ] 7.3 Implement the token endpoint client and `AuthModule`
+  - [x] 7.3 Implement the token endpoint client and `AuthModule`
     - `signIn`, `handleCallback` (state gate, 10 s timeout, failure classes, no raw `error_description`), in-memory access token, refresh token in `sessionStorage`, single-flight `renew`, proactive renewal timer, `restore`, `signOut` (clear tokens, storage, query cache, redirect to Cognito `/logout`), ID-token email claim kept in memory for display only
     - Roles are never taken from tokens
     - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8, 3.9, 3.11, 3.12, 3.14_
 
-  - [ ]* 7.4 Write property test for the callback state gate
+  - [x]* 7.4 Write property test for the callback state gate
     - **Property 4: Callback state gate**
     - **Validates: Requirements 3.2, 3.3, 3.14**
 
-  - [ ]* 7.5 Write property test for single-flight renewal
+  - [x]* 7.5 Write property test for single-flight renewal
     - **Property 5: Single-flight renewal**
     - **Validates: Requirements 3.7, 5.3**
 
-  - [ ] 7.6 Add `AuthProvider` and the public auth pages
+  - [x] 7.6 Add `AuthProvider` and the public auth pages
     - `AuthProvider` with `useSyncExternalStore`, `LandingPage`, `CallbackPage` (run once under strict mode), `SignedOutPage`, `AuthErrorPage` showing only the failure class, expired-session notice
     - _Requirements: 1.1, 3.4, 3.8, 3.10, 21.7_
 
-  - [ ]* 7.7 Write authentication tests with a mocked Cognito token endpoint
+  - [x]* 7.7 Write authentication tests with a mocked Cognito token endpoint
     - Authorize redirect contents, successful callback, state mismatch, `error` parameter, token exchange failure, 10 s timeout, renewal success and failure, sign-out redirect, `localStorage` empty; each failure asserts no Session and a visible error indication
     - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.7, 3.8, 3.9, 23.2_
 

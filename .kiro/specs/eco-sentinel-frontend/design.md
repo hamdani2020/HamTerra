@@ -260,6 +260,8 @@ buildAuthorizeUrl(cfg, {state, challenge}): string
 
 **Sign-out.** Clear module tokens, `sessionStorage` keys `eco.*`, `queryClient.clear()`, then `window.location.assign(<cognito>/logout?client_id=...&logout_uri=...)`. Cognito returns the browser to `/signed-out` (Requirement 3.9).
 
+**Implemented in task 7:** `createAuthModule(config, {guard, storage, fetch?, redirect?, now?, onSessionEnded?})` builds the module, so tests inject the token endpoint, the redirect and the clock. It also implements `endSession("expired")` from the API client's `AuthProvider` interface. `handleCallback` is memoised per search string in addition to the `CallbackPage` ref. A callback with a matching state but no `code` reports `token_exchange_failed`. A non-2xx answer or a body that fails `isTokenResponse` is `token_exchange_failed`; a network error or the 10 s timeout is `network_failure`. `safeReturnTo` accepts only in-app paths and maps the public auth routes to `/dashboard`. `createAppServices(config)` in `core/appServices.ts` wires the guard, Auth_Module, API client, query client and router once per page load; `onSessionEnded` clears the query cache and, for an expired Session, navigates to `/` with router state `{notice: "session_expired"}`. The landing page redirects a signed-in user to the saved path or `/dashboard`, and shows "Restoring your session" while a stored refresh token is renewed. Auth page wording and the four failure-class texts live in `lib/messages.ts` (`AUTH_TEXT`, `AUTH_FAILURE_TEXT`). `router.tsx` holds the four public routes and a temporary catch-all; task 8 adds the protected lazy routes, the guards and `NotFoundPage`.
+
 **Only the access token is sent to the Backend.** `ApiClient` takes it from `getAccessToken()`. The ID token is never exposed outside the module except the email claim (Requirement 3.11, 3.12). Roles come only from `GET /me`.
 
 ### API_Client
@@ -306,6 +308,8 @@ sequenceDiagram
         C-->>H: ApiError UNAUTHENTICATED
     end
 ```
+
+**Implemented in task 6:** the client is built by `createApiClient(guard, auth)` and the endpoint functions by `createEndpoints(client)`, so tests and the app inject the Auth_Module through the `AuthProvider` interface (`getAccessToken`, `renew`, `endSession`) instead of a module singleton; the app wires them in task 8. Health endpoints (`getHealthLive`, `getHealthReady`) are included, unversioned and without a token. `HttpGuard` also refuses backslashes, user information in URLs and path segments that decode to `/`, `.` or `..`. `lib/pagination.ts` names the three admin lists whose maximum is 100, so the API-path scan exempts it alongside `endpoints.ts`. `src/types/api.ts` includes the Backend additions (observation-list `meta`, report `warnings`, probe `outcome`); a check against the running Backend's OpenAPI found the 29 endpoint functions and the response field names in agreement.
 
 **Error types** (`core/api/errors.ts`): `ApiError`, `NetworkError`, `ApiTimeoutError`, `DisallowedHostError`. A pure function `describeError(e: unknown): DisplayError` in `lib/messages.ts` maps any thrown value to `{title, body, requestId?, retry: boolean, kind}`. It is total: it returns a value for every input (Property 7).
 
@@ -449,7 +453,8 @@ Rules:
 - Backend `summary_text`, `limitations`, `caveats` and `Warning.message` are never passed through this module. They are rendered unchanged by `VerbatimText` (a component that renders a string inside a `<p>` with `white-space: normal; overflow-wrap: anywhere` and no truncation CSS, Requirement 20.9).
 - `WARNING_TEXT` covers every code in the requirements glossary: `INSUFFICIENT_OBSERVATIONS`, `IRREGULAR_SAMPLING`, `WEATHER_UNAVAILABLE`, `WEATHER_DISABLED`, `LOW_QUALITY_OBSERVATION`, `SEASONALITY_NOT_CONTROLLED`, `DATA_COVERAGE_UNKNOWN`, `ITEMS_DISCARDED`, `INVALID_CLOUD_COVERAGE`, `WEATHER_INVALID_DATA`, `PERCENT_DIFFERENCE_UNDEFINED`.
 - `ERROR_TEXT` covers `UNAUTHENTICATED`, `FORBIDDEN`, `VALIDATION_ERROR`, `NOT_FOUND`, `CONFLICT`, `GEOMETRY_OUTSIDE_GHANA`, `AREA_OUT_OF_RANGE`, `CROSS_SENSOR_COMPARISON`, `NO_OBSERVATIONS`, `REFRESH_IN_PROGRESS`, `LAST_ADMIN`, `SELF_ROLE_CHANGE`, `COGNITO_ADMIN_NOT_ENABLED`, `UPSTREAM_ERROR`, `UPSTREAM_TIMEOUT`, `NOT_IMPLEMENTED`, `PAYLOAD_TOO_LARGE`, `SERVICE_UNAVAILABLE`, `INTERNAL_ERROR`.
-- `AREA_OUT_OF_RANGE` uses the Backend `message` unchanged, so no limit is hard-coded (G3). `GEOMETRY_OUTSIDE_GHANA` uses the fixed text "The polygon is not entirely within Ghana."
+- `AREA_OUT_OF_RANGE` uses the Backend `message` unchanged, so no limit is hard-coded (G3).
+- **Implemented in task 5:** `WARNING_TEXT` also covers `UPSTREAM_ERROR`, which the Backend sends as a warning with a partial refresh. `KnownWarningCode` and `KnownErrorCode` are derived from the two tables and re-exported by `src/types/api.ts`, so the codes are defined once. The Backend's generic `BAD_REQUEST` code (framework 4xx responses) has no authored text and falls back to the Backend message. `errorText` uses the generic notice `Unrecognised error (<code>)`. `GEOMETRY_OUTSIDE_GHANA` uses the fixed text "The polygon is not entirely within Ghana."
 - Example texts: `IRREGULAR_SAMPLING` is "Observations are unevenly spaced; gaps exceed the threshold." `LOW_QUALITY_OBSERVATION` is "At least one of the observations has low quality for the limits applied." `SEASONALITY_NOT_CONTROLLED` is "The interval is not a whole number of years, so seasonal effects are not controlled." `WEATHER_DISABLED` is "Weather context is turned off."
 
 ### Evidence Language Module (`lib/evidence.ts`)

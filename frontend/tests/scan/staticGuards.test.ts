@@ -27,7 +27,8 @@ const SECRET_NAME = /\b[A-Za-z0-9_]*(SECRET|API_KEY)[A-Za-z0-9_]*\b/;
 // these prefixes (for example /areas/:areaId), so they live in one route module that is
 // exempt as well. Both modules are created in later tasks.
 const API_PREFIXES = ["/areas", "/admin", "/reports", "/observations", "/settings", "/me"];
-const PATH_EXEMPT = new Set(["src/core/api/endpoints.ts", "src/lib/routes.ts"]);
+// pagination.ts names the three admin lists whose Backend maximum is 100 (Requirement 5.15).
+const PATH_EXEMPT = new Set(["src/core/api/endpoints.ts", "src/lib/routes.ts", "src/lib/pagination.ts"]);
 const STRING_LITERAL = /(["'`])(\/[^"'`\s]*)\1/g;
 
 export function apiPathLiterals(text: string): string[] {
