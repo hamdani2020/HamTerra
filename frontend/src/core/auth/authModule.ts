@@ -26,6 +26,8 @@ export interface AuthState {
   status: AuthStatus;
   /** Display only (Requirement 4.6). */
   idEmail: string | null;
+  /** Why the last Session ended, until the next sign-in; guards add the expired notice. */
+  endReason: SessionEndReason | null;
 }
 
 export type AuthFailure = "state_mismatch" | "access_denied" | "token_exchange_failed" | "network_failure";
@@ -75,14 +77,20 @@ export function createAuthModule(config: PublicConfig, deps: AuthDeps): AuthModu
 
   let accessToken: string | null = null;
   let expiresAt = 0;
-  let state: AuthState = { status: "signed_out", idEmail: null };
+  // With a stored refresh token the Session is being restored, so guards wait for
+  // `restore()` (called by AuthProvider) instead of redirecting to sign-in.
+  let state: AuthState = {
+    status: storage.get(STORAGE_KEYS.refreshToken) ? "renewing" : "signed_out",
+    idEmail: null,
+    endReason: null,
+  };
   let inflight: Promise<boolean> | null = null;
   let callbackRun: { search: string; result: Promise<CallbackResult> } | null = null;
   let renewTimer: ReturnType<typeof setTimeout> | undefined;
   const listeners = new Set<() => void>();
 
   function setState(next: AuthState): void {
-    if (next.status === state.status && next.idEmail === state.idEmail) return;
+    if (next.status === state.status && next.idEmail === state.idEmail && next.endReason === state.endReason) return;
     state = next;
     for (const listener of listeners) listener();
   }
@@ -102,27 +110,27 @@ export function createAuthModule(config: PublicConfig, deps: AuthDeps): AuthModu
     // Cognito usually returns no new refresh token on renewal; keep the stored one then.
     if (tokens.refresh_token) storage.set(STORAGE_KEYS.refreshToken, tokens.refresh_token);
     const email = tokens.id_token ? idTokenEmail(tokens.id_token) : state.idEmail;
-    setState({ status: "signed_in", idEmail: email });
+    setState({ status: "signed_in", idEmail: email, endReason: null });
     scheduleRenewal();
   }
 
-  function clearSession(): void {
+  function clearSession(endReason: SessionEndReason | null = null): void {
     clearTimeout(renewTimer);
     accessToken = null;
     expiresAt = 0;
     storage.clearAll();
-    setState({ status: "signed_out", idEmail: null });
+    setState({ status: "signed_out", idEmail: null, endReason });
   }
 
   function endSession(reason: "expired"): void {
-    clearSession();
+    clearSession(reason);
     deps.onSessionEnded?.(reason);
   }
 
   async function doRenew(): Promise<boolean> {
     const refreshToken = storage.get(STORAGE_KEYS.refreshToken);
     if (!refreshToken) return false;
-    setState({ status: "renewing", idEmail: state.idEmail });
+    setState({ status: "renewing", idEmail: state.idEmail, endReason: state.endReason });
     const result = await postToken(config, guard, fetchImpl, {
       grant_type: "refresh_token",
       client_id: config.cognitoClientId,
@@ -217,7 +225,7 @@ export function createAuthModule(config: PublicConfig, deps: AuthDeps): AuthModu
   }
 
   function signOut(): void {
-    clearSession();
+    clearSession("signed_out");
     deps.onSessionEnded?.("signed_out");
     redirect(guard.check(buildLogoutUrl(config)).toString());
   }

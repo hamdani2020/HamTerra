@@ -8,7 +8,7 @@ import { createQueryClient } from "@/core/api/queryClient";
 import { createAuthModule, type AuthModule } from "@/core/auth/authModule";
 import { sessionAuthStorage, type AuthStorage } from "@/core/auth/storage";
 import type { PublicConfig } from "@/core/config";
-import { ROUTES, type LandingState } from "@/lib/routes";
+import { PUBLIC_ROUTES, ROUTES, type LandingState } from "@/lib/routes";
 import { appRoutes } from "@/router";
 
 export type AppRouter = ReturnType<typeof createBrowserRouter>;
@@ -44,7 +44,9 @@ export function createAppServices(config: PublicConfig, overrides: AppServiceOve
     onSessionEnded(reason) {
       queryClient.clear();
       if (reason === "expired") {
+        const { pathname, search } = router.state.location;
         const state: LandingState = { notice: "session_expired" };
+        if (!PUBLIC_ROUTES.includes(pathname)) state.from = `${pathname}${search}`;
         void router.navigate(ROUTES.landing, { replace: true, state });
       }
     },

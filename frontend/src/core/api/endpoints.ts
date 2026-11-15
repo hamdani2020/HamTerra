@@ -47,6 +47,8 @@ import type {
 type Signal = { signal?: AbortSignal | undefined };
 const seg = (value: string): string => encodeURIComponent(value);
 
+export const ME_TIMEOUT_MS = 10_000;
+
 export function createEndpoints(client: ApiClient) {
   const { request } = client;
   return {
@@ -57,7 +59,8 @@ export function createEndpoints(client: ApiClient) {
       request<HealthReady>("/health/ready", { auth: false, root: true, signal: o.signal }),
 
     // Identity
-    getMe: (o: Signal = {}) => request<PrincipalMe>("/me", { signal: o.signal }),
+    // Requirement 4.1, 4.5: the Principal load gives up after 10 s.
+    getMe: (o: Signal = {}) => request<PrincipalMe>("/me", { signal: o.signal, timeoutMs: ME_TIMEOUT_MS }),
 
     // Areas
     listAreas: (params: AreaListParams = {}, o: Signal = {}) =>

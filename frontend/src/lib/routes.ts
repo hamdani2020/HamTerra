@@ -8,7 +8,34 @@ export const ROUTES = {
   signedOut: "/signed-out",
   authError: "/auth/error",
   dashboard: "/dashboard",
+  map: "/map",
+  areas: "/areas",
+  reports: "/reports",
+  admin: "/admin",
+  adminUsers: "/admin/users",
+  adminAreas: "/admin/areas",
+  adminRetrievals: "/admin/retrievals",
+  adminSettings: "/admin/settings",
+  adminActivity: "/admin/activity",
 } as const;
+
+/** Route patterns with parameters, for the router table. */
+export const ROUTE_PATTERNS = {
+  area: "/areas/:areaId",
+  areaTimeSeries: "/areas/:areaId/timeseries",
+  areaCompare: "/areas/:areaId/compare",
+  report: "/reports/:reportId",
+} as const;
+
+const seg = (value: string): string => encodeURIComponent(value);
+
+/** Links to parameterised routes. */
+export const routeTo = {
+  area: (areaId: string) => `${ROUTES.areas}/${seg(areaId)}`,
+  areaTimeSeries: (areaId: string) => `${ROUTES.areas}/${seg(areaId)}/timeseries`,
+  areaCompare: (areaId: string) => `${ROUTES.areas}/${seg(areaId)}/compare`,
+  report: (reportId: string) => `${ROUTES.reports}/${seg(reportId)}`,
+};
 
 /** Routes reachable without a Session (Requirement 1.8). */
 export const PUBLIC_ROUTES: readonly string[] = [
@@ -19,6 +46,11 @@ export const PUBLIC_ROUTES: readonly string[] = [
 ];
 
 /** Router state read by the landing page: the requested path and the expired notice. */
+/** Router state that asks `NoticeHost` to show a notice (Requirement 1.7). */
+export interface NoticeState {
+  notice: "ADMIN_REQUIRED";
+}
+
 export interface LandingState {
   from?: string;
   notice?: "session_expired";

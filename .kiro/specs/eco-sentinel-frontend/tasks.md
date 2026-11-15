@@ -180,34 +180,34 @@ Each feature task creates its page module. The router (task 8.3) registers every
     - Authorize redirect contents, successful callback, state mismatch, `error` parameter, token exchange failure, 10 s timeout, renewal success and failure, sign-out redirect, `localStorage` empty; each failure asserts no Session and a visible error indication
     - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.7, 3.8, 3.9, 23.2_
 
-- [ ] 8. Principal loading, route guards and app shell
-  - [ ] 8.1 Implement `navItems`, the app shell and layout components
+- [x] 8. Principal loading, route guards and app shell
+  - [x] 8.1 Implement `navItems`, the app shell and layout components
     - `navItems(roles)`, `AppShell`, `Sidebar` (persistent from 640 px, `Sheet` drawer below), `Header` (username, email rules, sign-out), `SkipLink`, `RouteAnnouncer` (title and focus within 500 ms), `NoticeHost` (at least 5 s), `NotFoundPage`, `ErrorBoundary`
     - Active item uses emerald style and `aria-current="page"`
     - _Requirements: 1.2, 1.3, 1.4, 1.5, 1.6, 1.9, 1.10, 1.11, 1.12, 4.6, 4.7_
 
-  - [ ]* 8.2 Write property test for role-based navigation
+  - [x]* 8.2 Write property test for role-based navigation
     - **Property 6: Role-based navigation**
     - **Validates: Requirements 1.4, 1.5, 1.6, 3.13**
 
-  - [ ] 8.3 Implement the router, guards and principal loading
+  - [x] 8.3 Implement the router, guards and principal loading
     - `router.tsx` with all routes of Requirement 1.1 as lazy imports of placeholder page modules (admin pages and map in separate chunks)
     - `RequireSession`, `RequirePrincipal` (10 s loading, retry on network/500/503, 401 renew path), `RequireRole`, `NoRolePage`, `usePrincipal` (memory only, `staleTime: Infinity`), 403 message handling
     - _Requirements: 1.1, 1.7, 1.8, 3.12, 3.13, 4.1, 4.2, 4.3, 4.4, 4.5, 4.8, 4.9, 24.4_
 
-  - [ ]* 8.4 Write route-protection tests
+  - [x]* 8.4 Write route-protection tests
     - No Session redirect, return path restored after sign-in, `GET /me` failing with 401, 500 and a network error, user with no role; each asserts final URL and the visible notice or error
     - _Requirements: 1.8, 3.13, 4.3, 4.4, 4.5, 23.3_
 
-  - [ ]* 8.5 Write role-based navigation tests
+  - [x]* 8.5 Write role-based navigation tests
     - Exact nav items and reachable routes for researcher and admin; researcher opening `/admin` is redirected with a notice
     - _Requirements: 1.4, 1.5, 1.6, 1.7, 23.4_
 
-  - [ ]* 8.6 Write responsive layout tests
+  - [x]* 8.6 Write responsive layout tests
     - Widths 360, 768 and 1280: drawer on mobile, `scrollWidth` not greater than viewport width, main content reachable
     - _Requirements: 1.2, 1.3, 6.5, 6.6, 23.9_
 
-- [ ] 9. Checkpoint - Ensure all tests pass
+- [x] 9. Checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 10. Shared helpers and common region states

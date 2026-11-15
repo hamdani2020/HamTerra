@@ -11,7 +11,7 @@ export interface AuthCardProps {
 /** The card used by the sign-in landing, callback, signed-out and auth error pages. */
 export function AuthCard({ title, children, className }: AuthCardProps): JSX.Element {
   return (
-    <main className="bg-landing flex min-h-screen items-center justify-center p-4">
+    <main id="main-content" tabIndex={-1} className="bg-landing flex min-h-screen items-center justify-center p-4">
       <section
         aria-labelledby="auth-card-title"
         className={cn("w-full max-w-md rounded-lg border bg-card p-6 shadow", className)}

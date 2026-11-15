@@ -123,6 +123,38 @@ export const AUTH_TEXT = {
   backToSignIn: "Back to the sign-in page",
 } as const;
 
+/** Notices carried in router state and shown by `NoticeHost` (Requirement 1.7). */
+export const NOTICE_TEXT = {
+  ADMIN_REQUIRED: "That page requires the admin role. You have been returned to the dashboard.",
+} as const satisfies Record<string, string>;
+
+export const SHELL_TEXT = {
+  skipLink: "Skip to main content",
+  openMenu: "Open navigation menu",
+  navLabel: "Main navigation",
+  navTitle: "Navigation",
+  adminGroup: "Administration",
+  signOut: "Sign out",
+  signedInAs: "Signed in as",
+  dismiss: "Dismiss notice",
+  noticeTitle: "Notice",
+  loadingAccount: "Loading your account…",
+  accountErrorTitle: "Your account could not be loaded",
+  retry: "Try again",
+  requestId: "Request ID",
+  noRoleTitle: "No role assigned",
+  noRoleBody:
+    "Your account has no assigned role, so no pages are available. An administrator must add your user to the researcher or admin group in Cognito. Sign out, then sign in again after the change.",
+  notFoundTitle: "Page not found",
+  notFoundBody: "No page exists at this address.",
+  toDashboard: "Go to the dashboard",
+  toSignIn: "Go to the sign-in page",
+  crashTitle: "Something went wrong",
+  crashBody: "This page could not be displayed. Reload the page to try again.",
+  reload: "Reload",
+  placeholder: "This screen is not available yet.",
+} as const;
+
 /** "Flagged" is a numeric difference at or above a threshold, never a finding (20.2). */
 export function flagDescription(flag: FlagStatus, difference: string, threshold: string): string {
   return flag === "flagged"
@@ -177,6 +209,8 @@ export function authoredTextCatalogue(): string[] {
     ...Object.values(EVIDENCE_TEXT),
     ...Object.values(AUTH_FAILURE_TEXT).flatMap((t) => [t.title, t.body]),
     ...Object.values(AUTH_TEXT),
+    ...Object.values(NOTICE_TEXT),
+    ...Object.values(SHELL_TEXT),
     ...Object.values(QUALITY_LABEL),
     ...Object.values(FLAG_LABEL),
     flagDescription("flagged", "+0.1739", "0.1"),

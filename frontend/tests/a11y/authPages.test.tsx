@@ -4,7 +4,7 @@ import { axe } from "vitest-axe";
 
 import { AUTH_FAILURE_TEXT, AUTH_TEXT } from "@/lib/messages";
 
-import { renderApp } from "../auth/authHarness";
+import { renderApp, renderSignedIn } from "../auth/authHarness";
 
 beforeEach(() => {
   sessionStorage.clear();
@@ -26,6 +26,18 @@ describe("accessibility of the public auth pages (Requirement 21.4)", () => {
 
   it("signed-out page has no axe violations", async () => {
     const { container } = await renderApp("/signed-out");
+    expect(await axe(container)).toHaveNoViolations();
+  });
+
+  it("signed-in shell (admin navigation) has no axe violations", async () => {
+    const { container } = await renderSignedIn("/dashboard", { roles: ["admin"], email: "a@example.org" });
+    await screen.findByRole("heading", { level: 1, name: "Dashboard" });
+    expect(await axe(container)).toHaveNoViolations();
+  });
+
+  it("no-role page has no axe violations", async () => {
+    const { container } = await renderSignedIn("/dashboard", { roles: [] });
+    await screen.findByRole("heading", { level: 1, name: "No role assigned" });
     expect(await axe(container)).toHaveNoViolations();
   });
 });

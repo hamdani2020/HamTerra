@@ -77,7 +77,7 @@ describe("callback (Requirements 3.2 to 3.5)", () => {
     expect(form?.get("redirect_uri")).toBe(config.redirectUri);
     expect(form?.has("client_secret")).toBe(false);
 
-    expect(services.auth.getState()).toEqual({ status: "signed_in", idEmail: "researcher@example.org" });
+    expect(services.auth.getState()).toEqual({ status: "signed_in", idEmail: "researcher@example.org", endReason: null });
     expect(await services.auth.getAccessToken()).toBe("dummy-access-token-1");
     expect(sessionStorage.getItem(STORAGE_KEYS.refreshToken)).toBe("dummy-refresh-token-1");
     expect(sessionStorage.getItem(STORAGE_KEYS.state)).toBeNull();
