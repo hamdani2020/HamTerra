@@ -46,6 +46,19 @@ export class FakeMap {
   readonly controls: unknown[] = [];
   readonly handlers = new Map<string, Handler[]>();
   removed = false;
+  styleLoaded = false;
+
+  isStyleLoaded(): boolean {
+    return this.styleLoaded;
+  }
+
+  once(type: string, handler: Handler): this {
+    const wrapped: Handler = (event) => {
+      this.handlers.set(type, (this.handlers.get(type) ?? []).filter((h) => h !== wrapped));
+      handler(event);
+    };
+    return this.on(type, wrapped);
+  }
 
   constructor(readonly options: Record<string, unknown>) {
     if (mapControl.webglUnavailable) throw new Error("Failed to initialize WebGL");
@@ -53,7 +66,10 @@ export class FakeMap {
     this.layers = style.layers.map((layer) => ({ ...layer, layout: { ...(layer.layout ?? {}) } }));
     maps.push(this);
     queueMicrotask(() => {
-      if (!this.removed) this.emit("load", {});
+      if (this.removed) return;
+      this.styleLoaded = true;
+      this.emit("style.load", {});
+      this.emit("load", {});
     });
   }
 

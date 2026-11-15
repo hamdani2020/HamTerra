@@ -17,7 +17,7 @@ export function AppShell(): JSX.Element {
   const { roles } = useCurrentPrincipal();
   const items = navItems(roles);
   return (
-    <div className="min-h-screen bg-background text-foreground sm:grid sm:grid-cols-[15rem_minmax(0,1fr)]">
+    <div className="min-h-screen bg-background text-foreground sm:grid sm:grid-cols-[15rem_minmax(0,1fr)]" data-print="shell">
       <aside className="hidden border-r bg-card p-4 sm:block">
         <p className="mb-6 px-3 text-lg font-semibold text-foreground">{AUTH_TEXT.appName}</p>
         <SidebarNav items={items} />

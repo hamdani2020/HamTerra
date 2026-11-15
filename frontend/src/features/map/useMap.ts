@@ -61,6 +61,8 @@ export interface UseMapOptions {
   onBasemapFailure?: () => void;
   /** False for the area page's mini map: no pan, zoom or selection. */
   interactive?: boolean;
+  /** Keep the drawn frame, so the map appears when the page is printed (report view). */
+  printable?: boolean;
 }
 
 /** A keyless raster basemap over a plain background that shows if the tiles fail. */
@@ -188,7 +190,7 @@ export function useMap(containerRef: RefObject<HTMLElement | null>, options: Use
   const [state, setState] = useState<MapState>({ status: "loading" });
   const callbacks = useRef(options);
   callbacks.current = options;
-  const { basemapTileUrl, interactive = true } = options;
+  const { basemapTileUrl, interactive = true, printable = false } = options;
 
   useEffect(() => {
     const container = containerRef.current;
@@ -203,6 +205,8 @@ export function useMap(containerRef: RefObject<HTMLElement | null>, options: Use
         attributionControl: false,
         fadeDuration: 0,
         interactive,
+        // WebGL clears the canvas after each frame unless told to keep it; printing reads it.
+        ...(printable ? { canvasContextAttributes: { preserveDrawingBuffer: true } } : {}),
       });
     } catch {
       setState({ status: "unsupported" });
@@ -239,9 +243,14 @@ export function useMap(containerRef: RefObject<HTMLElement | null>, options: Use
       const id = feature?.properties?.id;
       callbacks.current.onSelect?.(typeof id === "string" ? id : null);
     });
-    map.on("load", () => {
+    // Ready as soon as the style is loaded: sources and layers can be added then. The `load`
+    // event also waits for every basemap tile of the first view, so one slow or failed tile
+    // kept the areas off the map.
+    const ready = () => {
       if (!controller.disposed) setState({ status: "ready", controller });
-    });
+    };
+    if (map.isStyleLoaded()) ready();
+    else map.once("style.load", ready);
 
     return () => {
       controller.disposed = true;
@@ -249,7 +258,7 @@ export function useMap(containerRef: RefObject<HTMLElement | null>, options: Use
       map.remove();
       setState({ status: "loading" });
     };
-  }, [containerRef, basemapTileUrl, interactive]);
+  }, [containerRef, basemapTileUrl, interactive, printable]);
 
   return state;
 }

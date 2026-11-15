@@ -130,7 +130,7 @@ function ReportBody({ raw, report }: { raw: string; report: Report }): JSX.Eleme
 
       <Section id="report-map" title={REPORT_TEXT.mapTitle}>
         <Suspense fallback={<RegionSkeleton rows={3} />}>
-          <StoredMap area={storedArea(report)} onReady={noop} />
+          <StoredMap area={storedArea(report)} onReady={noop} printable />
         </Suspense>
       </Section>
 

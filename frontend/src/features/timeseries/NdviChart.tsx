@@ -1,7 +1,9 @@
 import { CartesianGrid, ComposedChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis, type TooltipContentProps } from "recharts";
 import type { NameType, ValueType } from "recharts/types/component/DefaultTooltipContent";
+import { cloneElement, type ReactElement } from "react";
 
 import { ChartContainer } from "@/components/common/ChartContainer";
+import { usePrintMode } from "@/hooks/usePrintMode";
 import { formatCoverage, formatDate, formatInteger, formatNdvi } from "@/lib/format";
 import { OBSERVATION_TEXT, QUALITY_LABEL, SOURCE_LABEL, TIME_SERIES_TEXT } from "@/lib/messages";
 import { ndviRamp } from "@/lib/ndviRamp";
@@ -11,11 +13,27 @@ import { TOKENS } from "@/styles/tokens";
 import { WeatherCell } from "./WeatherCell";
 
 const DAY_MS = 86_400_000;
+/** Fits the content width of A4 and US Letter with 15 mm margins, inside a card. */
+export const PRINT_CHART_WIDTH = 600;
+export const PRINT_CHART_HEIGHT = 260;
 const LINE_COLOUR = TOKENS["slate-600"];
 const OUTLINE = TOKENS["slate-900"];
 
 interface Datum extends ChartPoint {
   t: number;
+}
+
+/**
+ * On screen the chart follows its container. When printing it is drawn at a fixed size that
+ * fits the page, because the container is not measured again for the print layout.
+ */
+function ChartFrame({ printing, children }: { printing: boolean; children: ReactElement }): JSX.Element {
+  if (printing) return cloneElement(children, { width: PRINT_CHART_WIDTH, height: PRINT_CHART_HEIGHT } as never);
+  return (
+    <ResponsiveContainer width="100%" height="100%" minHeight={240}>
+      {children}
+    </ResponsiveContainer>
+  );
 }
 
 function Marker({ cx, cy, datum }: { cx: number; cy: number; datum: Datum }): JSX.Element {
@@ -107,6 +125,7 @@ function ChartLegend({ domain }: { domain: [number, number] }): JSX.Element {
  * marker so gaps stay visible.
  */
 export function NdviChart({ points, titleAs = "h2" }: { points: readonly ChartPoint[]; titleAs?: "h2" | "h3" }): JSX.Element {
+  const printing = usePrintMode();
   const series = singleSourceSeries(points);
   if (!series) {
     return (
@@ -129,7 +148,7 @@ export function NdviChart({ points, titleAs = "h2" }: { points: readonly ChartPo
       titleAs={titleAs}
       footer={<ChartLegend domain={domain} />}
     >
-      <ResponsiveContainer width="100%" height="100%" minHeight={240}>
+      <ChartFrame printing={printing}>
         <ComposedChart data={data} margin={{ top: 8, right: 16, bottom: 8, left: 0 }}>
           <CartesianGrid stroke={TOKENS["slate-200"]} />
           <XAxis
@@ -158,7 +177,7 @@ export function NdviChart({ points, titleAs = "h2" }: { points: readonly ChartPo
             activeDot={{ r: 7, stroke: OUTLINE, strokeWidth: 2 }}
           />
         </ComposedChart>
-      </ResponsiveContainer>
+      </ChartFrame>
     </ChartContainer>
   );
 }

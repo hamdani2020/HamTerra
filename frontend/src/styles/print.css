@@ -1,7 +1,12 @@
 /*
- * Print stylesheet (Requirement 15.11). Navigation and controls are hidden, content uses
- * the full width, and caveats and limitations are always printed.
+ * Print stylesheet (Requirement 15.11). Navigation, the sidebar and controls are hidden,
+ * the content uses the full page width, and the caveats and limitations always print.
+ * Charts redraw at a print size (usePrintMode); the report map keeps its drawn frame.
  */
+@page {
+  margin: 15mm;
+}
+
 @media print {
   [data-print="hide"],
   nav,
@@ -9,12 +14,27 @@
   aside,
   button,
   [role="dialog"],
-  [data-sonner-toaster] {
+  [data-sonner-toaster],
+  .maplibregl-ctrl-attrib-button {
     display: none !important;
   }
 
   [data-print="show"] {
     display: block !important;
+  }
+
+  /* The shell is a two-column grid on screen; hiding the sidebar would leave the content in
+     the 15rem sidebar column, so the shell becomes a single block. */
+  [data-print="shell"] {
+    display: block !important;
+    min-height: 0 !important;
+  }
+
+  html,
+  body,
+  [data-print="shell"],
+  main {
+    background: #ffffff !important;
   }
 
   main,
@@ -26,15 +46,71 @@
   }
 
   body {
-    background: #ffffff !important;
     color: #000000 !important;
+    font-size: 11pt;
   }
 
-  section,
-  table,
+  /* Cards print flat, with a hairline border and no shadow. */
+  .shadow {
+    box-shadow: none !important;
+  }
+
+  /* Keep small units whole; let long sections and tables flow across pages. */
   figure,
-  [data-print="keep"] {
+  article,
+  dl,
+  tr,
+  li,
+  [data-print="keep"],
+  [data-print="map"] {
     break-inside: avoid;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    break-after: avoid;
+  }
+
+  thead {
+    display: table-header-group;
+  }
+
+  /* The map keeps its frame; its pixel-sized canvas fills the frame without stretching. */
+  [data-print="map"] .maplibregl-canvas {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain;
+  }
+
+  /* Tables: smaller type and padding, so cells such as "Sentinel-2" and the quality badge
+     stay on one line. */
+  table {
+    font-size: 9pt;
+  }
+
+  th,
+  td {
+    padding: 4px 6px !important;
+    height: auto !important;
+    overflow-wrap: normal !important;
+  }
+
+  td span,
+  td {
+    white-space: nowrap;
+  }
+
+  /* Recharts draws at the print size; never wider than the page. */
+  figure svg {
+    max-width: 100%;
+  }
+
+  /* Status colours carry meaning next to their labels; print them. */
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
 
   a[href]::after {

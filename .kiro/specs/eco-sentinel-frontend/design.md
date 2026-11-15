@@ -868,6 +868,15 @@ Only the preview route draws bitmaps. No satellite or index tiles are requested 
 
 **Fixed after task 19 (development only):** Hot module replacement re-ran context modules while mounted components kept the old context, which raised "useCurrentPrincipal must be used below RequirePrincipal". It also kept the `api` object built at page load, so a new endpoint function (`getReportJson`) was missing, and the report view failed with a `TypeError` before it sent a request. The modules that create contexts or long-lived services (`principal.tsx`, `AuthProvider.tsx`, `ApiProvider.tsx`, `ConfigProvider.tsx`, `appServices.ts`) now accept their own update and reload the page (`import.meta.hot?.accept(() => window.location.reload())`; Vite 7 has no `decline`). Production builds are unaffected.
 
+**Fixed after task 19: printing.** A PDF of a real report, rendered with headless Chrome and checked page by page, showed four problems, now fixed:
+- **Narrow content column.** The shell is a two-column grid; with the sidebar hidden, the content moved into the 15rem sidebar column. `AppShell` is marked `data-print="shell"` and prints as a block.
+- **Chart overflow.** The chart kept its on-screen pixel width. `usePrintMode` (`beforeprint` and `afterprint` plus `matchMedia("print")`, applied with `flushSync`) makes `NdviChart` draw at 600 x 260 px while printing.
+- **Blank map.** The WebGL canvas printed blank. `useMap` gained `printable`, which sets `preserveDrawingBuffer`; the report map uses it, and its canvas prints with `object-fit: contain`.
+- **Page gaps.** Whole sections were `break-inside: avoid`. Now only figures, cards, definition lists, rows and list items are kept whole, headings avoid breaking after themselves, and table headers repeat on each page. Tables print at 9 pt with no wrapping inside cells.
+- **Smaller items.** Pages get `@page { margin: 15mm }`, cards lose their shadow, status colours print, and the attribution toggle is hidden.
+
+The check also showed a separate map bug. `useMap` became ready on `load`, which waits for every basemap tile of the first view, so one slow or failed OpenStreetMap tile kept the polygon off the mini map and never fitted the view. It now becomes ready on `style.load`, or at once when the style is already loaded. The test mock emits `style.load`.
+
 #### Admin Area Management
 
 - `AdminAreasPage` lists with `status=all`, 20 rows per page, with create, edit, archive and restore controls.
