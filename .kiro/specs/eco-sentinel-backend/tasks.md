@@ -27,8 +27,8 @@ Out of scope: ML, illegal-mining classification, raster processing, production A
     - `docker-compose.yml` with `postgis` (postgis/postgis:16-3.4), `backend`, `frontend` (placeholder whose build context is `./frontend`, defined by the eco-sentinel-frontend spec) and `pgadmin` on network `eco-net`, named volumes, `${VAR:?}` required variables, health checks (interval 10 s, timeout 5 s, 5 retries), `depends_on` health conditions, bind mount for hot reload, and ports bound to `${BIND_ADDRESS:-127.0.0.1}`.
     - _Requirements: 20.1, 20.2, 20.3, 20.4, 20.5, 20.6, 20.7, 20.8, 20.9, 20.11, 20.15_
 
-- [ ] 2. Configuration, logging, errors and middleware
-  - [ ] 2.1 Implement settings loading with startup validation
+- [x] 2. Configuration, logging, errors and middleware
+  - [x] 2.1 Implement settings loading with startup validation
     - `app/core/config.py` with `pydantic-settings`. Collect all missing required variables into one error that lists names only. Validate `LOG_LEVEL` case-insensitively, ranges (timeouts 1 to 30, concurrency 1 to 20, RPM 1 to 60, body limit 1 KB to 10 MB), and refuse `AREA_MAX_HA` above 3000.
     - _Requirements: 2.11, 2.12, 5.1, 5.2, 5.3, 5.11, 10.1, 10.2, 17.3, 19.5, 19.6, 19.7, 23.4_
 
@@ -36,7 +36,7 @@ Out of scope: ML, illegal-mining classification, raster processing, production A
     - **Property 5: Startup configuration validation**
     - **Validates: Requirements 2.11, 2.12, 17.3, 19.5, 19.6, 19.7**
 
-  - [ ] 2.3 Implement redaction and JSON logging
+  - [x] 2.3 Implement redaction and JSON logging
     - `app/core/redaction.py` (`redact_url`, `redact`, `RedactionFilter`) and `app/core/logging.py` (JSON lines on stdout, `request_id` ContextVar, httpx and httpcore loggers held at WARNING, filter on the root handler).
     - _Requirements: 5.10, 17.5, 17.6, 19.5, 19.8_
 
@@ -44,11 +44,11 @@ Out of scope: ML, illegal-mining classification, raster processing, production A
     - **Property 13: Secret redaction**
     - **Validates: Requirements 5.10, 17.5, 17.6**
 
-  - [ ] 2.5 Implement error hierarchy and Error_Envelope handlers
+  - [x] 2.5 Implement error hierarchy and Error_Envelope handlers
     - `app/core/errors.py` with `AppError` subclasses, the stable error codes (including `PAYLOAD_TOO_LARGE`, `SERVICE_UNAVAILABLE`), handlers for `AppError`, `RequestValidationError` (fields listed with reasons), `HTTPException`, `IntegrityError` (409 for unique, 422 for check and foreign key, constraint type only) and a catch-all 500 with no stack trace or SQL.
     - _Requirements: 1.5, 1.6, 16.6, 17.4_
 
-  - [ ] 2.6 Implement middleware and application factory
+  - [x] 2.6 Implement middleware and application factory
     - `app/api/middleware.py` with `RequestIdMiddleware` (pattern `^[A-Za-z0-9_-]{1,128}$`, otherwise generate a UUID4 hex, header on every response including errors) and `BodySizeLimitMiddleware` (413 before parsing, counts chunked bytes). `app/main.py` with `create_app()`, CORS from `ALLOWED_ORIGINS` (empty means no CORS headers), the `/api/v1` prefix, automatic router discovery, OpenAPI at `/api/v1/openapi.json`, and a lifespan that loads settings.
     - _Requirements: 1.1, 1.2, 1.3, 1.7, 1.8, 1.9, 1.12, 17.9, 19.8_
 
@@ -60,16 +60,16 @@ Out of scope: ML, illegal-mining classification, raster processing, production A
     - **Property 32: Request body limit**
     - **Validates: Requirements 17.9**
 
-- [ ] 3. Database models, migrations and audit service
-  - [ ] 3.1 Implement SQLAlchemy models and session management
+- [x] 3. Database models, migrations and audit service
+  - [x] 3.1 Implement SQLAlchemy models and session management
     - `app/db/base.py` with the constraint naming convention, `app/db/session.py` (async engine, one session per request, rollback on error), and models for users, areas, observations, retrieval_records, reports, comparisons, app_settings and audit_events with all columns, check constraints, unique constraints, foreign keys and indexes from the design (GiST on `areas.geom`, partial unique indexes, UTC `timestamptz`).
     - _Requirements: 4.12, 16.1, 16.5, 16.7, 16.8, 16.10_
 
-  - [ ] 3.2 Create Alembic environment and migrations 0001 to 0005
+  - [x] 3.2 Create Alembic environment and migrations 0001 to 0005
     - Async `env.py` with `compare_type`, `compare_server_default` and an `include_object` hook that ignores `spatial_ref_sys`. Migrations: `0001_extensions_users` (PostGIS extension), `0002_areas`, `0003_retrievals_observations`, `0004_reports_comparisons`, `0005_settings_audit` (seed six settings, audit immutability trigger). Each downgrade drops only what its upgrade created.
     - _Requirements: 16.2, 16.4, 16.9, 18.5_
 
-  - [ ] 3.3 Create PostGIS test fixtures and reference data
+  - [x] 3.3 Create PostGIS test fixtures and reference data
     - `tests/integration/conftest.py` that creates a database, runs migrations, and gives a rolled-back session per test. Add the reference NDVI series (eight Sentinel-2 points), a small Ghana boundary fixture, and a fake JWT key fixture helper location in `tests/fixtures/`.
     - _Requirements: 22.2, 22.8_
 
@@ -77,7 +77,7 @@ Out of scope: ML, illegal-mining classification, raster processing, production A
     - Upgrade on an empty DB then downgrade, schema drift check via `compare_metadata`, down-one then up cycle that keeps earlier rows, GiST index presence, unique, foreign-key and check constraint rejections, and a spatial query fixture.
     - _Requirements: 16.3, 16.5, 16.6, 16.9, 22.2_
 
-  - [ ] 3.5 Implement the audit service
+  - [x] 3.5 Implement the audit service
     - `app/services/audit.py` with `record(session, ...)` that writes in the caller's transaction, a helper that writes failure and denied events in a separate session with a 2 s timeout, and no credentials or bodies in `details`.
     - _Requirements: 18.1, 18.2, 18.3, 18.4, 18.5, 18.6_
 
@@ -85,8 +85,8 @@ Out of scope: ML, illegal-mining classification, raster processing, production A
     - A forced audit failure rolls back the action and returns 500. The trigger rejects `UPDATE` and `DELETE`. Denied events are written even when the main transaction rolls back.
     - _Requirements: 18.3, 18.4, 18.5, 18.6_
 
-- [ ] 4. Health endpoints
-  - [ ] 4.1 Implement `/health/live` and `/health/ready`
+- [x] 4. Health endpoints
+  - [x] 4.1 Implement `/health/live` and `/health/ready`
     - `app/api/routers/health.py` mounted at the unversioned root. `ready` runs `SELECT 1` (2 s) and compares `alembic_version` to the script head under a 3 s limit, and returns 503 with only the failed check names. No provider calls. Add startup cleanup that expires `running` retrieval records older than 150 s.
     - _Requirements: 19.1, 19.2, 19.3, 19.4_
 
@@ -94,159 +94,159 @@ Out of scope: ML, illegal-mining classification, raster processing, production A
     - Database up, database down, migrations behind head, no secrets in the 503 body, no network calls.
     - _Requirements: 19.1, 19.2, 19.3, 19.4_
 
-- [ ] 5. Authentication, authorization and `/me`
-  - [ ] 5.1 Implement roles, principal and permissions module
+- [x] 5. Authentication, authorization and `/me`
+  - [x] 5.1 Implement roles, principal and permissions module
     - `app/core/security.py` (`Role`, `Principal`, group-to-role mapping that ignores unknown groups) and `app/core/permissions.py` (the only place that spells permission strings, `REQUIRED_ROLE`, `permissions_for`).
     - _Requirements: 3.1, 3.4, 3.5, 15.2, 15.5_
 
-  - [ ]* 5.2 Write property test for group to role mapping
+  - [x]* 5.2 Write property test for group to role mapping
     - **Property 6: Group to role mapping**
     - **Validates: Requirements 3.1, 3.4, 3.5**
 
-  - [ ]* 5.3 Write property test for permission derivation
+  - [x]* 5.3 Write property test for permission derivation
     - **Property 7: Permission derivation**
     - **Validates: Requirements 15.2, 15.3**
 
-  - [ ] 5.4 Implement JWKS cache and token validator
+  - [x] 5.4 Implement JWKS cache and token validator
     - `app/integrations/cognito/jwks.py` (in-memory cache, `asyncio.Lock`, one refresh per 60 s, 5 s fetch timeout, fall back to cache on fetch failure, 503 when nothing is cached) and `validator.py` (RS256 only, signature, `exp`, `iss`, `client_id`, `token_use=access`; internal reason codes logged without the token).
     - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.10, 2.13_
 
-  - [ ]* 5.5 Write property test for token acceptance
+  - [x]* 5.5 Write property test for token acceptance
     - **Property 4: Token acceptance**
     - **Validates: Requirements 2.1, 2.2, 2.10**
 
-  - [ ]* 5.6 Write authentication unit tests with locally generated keys
+  - [x]* 5.6 Write authentication unit tests with locally generated keys
     - Valid, expired, wrong issuer, wrong client, ID token, bad signature, unknown `kid`, missing header. JWKS refresh limited to once per 60 s using a fake clock, cache fallback, and 503 with no cache.
     - _Requirements: 2.2, 2.3, 2.5, 2.6, 2.7, 22.4_
 
-  - [ ] 5.7 Implement auth dependencies and authorization guard
+  - [x] 5.7 Implement auth dependencies and authorization guard
     - `app/api/deps.py` with `get_session`, `get_principal` (validate, map roles, concurrency-safe `INSERT ... ON CONFLICT` user upsert, update `last_seen_at`), `guard(permission)` with `required_role` metadata and a denied Audit_Event on 403 that never changes the 403 outcome, plus pagination params (`limit` 1 to 200, `offset` at least 0).
     - _Requirements: 1.10, 1.11, 2.8, 2.9, 3.2, 3.3, 3.6, 3.7, 3.8_
 
-  - [ ] 5.8 Implement `GET /api/v1/me`
+  - [x] 5.8 Implement `GET /api/v1/me`
     - `app/api/routers/me.py` returning `sub`, username, email (or null), roles and permissions, with 401 and no user data on invalid tokens, and 200 with empty lists for users with no role.
     - _Requirements: 3.5, 15.1, 15.2, 15.3, 15.4, 15.6_
 
-  - [ ]* 5.9 Write tests for the guard and `/me`
+  - [x]* 5.9 Write tests for the guard and `/me`
     - 403 for insufficient role and for no group, admin satisfies researcher, denied Audit_Event written, 403 still returned when the audit write fails, first-seen `sub` creates exactly one user row under concurrent requests, `/me` for no role and missing email.
     - _Requirements: 2.9, 3.3, 3.5, 3.7, 3.8, 15.1, 15.3, 15.4, 15.6_
 
-- [ ] 6. AgroMonitoring client
-  - [ ] 6.1 Implement provider models and normalisation
+- [x] 6. AgroMonitoring client
+  - [x] 6.1 Implement provider models and normalisation
     - `app/integrations/agro/models.py` and `normalize.py`: map `type` to source, `dt` to UTC date, `cl`, `dc` (absent stays `None`, never `100 - cl`), NDVI stats, strip `appid` from preview URLs, discard invalid items with a per-item warning log, and keep the lower-cloud item for duplicate `(source, date)`.
     - _Requirements: 5.7, 5.8, 5.9_
 
-  - [ ]* 6.2 Write property test for provider item normalisation
+  - [x]* 6.2 Write property test for provider item normalisation
     - **Property 12: Provider item normalisation**
     - **Validates: Requirements 5.7, 5.8, 5.9**
 
-  - [ ] 6.3 Implement the HTTP transport and Agro client
+  - [x] 6.3 Implement the HTTP transport and Agro client
     - `ratelimit.py` (semaphore plus token bucket), `transport.py` (shared `httpx.AsyncClient`, connect and read timeouts, key added in one place), `client.py` implementing the `AgroClient` protocol (`create_polygon`, `delete_polygon`, `ndvi_history`, `image_search`, `fetch_image`, `probe`, `AGRO_STATS_MODE=per_image` fallback). Retry on 429, 502, 503, 504 and timeouts up to 3 times with the specified backoff, jitter and capped `Retry-After`. Other 4xx raise immediately. Errors carry no upstream body or URL. Injected sleep for tests.
     - _Requirements: 5.1, 5.3, 5.4, 5.5, 5.6, 5.10, 5.11, 5.13, 23.4_
 
-  - [ ]* 6.4 Write property test for retry wait schedule
+  - [x]* 6.4 Write property test for retry wait schedule
     - **Property 11: Retry wait schedule**
     - **Validates: Requirements 5.4**
 
-  - [ ]* 6.5 Write mocked HTTPX transport tests for the Agro client
+  - [x]* 6.5 Write mocked HTTPX transport tests for the Agro client
     - Success, timeout, 429 with `Retry-After` (assert wait through injected sleep), 5xx stopping after 4 attempts, a non-429 4xx making exactly one request, malformed payloads handled, empty results, no key in errors or logs.
     - _Requirements: 5.4, 5.5, 5.6, 5.8, 5.10, 22.3_
 
-- [ ] 7. Geometry and monitoring areas
-  - [ ] 7.1 Implement geometry validation and bbox parsing
+- [x] 7. Geometry and monitoring areas
+  - [x] 7.1 Implement geometry validation and bbox parsing
     - `app/domain/geometry.py` with `validate_geometry` (type, coordinate range, ring length and closure, validity, Ghana containment, in that order, never raising other exceptions), inclusive area range check, and `parse_bbox` / `format_bbox`.
     - _Requirements: 4.2, 4.3, 4.5, 4.9, 4.10_
 
-  - [ ]* 7.2 Write property test for geometry validation
+  - [x]* 7.2 Write property test for geometry validation
     - **Property 8: Geometry validation is total and correct**
     - **Validates: Requirements 4.2, 4.3, 22.6, 22.9**
 
-  - [ ]* 7.3 Write property test for inclusive area range
+  - [x]* 7.3 Write property test for inclusive area range
     - **Property 9: Area range is inclusive**
     - **Validates: Requirements 4.5**
 
-  - [ ]* 7.4 Write property test for bounding box parsing
+  - [x]* 7.4 Write property test for bounding box parsing
     - **Property 10: Bounding box parsing**
     - **Validates: Requirements 4.9, 4.10**
 
-  - [ ]* 7.5 Write geospatial unit tests
+  - [x]* 7.5 Write geospatial unit tests
     - Invalid rings, self-intersection, outside Ghana, areas just below, at and above the limits, and a reference polygon whose computed area is within 1% of the known value.
     - _Requirements: 4.2, 4.3, 4.4, 4.5, 22.6_
 
-  - [ ] 7.6 Implement Ghana boundary loader
+  - [x] 7.6 Implement Ghana boundary loader
     - Load `GHANA_BOUNDARY_PATH` with GeoPandas at startup into a Shapely prepared geometry, stop startup when the file is missing or invalid, and expose it through the application state. Document that the owner supplies `data/ghana_boundary.geojson`.
     - _Requirements: 4.3_
 
-  - [ ] 7.7 Implement the area service
+  - [x] 7.7 Implement the area service
     - `app/services/areas.py`: create (validate, PostGIS `ST_Area` on geography rounded to 2 decimals, duplicate name check, `create_polygon` within 10 s, insert plus Audit_Event in one transaction, best-effort provider polygon delete on insert failure), update with geometry replacement (new polygon, mark observations `stale_geometry`, delete old polygon after commit), archive, restore with name clash check, list with `status`, `q`, `bbox` (GiST `ST_Intersects`), detail, and map FeatureCollection with latest observation date.
     - _Requirements: 4.1, 4.4, 4.6, 4.7, 4.8, 4.9, 4.11, 4.13, 13.9, 13.10, 18.1_
 
-  - [ ] 7.8 Implement area routers
+  - [x] 7.8 Implement area routers
     - `app/api/routers/areas.py` (`GET /areas`, `GET /areas/map`, `GET /areas/{area_id}`) and `admin_areas.py` (`POST /admin/areas`, `PATCH /admin/areas/{area_id}`, archive, restore), all guarded, with Pydantic schemas using `extra="forbid"`.
     - _Requirements: 4.1, 4.8, 4.9, 4.10, 4.11, 13.9, 15.5_
 
-  - [ ]* 7.9 Write PostGIS integration tests for areas
+  - [x]* 7.9 Write PostGIS integration tests for areas
     - Create, duplicate name 409, outside Ghana, area out of range, provider failure stores nothing, geometry update marks observations stale, archive hides from default list, bbox filter and map output, spatial index used for the fixture.
     - _Requirements: 4.1, 4.3, 4.5, 4.7, 4.8, 4.9, 4.11, 4.13, 13.10, 22.2_
 
-  - [ ]* 7.10 Write property test for pagination envelope
+  - [x]* 7.10 Write property test for pagination envelope
     - **Property 2: Pagination envelope**
     - **Validates: Requirements 1.10, 1.11**
 
-- [ ] 8. Checkpoint - Ensure all tests pass
+- [x] 8. Checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 9. Application settings
-  - [ ] 9.1 Implement the settings service and endpoints
+- [x] 9. Application settings
+  - [x] 9.1 Implement the settings service and endpoints
     - `app/services/settings.py` and routers `settings.py` (`GET /settings` with the five Researcher-visible keys including `gap_threshold_days`) and `admin_settings.py` (`GET /admin/settings`, `PUT /admin/settings/{key}`). Allow-list of six keys with type and range checks, secret-like key rejection checked first (422), unknown key 404, audit with old and new values in the same transaction, rollback if the audit fails, defaults read on every request.
     - _Requirements: 8.8, 8.9, 14.1, 14.2, 14.3, 14.4, 14.5, 14.6, 14.7, 14.8, 14.9, 14.10_
 
-  - [ ]* 9.2 Write property test for settings and override validation
+  - [x]* 9.2 Write property test for settings and override validation
     - **Property 27: Settings and override validation**
     - **Validates: Requirements 8.8, 8.9, 8.10, 8.11, 14.3, 14.5, 14.6**
 
-  - [ ]* 9.3 Write settings tests
+  - [x]* 9.3 Write settings tests
     - Researcher sees only permitted keys and no `updated_by`, Researcher update is 403, audit failure rolls back the change, unknown key and secret-like key responses.
     - _Requirements: 14.2, 14.5, 14.6, 14.7, 14.8, 14.9, 14.10_
 
-- [ ] 10. Quality indicators, observations and refresh
-  - [ ] 10.1 Implement the quality domain
+- [x] 10. Quality indicators, observations and refresh
+  - [x] 10.1 Implement the quality domain
     - `app/domain/quality.py` with `quality_level`, `observation_quality` and `comparison_quality` (worse level, larger cloud, smaller non-null data coverage, `LOW_QUALITY_OBSERVATION`), and `app/domain/constants.py` warning codes.
     - _Requirements: 8.12, 9.1, 9.2, 9.3, 9.4, 9.5_
 
-  - [ ]* 10.2 Write property test for quality level
+  - [x]* 10.2 Write property test for quality level
     - **Property 18: Quality level**
     - **Validates: Requirements 8.12, 9.1, 9.2, 9.3, 9.4**
 
-  - [ ] 10.3 Implement observation service and schemas
+  - [x] 10.3 Implement observation service and schemas
     - `app/services/observations.py` and schemas: list with `source`, `date_from`, `date_to`, `max_cloud_coverage`, `min_data_coverage` (AND, inclusive, null data coverage never matches the minimum filter), ordered by date descending, detail by ID, quality computed on read from current settings, `Preview` object with proxy URL, `resolution_class` in `meta`, grouping by source, 404 and 422 rules.
     - _Requirements: 6.3, 6.6, 6.7, 6.8, 6.9, 6.10, 6.14, 9.6, 9.7_
 
-  - [ ] 10.4 Implement the refresh service
+  - [x] 10.4 Implement the refresh service
     - `app/services/refresh.py`: validate range (start not after end, at most 366 days, not future), insert a `running` record in its own transaction (409 on the partial unique index), per-source transactions with `INSERT ... ON CONFLICT DO UPDATE ... WHERE differs` and `xmax = 0` classification, `partial` / `empty` / `failed` / `success` statuses, 120 s `asyncio.timeout` returning 504, stale `running` expiry (150 s), sanitised error and 64 KB raw payload rule, and an Audit_Event. No image binaries stored.
     - _Requirements: 5.12, 6.1, 6.2, 6.4, 6.5, 6.12, 6.13, 6.14, 6.15, 6.16, 16.7, 16.8, 18.1, 23.5_
 
-  - [ ] 10.5 Implement observation and refresh routers
+  - [x] 10.5 Implement observation and refresh routers
     - `app/api/routers/observations.py` with `GET /areas/{area_id}/observations`, `GET /observations/{observation_id}` and `POST /areas/{area_id}/observations/refresh` (Researcher or Admin), including warnings in the refresh response.
     - _Requirements: 6.1, 6.6, 6.9, 6.10, 6.12, 6.13_
 
-  - [ ] 10.6 Implement the preview image proxy
+  - [x] 10.6 Implement the preview image proxy
     - Add `GET /observations/{observation_id}/preview` to `observations.py`: authorize first (no provider contact on denial), fetch with the key server-side through `fetch_image`, read PNG IHDR for width and height and store them on first fetch, return bytes with `Cache-Control: private, max-age=3600`, 404 when no preview, and a statement that previews are for visual orientation only.
     - _Requirements: 6.11, 17.6, 17.7, 17.8_
 
-  - [ ]* 10.7 Write property test for observation list filtering
+  - [x]* 10.7 Write property test for observation list filtering
     - **Property 16: Observation list filtering**
     - **Validates: Requirements 6.6, 6.7**
 
-  - [ ]* 10.8 Write property test for refresh counts and idempotence
+  - [x]* 10.8 Write property test for refresh counts and idempotence
     - **Property 14: Refresh counts and idempotence**
     - **Validates: Requirements 6.1, 6.4, 22.9**
 
-  - [ ]* 10.9 Write property test for refresh range validation
+  - [x]* 10.9 Write property test for refresh range validation
     - **Property 15: Refresh range validation**
     - **Validates: Requirements 6.2**
 
-  - [ ]* 10.10 Write refresh and proxy integration tests
+  - [x]* 10.10 Write refresh and proxy integration tests
     - Partial success keeps stored sources, total failure leaves data unchanged, empty result records `empty`, concurrent refresh returns 409, 120 s deadline returns 504 with earlier data intact, stale `running` record expiry, preview proxy denies before contacting the provider, no key in responses.
     - _Requirements: 6.12, 6.13, 6.15, 6.16, 17.7, 17.8, 23.5_
 
@@ -384,7 +384,7 @@ Out of scope: ML, illegal-mining classification, raster processing, production A
     - A test that OpenAPI lists every contract endpoint. `scripts/perf_check.py` seeds 500 observations and 1000 areas and reports p95 for area reads, map data and a 100-observation report, also with the provider mock failing. `scripts/compose_smoke.sh` checks healthy within 120 s, startup failure on a missing variable, and ports bound to `127.0.0.1`.
     - _Requirements: 1.2, 11.11, 20.4, 20.11, 20.15, 23.1, 23.2, 23.3_
 
-  - [-] 16.4 Write README documentation
+  - [ ] 16.4 Write README documentation
     - Commands for start, stop, rebuild, logs, PostgreSQL shell, manual migrations and running `make test` in the container. Cognito local-dev configuration (callback and logout URLs, allowed origins, app client settings, group names, token variables, example values), first-Admin provisioning through the console or CLI with a note that no API route grants `admin`, and the open provider items from the design.
     - _Requirements: 20.10, 20.12, 20.13_
 

@@ -41,7 +41,7 @@ All published ports bind to `127.0.0.1` by default (`BIND_ADDRESS`). Default por
 
 `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`, `PGADMIN_DEFAULT_EMAIL`, `PGADMIN_DEFAULT_PASSWORD`, `COGNITO_USER_POOL_ID`, `COGNITO_REGION`, `COGNITO_APP_CLIENT_ID`, `AGRO_API_KEY`.
 
-The backend also requires `GHANA_BOUNDARY_PATH`. The full variable list and defaults are in the Settings table of `.kiro/specs/eco-sentinel-backend/design.md`. `.env` is git-ignored. Never commit real secrets or paste them into issues or logs.
+The backend also requires `GHANA_BOUNDARY_PATH`, the path to a GeoJSON Polygon or MultiPolygon of Ghana (EPSG:4326). The project owner supplies it as `backend/data/ghana_boundary.geojson`; the repository does not ship one. The backend refuses to start when the file is missing or unusable. The boundary is used to check that monitoring areas lie inside Ghana. A coarse boundary is acceptable for the MVP, so an area very close to the border can be accepted slightly beyond it. The full variable list and defaults are in the Settings table of `.kiro/specs/eco-sentinel-backend/design.md`. `.env` is git-ignored. Never commit real secrets or paste them into issues or logs.
 
 ## Developer commands
 

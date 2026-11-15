@@ -51,7 +51,9 @@ resource "aws_cognito_user_pool_client" "web" {
   callback_urls                        = var.callback_urls
   logout_urls                          = var.logout_urls
 
-  explicit_auth_flows           = ["ALLOW_REFRESH_TOKEN_AUTH"] # U3
+  # Refresh token rotation applies to the OAuth token endpoint and is rejected
+  # when ALLOW_REFRESH_TOKEN_AUTH is listed, so no explicit flows are set (U3).
+  explicit_auth_flows           = []
   prevent_user_existence_errors = "ENABLED"
   enable_token_revocation       = true
 
