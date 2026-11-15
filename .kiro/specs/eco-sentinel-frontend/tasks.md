@@ -243,53 +243,53 @@ Each feature task creates its page module. The router (task 8.3) registers every
     - Data table with pagination, chart container and legend, loading, empty and error states, retry replaces error within one render
     - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.8, 23.1, 23.10_
 
-- [ ] 11. Researcher dashboard
-  - [ ] 11.1 Implement the dashboard page and hooks
+- [x] 11. Researcher dashboard
+  - [x] 11.1 Implement the dashboard page and hooks
     - `GET /areas` (`status=active`, up to 12 cards), per-card observations (`limit=5`) and time series (last 365 days from the latest date) through one limiter of 6, recent observations table, in-session comparison store for the change indicator, per-card error indicators, empty and error states, aggregate and "for investigation" statements, card navigation
     - Replaces the placeholder `DashboardPage`
     - _Requirements: 7.1, 7.2, 7.3, 7.4, 7.5, 7.6, 7.7, 7.8, 7.9, 7.10, 7.11, 7.12, 20.3_
 
-  - [ ]* 11.2 Write dashboard tests
+  - [x]* 11.2 Write dashboard tests
     - Cards and count, trend and "Not enough observations", no-observation card makes no calls, one failing card keeps others, zero areas, list failure with retry, at most 6 requests in flight
     - _Requirements: 7.1, 7.3, 7.7, 7.8, 7.11, 7.12, 24.6, 23.10_
 
-- [ ] 12. Map and preview overlay
-  - [ ] 12.1 Implement map helpers and the `useMap` hook
+- [x] 12. Map and preview overlay
+  - [x] 12.1 Implement map helpers and the `useMap` hook
     - `featureCollectionBounds` with `GHANA_BOUNDS` fallback, `useMap` controller (areas source and layers, selection feature-state, fit, WebGL failure result, basemap failure timer of 10 s, attribution, keyless raster basemap from `VITE_BASEMAP_TILE_URL`), the only module importing `maplibre-gl`
     - _Requirements: 8.1, 8.2, 8.3, 8.4, 8.13, 8.16, 21.13_
 
-  - [ ]* 12.2 Write property test for feature collection bounds
+  - [x]* 12.2 Write property test for feature collection bounds
     - **Property 15: Feature collection bounds**
     - **Validates: Requirements 8.1**
 
-  - [ ] 12.3 Implement `MapPage`, details panel, controls and legend
+  - [x] 12.3 Implement `MapPage`, details panel, controls and legend
     - `GET /areas/map` layer, selection and highlight, details panel within 300 ms with area and observations queries (`limit=10`), background click clears, keyboard-operable zoom and reset buttons, legend, link to `/areas`, error state with retry, unsupported-browser message
     - Replaces the placeholder `MapPage`
     - _Requirements: 8.1, 8.5, 8.6, 8.7, 8.8, 8.9, 8.10, 8.11, 8.12, 8.13, 8.14, 8.15, 8.16, 20.3_
 
-  - [ ] 12.4 Implement the preview overlay hook and UI
+  - [x] 12.4 Implement the preview overlay hook and UI
     - `usePreviewOverlay`: fetch blob with bearer through `apiRequest`, bbox image source and raster layer, opacity slider (default 70, 0 to 100, step 1), note, size, approximate-position statement, at most one overlay, remove and unmount revoke the blob URL, pending and error states
     - Wire into `MapPage` and the observation detail
     - _Requirements: 9.6, 9.7, 9.8, 9.10, 9.11, 9.12, 9.13, 9.14, 20.7_
 
-  - [ ]* 12.5 Write property test for preview overlay lifecycle
+  - [x]* 12.5 Write property test for preview overlay lifecycle
     - **Property 16: Preview overlay lifecycle**
     - **Validates: Requirements 9.12, 9.14, 23.12**
 
-  - [ ]* 12.6 Write map tests with MapLibre mocked
+  - [x]* 12.6 Write map tests with MapLibre mocked
     - Feature collection to layer sources, selection state, panel contents, observations error with retry, zero observations, WebGL failure message, basemap failure notice, overlay add and remove leaves no source or layer
     - _Requirements: 8.5, 8.7, 8.8, 8.13, 23.12_
 
-- [ ] 13. Observation views
-  - [ ] 13.1 Implement `ObservationDetail` and `ObservationsTable`
+- [x] 13. Observation views
+  - [x] 13.1 Implement `ObservationDetail` and `ObservationsTable`
     - Date, labelled source, NDVI statistics (non-null only), cloud and data coverage as separate values, "Not reported" with the `DATA_COVERAGE_UNKNOWN` text, quality badge and warnings, `stale_geometry` badge, preview control or "No preview available"
     - _Requirements: 9.1, 9.2, 9.3, 9.4, 9.5, 9.9, 20.3, 20.5, 20.6_
 
-  - [ ]* 13.2 Write property test for observation display
+  - [x]* 13.2 Write property test for observation display
     - **Property 30: Observation display**
     - **Validates: Requirements 9.1, 9.2, 9.3, 9.4, 9.9**
 
-  - [ ]* 13.3 Write observation view tests
+  - [x]* 13.3 Write observation view tests
     - Stale geometry badge, null data coverage, null preview URL, preview 404 and 502 message with control still available
     - _Requirements: 9.3, 9.5, 9.9, 9.11_
 

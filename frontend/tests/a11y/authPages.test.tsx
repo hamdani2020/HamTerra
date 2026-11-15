@@ -20,7 +20,7 @@ describe("accessibility of the public auth pages (Requirement 21.4)", () => {
   it("auth error page has no axe violations", async () => {
     const { container, pathname } = await renderApp("/auth/callback?code=abc&state=x");
     await waitFor(() => expect(pathname()).toBe("/auth/error"));
-    expect(screen.getByRole("heading", { name: AUTH_FAILURE_TEXT.state_mismatch.title })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: AUTH_FAILURE_TEXT.state_mismatch.title })).toBeInTheDocument();
     expect(await axe(container)).toHaveNoViolations();
   });
 
@@ -29,9 +29,12 @@ describe("accessibility of the public auth pages (Requirement 21.4)", () => {
     expect(await axe(container)).toHaveNoViolations();
   });
 
-  it("signed-in shell (admin navigation) has no axe violations", async () => {
+  it("signed-in shell and dashboard (admin navigation) have no axe violations", async () => {
     const { container } = await renderSignedIn("/dashboard", { roles: ["admin"], email: "a@example.org" });
     await screen.findByRole("heading", { level: 1, name: "Dashboard" });
+    // Let the dashboard regions settle, so the check covers the cards and the table.
+    await screen.findByTestId("active-area-count");
+    await waitFor(() => expect(container.querySelector('[aria-busy="true"]')).toBeNull());
     expect(await axe(container)).toHaveNoViolations();
   });
 

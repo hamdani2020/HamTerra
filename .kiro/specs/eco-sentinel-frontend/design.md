@@ -660,6 +660,17 @@ flowchart TB
 - Card change indicator uses the in-session comparison store: `sessionComparisons.get(areaId)?.flag`. It is empty unless the user ran a comparison.
 - The statement from Requirement 7.9 and the NDVI aggregate note appear at the top of the page.
 
+**Implemented in task 11:**
+- **Card data.** Each card takes its sensor from the first item of its `limit=5` observation call, because the Backend lists observations newest first. The time series covers `latest - 365 days` to `latest`. The card shows the mean NDVI of the last point, `trend_per_30d` with a sign and 4 decimals, `summary.count`, and the last point's Backend quality level.
+- **Warnings.** The Backend's warnings are shown through `warningText`. A null trend always shows the `INSUFFICIENT_OBSERVATIONS` text once.
+- **Failures.** A failed observation or time-series call shows `RegionError` with a retry on that card only.
+- **Card link.** The card link stretches over the whole card, and the retry control sits above it.
+- **Recent observations.** `useQueries` reuses the cards' observation queries for the 6 newest areas. When only some of them fail, the table shows the rest with a notice that it may be incomplete and a retry for the failed ones.
+- **Zero areas.** The count of 0 stays visible and nothing else is requested.
+- **Session comparisons.** The store is `features/comparison/sessionComparisons.ts`, in memory only, and cleared when the Session ends. The comparison feature records the Backend `flag` there.
+- **Wording.** Sensor names (`SOURCE_LABEL`) and dashboard wording (`DASHBOARD_TEXT`, `EVIDENCE_TEXT.investigationNote`) are in `lib/messages.ts`.
+- **`EvidenceNote`.** It now renders `role="note"` instead of `<aside>`, because a complementary landmark inside `main` breaks the axe landmark rules.
+
 #### Map
 
 `useMap(containerRef, options)` is the only code that imports `maplibre-gl`. It returns a typed controller:
@@ -699,11 +710,36 @@ interface MapController {
 
 Only the preview route draws bitmaps. No satellite or index tiles are requested (Requirement 9.13).
 
+**Implemented in task 12:**
+- **Hook result.** `useMap(containerRef, {basemapTileUrl, onSelect, onBasemapFailure})` returns `{status: "loading" | "ready" | "unsupported"}`, plus the controller once the style has loaded.
+- **Controller.** It also has `zoomIn`, `zoomOut` and `hasPreview`. It has no `destroy` method: the hook removes the map on unmount. Internally the flag is called `disposed`, because the evidence scan rejects the word "destroyed" even in identifiers.
+- **Selection.** One map `click` handler queries the `areas-fill` layer. A click that hits no area clears the selection.
+- **Basemap.** The basemap is a raster source with `attribution` and an expanded `AttributionControl`. The 10 s timer starts at the first `dataloading` event of that source and is cancelled by the first tile `data` event.
+- **Bounds.** `lib/geo.ts` holds `GHANA_BOUNDS`, `geometryBounds`, `featureCollectionBounds` and `bboxCorners`.
+- **Details panel.** It is a `section` beside the map from `lg` and below it on smaller screens, not a bottom sheet. It uses the bounding box of the feature geometry for the preview. A failure of `GET /areas/{id}` or of the observations call shows one retry in the observations section, and the retry repeats only the call that failed. Selecting another area or closing the panel removes the overlay.
+- **Opacity control.** It is a native `<input type="range">`, which is keyboard operable and testable in jsdom, instead of the Radix slider.
+- **Overlay hook.** `usePreviewOverlay(controller)` aborts a pending fetch when it is replaced, removed or unmounted. Before showing a new image it removes the old layer, then the old source, then revokes the old blob URL.
+- **Observation detail.** It does not exist yet, so the preview control is wired into it in task 13.
+- **`ConfigProvider` and `useConfig`.** These expose the public configuration to pages, for the basemap URL.
+- **Bundle.** MapLibre is bundled only in the `MapPage` chunk (about 1.07 MB, 296 kB gzip).
+- **Tests.** A static guard checks that only `features/map/useMap.ts` imports `maplibre-gl`. Tests replace the library with `tests/mocks/maplibre.ts`.
+
+**Fixed after task 12:**
+- **MapLibre worker.** MapLibre 6 resolves its worker as `./maplibre-gl-worker.mjs` next to its own module file. Vite's dependency pre-bundling moves that module to `node_modules/.vite/deps`, so the browser reported "Worker failed to load". A production build would not emit the worker either, because the URL is built at run time. `useMap.ts` therefore imports `maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url` and calls `setWorkerUrl` before any map is created. A plain `?url` import was tried first and is wrong: in development Vite serves the file as a page module that imports `/@vite/client`, which cannot run in a worker. The worker then never answered, so the map never fired `load` and stayed blank with no console error. `?worker&url` makes the file a Vite worker entry. It is served as `?worker_file&type=module` in development and bundled as an ES-module worker asset in builds, because `vite.config.ts` sets `worker.format` to `"es"` (about 517 kB). The worker is a module worker from the same origin, so a later `worker-src 'self'` CSP covers it.
+- **File watching.** Docker Desktop bind mounts deliver no file events to the container, so the dev server served stale code. Setting `VITE_USE_POLLING=true` turns polling on. chokidar lets the `CHOKIDAR_USEPOLLING` variable override Vite's `usePolling` option, and Compose always passes that variable, so `vite.config.ts` reads both variables and then removes `CHOKIDAR_USEPOLLING` from the process environment. `.env.example` now defaults to polling.
+
 #### Area List and Details
 
 - `AreaListPage`: filters in the URL query string (`status`, `q`, `bbox`, `page`) so back and forward work. The `q` input is debounced 300 ms by `useDebouncedValue`, limited to 100 characters. The bounding-box inputs run `validateBbox` (pure) before any request. "Use map extent" is offered only when the area list is opened from the map link, which passes the extent in router state. The table shows 20 rows per page and uses `limit=20&offset=...`. Empty result: empty state with "Reset filters".
 - `AreaDetailPage`: header with name, status badge (`Archived` when relevant), description, `area_ha`, `created_at`, `updated_at`, `latest_observation_date`, a small non-interactive `useMap` instance with the polygon (lazy loaded), links to time series, comparison and "Create report", and a "Refresh observations" button (Requirement 13). The observation history section loads when it is opened (a collapsible section that renders its query only when expanded), with `source`, `date_from`, `date_to`, `max_cloud_coverage`, `min_data_coverage` filters validated by `validateObservationFilters` and 20 rows per page. Selecting a row loads `GET /observations/{id}` into `ObservationDetail` (Requirement 9).
 - `ObservationDetail` shows the date, the source label ("Sentinel-2" or "Landsat 8"), mean NDVI plus each non-null min, max, std and median, cloud coverage and data coverage as two separate labelled values (`data_coverage_pct` null shows "Not reported" plus the `DATA_COVERAGE_UNKNOWN` text), the `QualityBadge` and all quality warnings, the `stale_geometry` badge and text, and the preview control or "No preview available".
+
+**Implemented in task 13:**
+- **Detail preview.** `ObservationDetail({observation, preview?})` takes a `PreviewBinding` for the map overlay, which `bindPreview(overlay, observation, bbox, mapReady)` builds. Without a binding, the "Show preview" control still appears whenever `preview.url` exists, but it is disabled. The map panel uses the same binding.
+- **Detail contents.** Quality notes are the Backend warnings mapped through `warningText`. When `data_coverage_pct` is null, the `DATA_COVERAGE_UNKNOWN` text is added once, unless the Backend already sent that warning. The stale-geometry badge uses the warning tone with a history icon. The detail ends with the polygon-aggregate note.
+- **Table rows.** `ObservationsTable` takes `ObservationRow`s: `{key, date, source, ndvi_mean, cloud_coverage_pct, data_coverage_pct, quality}`. `observationRow` builds one from an `Observation`, and time-series and report rows can be mapped the same way. An optional `onSelect` turns the date into a button.
+- **Hook.** `useObservation(id)` loads `GET /observations/{id}`.
+- **Wiring.** The area detail page (task 16) wires `ObservationDetail` with its small map and the overlay hook.
 
 #### Refresh Dialog
 

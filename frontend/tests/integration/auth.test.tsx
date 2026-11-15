@@ -99,7 +99,7 @@ describe("callback (Requirements 3.2 to 3.5)", () => {
     startedSignIn();
     const { services, pathname } = await renderApp("/auth/callback?code=abc&state=other");
     await waitFor(() => expect(pathname()).toBe("/auth/error"));
-    expect(screen.getByRole("heading", { level: 1, name: AUTH_FAILURE_TEXT.state_mismatch.title })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { level: 1, name: AUTH_FAILURE_TEXT.state_mismatch.title })).toBeInTheDocument();
     expect(tokenRequests).toHaveLength(0);
     await expectNoSession(services);
   });
@@ -107,7 +107,7 @@ describe("callback (Requirements 3.2 to 3.5)", () => {
   it("refuses a callback after the stored values were removed (reload)", async () => {
     const { services, pathname } = await renderApp(`/auth/callback?code=abc&state=${STATE}`);
     await waitFor(() => expect(pathname()).toBe("/auth/error"));
-    expect(screen.getByRole("heading", { level: 1, name: AUTH_FAILURE_TEXT.state_mismatch.title })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { level: 1, name: AUTH_FAILURE_TEXT.state_mismatch.title })).toBeInTheDocument();
     expect(tokenRequests).toHaveLength(0);
     await expectNoSession(services);
   });
@@ -118,7 +118,7 @@ describe("callback (Requirements 3.2 to 3.5)", () => {
       `/auth/callback?error=access_denied&error_description=Provider+detail+xyz&state=${STATE}`,
     );
     await waitFor(() => expect(pathname()).toBe("/auth/error"));
-    expect(screen.getByRole("heading", { level: 1, name: AUTH_FAILURE_TEXT.access_denied.title })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { level: 1, name: AUTH_FAILURE_TEXT.access_denied.title })).toBeInTheDocument();
     expect(screen.getByRole("alert")).toHaveTextContent(AUTH_FAILURE_TEXT.access_denied.body);
     expect(container.textContent).not.toContain("Provider detail xyz");
     expect(tokenRequests).toHaveLength(0);
@@ -134,7 +134,7 @@ describe("callback (Requirements 3.2 to 3.5)", () => {
     );
     const { services, pathname, container } = await renderApp(`/auth/callback?code=abc&state=${STATE}`);
     await waitFor(() => expect(pathname()).toBe("/auth/error"));
-    expect(screen.getByRole("heading", { level: 1, name: AUTH_FAILURE_TEXT.token_exchange_failed.title })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { level: 1, name: AUTH_FAILURE_TEXT.token_exchange_failed.title })).toBeInTheDocument();
     expect(container.textContent).not.toContain("Provider detail xyz");
     expect(tokenRequests).toHaveLength(1);
     await expectNoSession(services);
@@ -158,16 +158,16 @@ describe("callback (Requirements 3.2 to 3.5)", () => {
       await vi.advanceTimersByTimeAsync(500);
     });
     await waitFor(() => expect(pathname()).toBe("/auth/error"));
-    expect(screen.getByRole("heading", { level: 1, name: AUTH_FAILURE_TEXT.network_failure.title })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { level: 1, name: AUTH_FAILURE_TEXT.network_failure.title })).toBeInTheDocument();
     await expectNoSession(services);
   });
 
   it("offers a way back to the sign-in page", async () => {
     const { pathname } = await renderApp(`/auth/callback?code=abc&state=${STATE}`);
     await waitFor(() => expect(pathname()).toBe("/auth/error"));
-    await userEvent.click(screen.getByRole("link", { name: AUTH_TEXT.backToSignIn }));
+    await userEvent.click(await screen.findByRole("link", { name: AUTH_TEXT.backToSignIn }));
     expect(pathname()).toBe("/");
-    expect(screen.getByRole("button", { name: AUTH_TEXT.signIn })).toBeInTheDocument();
+    expect(await screen.findByRole("button", { name: AUTH_TEXT.signIn })).toBeInTheDocument();
   });
 });
 
@@ -208,7 +208,7 @@ describe("renewal (Requirements 3.6 to 3.8)", () => {
       expect(await services.auth.renew()).toBe(false);
     });
     await waitFor(() => expect(pathname()).toBe("/"));
-    expect(screen.getByText(AUTH_TEXT.sessionExpired)).toBeInTheDocument();
+    expect(await screen.findByText(AUTH_TEXT.sessionExpired)).toBeInTheDocument();
     expect(services.queryClient.getQueryData(["areas", {}])).toBeUndefined();
     await expectNoSession(services);
   });

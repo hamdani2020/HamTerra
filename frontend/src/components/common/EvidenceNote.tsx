@@ -13,8 +13,9 @@ export type EvidenceNoteProps =
 export function EvidenceNote(props: EvidenceNoteProps): JSX.Element {
   const text = props.kind === "aggregate" ? EVIDENCE_TEXT.aggregateNote : props.note;
   return (
-    <aside className={cn("text-sm text-ink-muted", props.className)}>
+    // role="note", not <aside>: a complementary landmark inside <main> breaks the landmark rules.
+    <div role="note" className={cn("text-sm text-ink-muted", props.className)}>
       <VerbatimText text={text} />
-    </aside>
+    </div>
   );
 }

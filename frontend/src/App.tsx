@@ -3,6 +3,7 @@ import { useState } from "react";
 import { RouterProvider } from "react-router";
 
 import { ApiProvider } from "@/core/api/ApiProvider";
+import { ConfigProvider } from "@/core/ConfigProvider";
 import { createAppServices, type AppServices } from "@/core/appServices";
 import { AuthProvider } from "@/core/auth/AuthProvider";
 import type { PublicConfig } from "@/core/config";
@@ -16,12 +17,14 @@ export interface AppProps {
 export function App({ config, services }: AppProps): JSX.Element {
   const [{ auth, api, queryClient, router }] = useState(() => services ?? createAppServices(config));
   return (
-    <QueryClientProvider client={queryClient}>
-      <ApiProvider api={api}>
-        <AuthProvider auth={auth}>
-          <RouterProvider router={router} />
-        </AuthProvider>
-      </ApiProvider>
-    </QueryClientProvider>
+    <ConfigProvider config={config}>
+      <QueryClientProvider client={queryClient}>
+        <ApiProvider api={api}>
+          <AuthProvider auth={auth}>
+            <RouterProvider router={router} />
+          </AuthProvider>
+        </ApiProvider>
+      </QueryClientProvider>
+    </ConfigProvider>
   );
 }

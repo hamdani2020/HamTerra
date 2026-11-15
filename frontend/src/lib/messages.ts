@@ -13,7 +13,7 @@ import {
   isAbortError,
   NetworkError,
 } from "@/core/api/errors";
-import type { DisplayError, FieldError } from "@/types/api";
+import type { DisplayError, FieldError, Source } from "@/types/api";
 import type { FlagStatus, QualityLevel } from "@/types/display";
 
 export const WARNING_TEXT = {
@@ -79,6 +79,8 @@ export const EVIDENCE_TEXT = {
   notAvailable: "Not available",
   notReported: "Not reported",
   notDefined: "Not defined",
+  investigationNote:
+    "Flagged differences are highlighted for investigation. They are not conclusions about what caused a change.",
 } as const;
 
 /**
@@ -198,6 +200,109 @@ export function rangeText(total: number, limit: number, offset: number): string 
   return `Showing ${first.toLocaleString("en-GB")}–${last.toLocaleString("en-GB")} of ${total.toLocaleString("en-GB")}`;
 }
 
+/** Sensor names. Sentinel-2 and Landsat 8 values are never combined (product steering). */
+export const SOURCE_LABEL: Record<Source, string> = {
+  "sentinel-2": "Sentinel-2",
+  "landsat-8": "Landsat 8",
+};
+
+export const DASHBOARD_TEXT = {
+  activeAreas: "Active areas",
+  areaCards: "Monitoring areas",
+  listErrorTitle: "The area list could not be loaded.",
+  noActiveAreas: "No active monitoring areas exist yet.",
+  noObservationsYet: "No observations yet",
+  latestObservation: "Latest observation",
+  latestMean: "Latest mean NDVI",
+  trend: "Trend (NDVI per 30 days)",
+  points: "Observations in the last 365 days",
+  notEnoughObservations: "Not enough observations",
+  quality: "Latest quality",
+  cardError: "The NDVI summary for this area could not be loaded.",
+  sessionComparison: "Comparison run this session",
+  recentTitle: "Recent observations",
+  recentEmpty: "observations",
+  area: "Area",
+  date: "Date",
+  source: "Source",
+  meanNdvi: "Mean NDVI",
+  cloud: "Cloud coverage",
+  dataCoverage: "Data coverage",
+  showingFirst: "Showing the first 12 active areas.",
+} as const;
+
+export function recentPartialText(failed: number): string {
+  return failed === 1
+    ? "Observations for 1 area could not be loaded, so the table may be incomplete."
+    : `Observations for ${failed} areas could not be loaded, so the table may be incomplete.`;
+}
+
+export const MAP_TEXT = {
+  mapLabel: "Map of monitoring areas in Ghana",
+  areaListLink: "View the monitoring areas as a list",
+  zoomIn: "Zoom in",
+  zoomOut: "Zoom out",
+  reset: "Reset view to Ghana",
+  controls: "Map controls",
+  legendTitle: "Legend",
+  legendDefault: "Monitoring area outline",
+  legendSelected: "Selected area outline",
+  loadingAreas: "Loading monitoring areas…",
+  areasError: "The monitoring areas could not be loaded onto the map.",
+  unsupported:
+    "This browser cannot display the map, because WebGL is not available. The monitoring areas are available as a list.",
+  basemapFailed: "The basemap could not be loaded, so the areas are shown on a plain background.",
+  noAreas: "No active monitoring areas exist yet.",
+  panelTitle: "Selected area",
+  closePanel: "Close area details",
+  latestObservation: "Latest observation",
+  size: "Size",
+  noObservations: "No observations",
+  openDetails: "Area details",
+  openTimeSeries: "NDVI time series",
+  openComparison: "Compare dates",
+  observationsTitle: "Latest observations",
+  observationsError: "The area details could not be loaded.",
+  showPreview: "Show preview",
+  removePreview: "Remove preview",
+  loadingPreview: "Loading preview…",
+  noPreview: "No preview available",
+  previewOpacity: "Preview opacity",
+  previewSize: "Image size",
+  attribution: "© OpenStreetMap contributors",
+} as const;
+
+/** "117 by 117 px", with "unknown" for a missing dimension (Requirement 9.7). */
+export function previewSizeText(width: number | null, height: number | null): string {
+  const part = (value: number | null) => (value === null ? "unknown" : String(value));
+  return `${part(width)} by ${part(height)} px`;
+}
+
+export function opacityText(percent: number): string {
+  return `Preview opacity: ${percent}%`;
+}
+
+export const OBSERVATION_TEXT = {
+  title: "Observation",
+  date: "Date",
+  source: "Source",
+  mean: "Mean NDVI",
+  min: "Minimum NDVI",
+  max: "Maximum NDVI",
+  std: "Standard deviation",
+  median: "Median NDVI",
+  cloud: "Cloud coverage",
+  dataCoverage: "Data coverage",
+  quality: "Quality",
+  qualityWarnings: "Quality notes",
+  staleBadge: "Geometry changed since retrieval",
+  staleText:
+    "The area's polygon was changed after this observation was retrieved, so these values belong to an earlier polygon shape.",
+  preview: "Preview",
+  tableCaption: "Observations",
+  select: "Show details",
+} as const;
+
 /** "Flagged" is a numeric difference at or above a threshold, never a finding (20.2). */
 export function flagDescription(flag: FlagStatus, difference: string, threshold: string): string {
   return flag === "flagged"
@@ -256,6 +361,14 @@ export function authoredTextCatalogue(): string[] {
     ...Object.values(SHELL_TEXT),
     ...Object.values(VALIDATION_TEXT),
     ...Object.values(REGION_TEXT),
+    ...Object.values(SOURCE_LABEL),
+    ...Object.values(DASHBOARD_TEXT),
+    recentPartialText(1),
+    ...Object.values(MAP_TEXT),
+    ...Object.values(OBSERVATION_TEXT),
+    previewSizeText(117, null),
+    opacityText(70),
+    recentPartialText(3),
     spanTooLongText(366),
     emptyText("areas"),
     rangeText(95, 20, 20),

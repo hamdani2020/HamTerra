@@ -30,7 +30,7 @@ describe("route protection (Requirements 1.8, 4.3)", () => {
   it("sends a visitor without a Session to / and keeps the requested path", async () => {
     const { pathname, services } = await renderApp("/areas?status=active");
     await waitFor(() => expect(pathname()).toBe("/"));
-    expect(screen.getByRole("button", { name: AUTH_TEXT.signIn })).toBeInTheDocument();
+    expect(await screen.findByRole("button", { name: AUTH_TEXT.signIn })).toBeInTheDocument();
     expect(services.router.state.location.state).toEqual({ from: "/areas?status=active" });
     expect(meCalls).toBe(0);
   });
@@ -38,7 +38,7 @@ describe("route protection (Requirements 1.8, 4.3)", () => {
   it("returns to the requested path after sign-in", async () => {
     const first = await renderApp("/reports");
     await waitFor(() => expect(first.pathname()).toBe("/"));
-    await userEvent.click(screen.getByRole("button", { name: AUTH_TEXT.signIn }));
+    await userEvent.click(await screen.findByRole("button", { name: AUTH_TEXT.signIn }));
     await waitFor(() => expect(first.redirect).toHaveBeenCalledTimes(1));
     const state = new URL(String(first.redirect.mock.calls[0]?.[0])).searchParams.get("state");
     expect(sessionStorage.getItem(STORAGE_KEYS.returnTo)).toBe("/reports");

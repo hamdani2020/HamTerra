@@ -68,6 +68,11 @@ describe("static guards", () => {
     );
   });
 
+  it("imports maplibre-gl only in the map hook (frontend design, Map)", () => {
+    const importers = files.filter((f) => /from\s+["']maplibre-gl["']|import\(\s*["']maplibre-gl["']/.test(f.text)).map((f) => f.path);
+    expect(importers).toEqual(["src/features/map/useMap.ts"]);
+  });
+
   it("detects path literals (self-check of the scanner)", () => {
     expect(apiPathLiterals(`fetch("/areas/" + id); const x = '/admin/users?limit=1';`)).toEqual([
       "/areas/",

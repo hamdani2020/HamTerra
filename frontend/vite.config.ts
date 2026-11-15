@@ -21,9 +21,15 @@ export default defineConfig(({ mode }) => {
   if (mode !== "test") assertRequiredEnv(env);
   const polling =
     process.env.VITE_USE_POLLING === "true" || process.env.CHOKIDAR_USEPOLLING === "true";
+  // chokidar reads CHOKIDAR_USEPOLLING itself and lets it override `usePolling`. Compose always
+  // passes it ("false" by default), which would switch polling off even when VITE_USE_POLLING
+  // asks for it, so the decision above is the only one that counts.
+  Reflect.deleteProperty(process.env, "CHOKIDAR_USEPOLLING");
 
   return {
     plugins: [react()],
+    // MapLibre starts its worker as a module worker, so worker entries are built as ES modules.
+    worker: { format: "es" },
     resolve: {
       alias: {
         "@": fileURLToPath(new URL("./src", import.meta.url)),
@@ -46,6 +52,8 @@ export default defineConfig(({ mode }) => {
       include: ["tests/**/*.test.{ts,tsx}"],
       // No real network: MSW rejects unmocked requests (tests/setup.ts).
       restoreMocks: true,
+      // Headroom for shared CI runners, where the first lazy route import is slow.
+      testTimeout: 15_000,
     },
   };
 });

@@ -34,7 +34,8 @@ describe("pagination clamping", () => {
         const off = clampOffset(offset);
         expect(Number.isInteger(off)).toBe(true);
         expect(off).toBeGreaterThanOrEqual(0);
-        if (Number.isInteger(offset) && offset >= 0) expect(off).toBe(offset);
+        // `===`, not Object.is: an offset of -0 is returned as 0, which is the same offset.
+        if (Number.isInteger(offset) && offset >= 0) expect(off === offset).toBe(true);
         // The request carries the clamped values.
         const query = buildQuery(path, { limit, offset });
         expect(query.get("limit")).toBe(String(clamped));

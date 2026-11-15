@@ -8,6 +8,7 @@ import { createQueryClient } from "@/core/api/queryClient";
 import { createAuthModule, type AuthModule } from "@/core/auth/authModule";
 import { sessionAuthStorage, type AuthStorage } from "@/core/auth/storage";
 import type { PublicConfig } from "@/core/config";
+import { sessionComparisons } from "@/features/comparison/sessionComparisons";
 import { PUBLIC_ROUTES, ROUTES, type LandingState } from "@/lib/routes";
 import { appRoutes } from "@/router";
 
@@ -43,6 +44,7 @@ export function createAppServices(config: PublicConfig, overrides: AppServiceOve
     ...(overrides.redirect ? { redirect: overrides.redirect } : {}),
     onSessionEnded(reason) {
       queryClient.clear();
+      sessionComparisons.clear();
       if (reason === "expired") {
         const { pathname, search } = router.state.location;
         const state: LandingState = { notice: "session_expired" };
