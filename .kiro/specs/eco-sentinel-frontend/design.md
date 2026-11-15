@@ -20,7 +20,7 @@ The Backend `design.md` (section "API Contract") is authoritative. This design r
 |---|---|---|
 | Language / build | TypeScript (`strict`), Vite | Required. |
 | UI | React 18, Tailwind CSS 3, shadcn/ui (Radix primitives) | Required. Radix gives focus trapping and return focus for dialogs (Requirement 21.9) and keyboard support. |
-| Routing | React Router 6 (`createBrowserRouter`, `lazy` routes) | Route-level code splitting for the admin area and the map (Requirement 24.4). Small and standard. |
+| Routing | React Router 7 (package `react-router`; `createBrowserRouter`, `lazy` routes, library mode) | Route-level code splitting for the admin area and the map (Requirement 24.4). Small and standard. Upgraded from 6 in task 1 at the owner's request: 6.30 carries a moderate advisory fixed only in 7. |
 | Server state | TanStack Query 5 | Provides `staleTime: 30_000` reuse (24.2), `AbortSignal` cancellation on unmount (24.3), per-region loading and error states (Requirement 6), and `invalidateQueries` after writes. Writing this by hand would be larger and less tested. |
 | Forms | Plain controlled components with small pure validators in `src/lib/validators` | Forms are few and each has simple rules. A form library would add more code than it saves, and pure validators are directly property-testable. |
 | Map | MapLibre GL JS | Required. Wrapped in one hook, `useMap`, so tests mock one module (23.12). |
@@ -756,7 +756,7 @@ Only the preview route draws bitmaps. No satellite or index tiles are requested 
 
 ### Design System
 
-**Tokens.** Defined once as CSS variables in `globals.css` and mapped in `tailwind.config.ts`.
+**Tokens.** Defined once as CSS variables in `globals.css` and mapped in `tailwind.config.ts`. **Implemented in task 4:** the hex values live in `src/styles/tokens.ts` (also used by the contrast test), and `globals.css` declares them as RGB channels so Tailwind opacity modifiers work; a unit test checks the two agree. shadcn/ui semantic names (`primary`, `secondary`, `accent`, `muted`, `destructive`, `border`, `input`, `ring`) map onto the tokens. One addition: form control borders use Slate 500 `#64748B`, because Slate 200 on white is about 1.2:1 and control boundaries need 3:1 (Requirement 21.3). All Tailwind shadow sizes map to the single card shadow and the duration scale stops at 200 ms. shadcn/ui components were generated with CLI 2.3.0, the last release for Tailwind 3; the generated `sonner` wrapper no longer uses `next-themes` (light theme only).
 
 ```css
 :root {
@@ -839,8 +839,10 @@ The compose service builds the `dev` target.
 ```yaml
   frontend:
     build: { context: ./frontend, target: dev }
-    env_file: .env
-    environment:
+    environment:   # public VITE_ values and dev-server settings only, no env_file
+      VITE_API_BASE_URL: ${VITE_API_BASE_URL:-}
+      # ... the other VITE_ variables the same way ...
+      FRONTEND_PORT: ${FRONTEND_PORT:-5173}
       CHOKIDAR_USEPOLLING: ${CHOKIDAR_USEPOLLING:-false}
       VITE_USE_POLLING: ${VITE_USE_POLLING:-false}
     volumes:
@@ -853,7 +855,7 @@ The compose service builds the `dev` target.
     networks: [eco-net]
 ```
 
-The `frontend-node-modules` named volume is added to the top-level `volumes`. The Backend `ALLOWED_ORIGINS` becomes `${ALLOWED_ORIGINS:-http://localhost:5173}` and `.env.example` sets it to `http://${BIND_ADDRESS}:${FRONTEND_PORT}` equivalents (Requirement 22.11). Because the browser, not the container, calls the Backend, `VITE_API_BASE_URL` is the host-visible URL (`http://localhost:8000/api/v1`), not `http://backend:8000`.
+**Changed in task 2:** the service does not use `env_file: .env`, because the root `.env` also holds the backend secrets (provider keys, database and AWS credentials) and the frontend container needs none of them. Compose passes only the `VITE_` variables, `FRONTEND_PORT` and the polling switches. An unset `VITE_` variable arrives as an empty string; `vite.config.ts` treats empty as absent, so a value in `frontend/.env` (local runs) still applies. The `ALLOWED_ORIGINS` default lists both `http://localhost:<port>` and `http://<BIND_ADDRESS>:<port>`, because those are different browser origins. The `frontend-node-modules` named volume is added to the top-level `volumes`. The Backend `ALLOWED_ORIGINS` becomes `${ALLOWED_ORIGINS:-http://localhost:5173}` and `.env.example` sets it to `http://${BIND_ADDRESS}:${FRONTEND_PORT}` equivalents (Requirement 22.11). Because the browser, not the container, calls the Backend, `VITE_API_BASE_URL` is the host-visible URL (`http://localhost:8000/api/v1`), not `http://backend:8000`.
 
 **`vite.config.ts` (relevant parts)**
 
@@ -1230,5 +1232,5 @@ Both unit tests and property-based tests are used and are complementary. Propert
 6. **`PERCENT_DIFFERENCE_UNDEFINED`.** Listed in the Frontend glossary but not in the Backend warning list. The message module defines it. If the Backend never emits it, the mapping stays unused.
 7. **Cognito sign-out URL.** The Backend design uses `http://localhost:5173/` and this spec uses `/signed-out`. Register both on the app client.
 8. **No latest-observation source field.** The dashboard learns a card's source from its observation list, costing one extra call per area. A `latest_observation_source` field on `Area` would remove it. This is a Backend change and is not assumed here.
-9. **React Router 6 advisory.** `npm audit` reports a moderate advisory for `react-router-dom` 6.30.6 whose only fix is React Router 7. This design specifies React Router 6; the upgrade is pending the owner's decision.
+9. **React Router advisory (resolved).** React Router 6.30 had a moderate advisory fixed only in 7. Upgraded to React Router 7 in task 1; the production dependencies audit clean.
 10. **Remaining dev-only advisories.** Moderate `minimatch` advisories reach the build through `typescript-eslint` (lint time only). ESLint stays on 9 because `eslint-plugin-jsx-a11y` 6.10 does not support ESLint 10.

@@ -1,5 +1,8 @@
 # Eco Sentinel
 
+[![Backend CI](https://github.com/hamdani2020/HamTerra/actions/workflows/backend.yml/badge.svg?branch=main)](https://github.com/hamdani2020/HamTerra/actions/workflows/backend.yml)
+[![Frontend CI](https://github.com/hamdani2020/HamTerra/actions/workflows/frontend.yml/badge.svg?branch=main)](https://github.com/hamdani2020/HamTerra/actions/workflows/frontend.yml)
+
 Eco Sentinel is a web platform for monitoring vegetation change (NDVI from Sentinel-2 and Landsat 8) over registered areas in Ghana. The backend is a FastAPI service backed by PostgreSQL/PostGIS. It validates AWS Cognito access tokens and enforces the `admin` and `researcher` roles. It presents numeric evidence and flags differences for investigation. It never classifies a change or states its cause.
 
 Specs live in `.kiro/specs/` (`eco-sentinel-backend`, `eco-sentinel-frontend`, `eco-sentinel-infrastructure`).
@@ -66,6 +69,17 @@ The image built before this change has no `make`. After pulling it, rebuild once
 **Performance check.** `scripts/perf_check.py` seeds 1000 areas and 500 observations into `eco_test`, measures p95 latency in-process (no network hop) for area reads, map data and report generation, with the provider mock working and failing, then removes the seeded rows. It exits non-zero when a limit (500 ms, 1000 ms, 10 s) is exceeded.
 
 **Compose smoke check.** `backend/scripts/compose_smoke.sh` checks that a missing `AGRO_API_KEY` stops Compose with an error naming it, that the backend reports healthy within 120 s, and that published ports bind to `127.0.0.1`. It starts the stack if it is not running and never removes volumes.
+
+## Continuous integration
+
+GitHub Actions runs two workflows on pushes to `main` and on pull requests, each only when its part of the repository changes. Both have read-only repository permissions, pin every action to a commit SHA, and collect no test coverage.
+
+| Workflow | Runs | Steps |
+|---|---|---|
+| `.github/workflows/backend.yml` | `backend/**` changes | `uv sync --frozen`, `ruff check`, `ruff format --check`, `mypy --strict .`, `pytest` against a PostGIS service container (hostname `postgis`, throwaway CI credentials), evidence-language scan |
+| `.github/workflows/frontend.yml` | `frontend/**` changes | `npm ci`, `npm run check` (ESLint and `tsc`), `npm run test -- --run`, `npm run build` with placeholder public values, evidence-language scan |
+
+Neither workflow needs a repository secret: the tests use dummy credentials and make no outbound calls.
 
 ## Cognito local development
 

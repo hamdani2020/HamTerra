@@ -34,60 +34,60 @@ Each feature task creates its page module. The router (task 8.3) registers every
     - Fail when a path literal starting with `/areas`, `/admin`, `/reports`, `/observations`, `/settings` or `/me` appears outside `core/api/endpoints.ts`
     - _Requirements: 2.4, 22.12, 23.11_
 
-- [ ] 2. Docker development environment
-  - [ ] 2.1 Add the Dockerfile and Vite configuration
+- [x] 2. Docker development environment
+  - [x] 2.1 Add the Dockerfile and Vite configuration
     - Multi-stage `frontend/Dockerfile` (`base`, `dev`, `build`) using `npm ci`, dev server on `0.0.0.0:5173`
     - `vite.config.ts` with `assertRequiredEnv` (throws naming each missing or empty `VITE_` variable, skipped in test mode), `server.watch.usePolling` from `VITE_USE_POLLING` or `CHOKIDAR_USEPOLLING`, HMR client port, and Vitest config (jsdom, setup file)
     - _Requirements: 22.2, 22.3, 22.6, 22.7_
 
-  - [ ] 2.2 Wire the `frontend` service into the existing Compose stack
+  - [x] 2.2 Wire the `frontend` service into the existing Compose stack
     - Update the root `docker-compose.yml` frontend service: build context `./frontend` target `dev`, `env_file: .env`, bind mount `./frontend:/app` plus a `frontend-node-modules` named volume, port `${BIND_ADDRESS:-127.0.0.1}:${FRONTEND_PORT:-5173}:5173`, same network as the Backend, polling env vars
     - Set the Backend `ALLOWED_ORIGINS` default to include the Frontend origin built from `BIND_ADDRESS` and `FRONTEND_PORT`, falling back to `http://localhost:5173`
     - Add every `VITE_` variable, `FRONTEND_PORT`, `VITE_USE_POLLING` and `CHOKIDAR_USEPOLLING` to the root `.env.example`
     - _Requirements: 22.1, 22.2, 22.5, 22.11_
 
-- [ ] 3. Public configuration and config error page
-  - [ ] 3.1 Implement `loadConfig` and the config error page
+- [x] 3. Public configuration and config error page
+  - [x] 3.1 Implement `loadConfig` and the config error page
     - `core/config.ts` returning `{ok, config}` or `{ok: false, missing, invalid}` with no values in the result
     - `ConfigErrorPage` listing variable names; `main.tsx` renders it and creates no AuthModule and sends no request when config is not ok
     - _Requirements: 2.1, 2.2, 2.3_
 
-  - [ ]* 3.2 Write property test for configuration validation
+  - [x]* 3.2 Write property test for configuration validation
     - **Property 1: Public configuration validation**
     - **Validates: Requirements 2.1, 2.2, 2.3**
 
-  - [ ]* 3.3 Write unit tests for the config error page
+  - [x]* 3.3 Write unit tests for the config error page
     - Missing, blank and invalid URL variables list the correct names; assert no `fetch` call
     - _Requirements: 2.2, 2.3_
 
-- [ ] 4. Design tokens and base components
-  - [ ] 4.1 Set up design tokens and global styles
+- [x] 4. Design tokens and base components
+  - [x] 4.1 Set up design tokens and global styles
     - CSS variables and Tailwind theme values for all Design_Tokens and the four status colour pairs, single card shadow, system font stack, focus ring with inner white ring, `touch-target` utility, reduced-motion rule, single landing gradient, `print.css`
     - Generate the shadcn/ui components listed in the design
     - _Requirements: 21.1, 21.2, 21.6, 21.8, 21.10, 21.11, 21.14, 15.11, 6.7_
 
-  - [ ] 4.2 Implement `lib/contrast.ts` and `lib/ndviRamp.ts`
+  - [x] 4.2 Implement `lib/contrast.ts` and `lib/ndviRamp.ts`
     - WCAG contrast ratio function and the 9-stop viridis-like `ndviRamp(value, min, max)`
     - _Requirements: 21.3, 21.12_
 
-  - [ ]* 4.3 Write property test for token contrast
+  - [x]* 4.3 Write property test for token contrast
     - **Property 31: Contrast of design tokens**
     - **Validates: Requirements 21.3, 21.6**
 
-  - [ ]* 4.4 Write property test for the NDVI ramp
+  - [x]* 4.4 Write property test for the NDVI ramp
     - **Property 32: NDVI ramp**
     - **Validates: Requirements 21.12**
 
-  - [ ] 4.5 Build the base components
+  - [x] 4.5 Build the base components
     - `StatusBadge`, `QualityBadge`, `FlagBadge`, `WarningBanner`, `VerbatimText`, `EvidenceNote`, `FormField` (error text with `aria-describedby`), `AuthCard`
     - Status shown with text label and icon in addition to colour; `VerbatimText` renders a text node with no truncation
     - _Requirements: 20.2, 20.9, 21.5, 21.7, 9.4_
 
-  - [ ]* 4.6 Write property test for verbatim rendering
+  - [x]* 4.6 Write property test for verbatim rendering
     - **Property 29: Backend text is rendered verbatim**
     - **Validates: Requirements 20.9**
 
-  - [ ]* 4.7 Write component tests for base components
+  - [x]* 4.7 Write component tests for base components
     - Status badge, warning banner, form field with Backend field errors, dialog focus-in and focus-return, each with a normal and an empty or error case
     - _Requirements: 23.1, 21.9_
 

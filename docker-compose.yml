@@ -27,6 +27,8 @@ services:
       COGNITO_REGION: ${COGNITO_REGION:?COGNITO_REGION is required}
       COGNITO_APP_CLIENT_ID: ${COGNITO_APP_CLIENT_ID:?COGNITO_APP_CLIENT_ID is required}
       AGRO_API_KEY: ${AGRO_API_KEY:?AGRO_API_KEY is required}
+      # The browser origin of the frontend, as localhost and as the bind address.
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:${FRONTEND_PORT:-5173},http://${BIND_ADDRESS:-127.0.0.1}:${FRONTEND_PORT:-5173}}
     command: ["./entrypoint.sh", "uvicorn", "app.main:create_app", "--factory",
               "--host", "0.0.0.0", "--port", "8000", "--reload", "--reload-dir", "/app/app"]
     volumes:
@@ -45,8 +47,23 @@ services:
     networks: [eco-net]
 
   frontend:
-    build: { context: ./frontend } # defined by the eco-sentinel-frontend spec
-    env_file: .env
+    build: { context: ./frontend, target: dev }
+    # Only public VITE_ values and dev-server settings. The root .env also holds backend
+    # secrets, so it is not passed as env_file (least privilege).
+    environment:
+      VITE_API_BASE_URL: ${VITE_API_BASE_URL:-}
+      VITE_COGNITO_DOMAIN: ${VITE_COGNITO_DOMAIN:-}
+      VITE_COGNITO_CLIENT_ID: ${VITE_COGNITO_CLIENT_ID:-}
+      VITE_COGNITO_REGION: ${VITE_COGNITO_REGION:-}
+      VITE_REDIRECT_URI: ${VITE_REDIRECT_URI:-}
+      VITE_LOGOUT_URI: ${VITE_LOGOUT_URI:-}
+      VITE_BASEMAP_TILE_URL: ${VITE_BASEMAP_TILE_URL:-}
+      FRONTEND_PORT: ${FRONTEND_PORT:-5173}
+      CHOKIDAR_USEPOLLING: ${CHOKIDAR_USEPOLLING:-false}
+      VITE_USE_POLLING: ${VITE_USE_POLLING:-false}
+    volumes:
+      - ./frontend:/app # bind mount, hot reload
+      - frontend-node-modules:/app/node_modules # keeps the image's modules under the mount
     depends_on:
       backend: { condition: service_healthy }
     ports:
@@ -72,3 +89,4 @@ networks:
 volumes:
   pgdata: {}
   pgadmin-data: {}
+  frontend-node-modules: {}

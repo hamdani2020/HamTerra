@@ -17,6 +17,8 @@ export default tseslint.config(
       ...reactHooks.configs.recommended.rules,
       // Requirement 2.7: nothing reaches the console except through safeLog.
       "no-console": "error",
+      // Leading underscore marks a deliberately unused parameter.
+      "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_" }],
       // No raw HTML injection anywhere (security rules).
       "no-restricted-syntax": [
         "error",

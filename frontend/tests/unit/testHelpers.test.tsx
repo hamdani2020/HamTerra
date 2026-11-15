@@ -2,12 +2,12 @@ import { screen } from "@testing-library/react";
 import { useQuery } from "@tanstack/react-query";
 import fc from "fast-check";
 import { http, HttpResponse } from "msw";
-import { useLocation } from "react-router-dom";
+import { useLocation } from "react-router";
 import { describe, expect, it } from "vitest";
 import { axe } from "vitest-axe";
 
 import { App } from "@/App";
-import { builder, testId } from "../factories";
+import { buildPublicConfig, builder, testId } from "../factories";
 import { server } from "../msw/server";
 import { propertyConfig } from "../properties/propertyConfig";
 import { renderWithProviders, useTestAuth } from "../renderWithProviders";
@@ -55,7 +55,7 @@ describe("test helpers", () => {
   });
 
   it("axe matchers are installed", async () => {
-    const { container } = renderWithProviders(<App />);
+    const { container } = renderWithProviders(<App config={buildPublicConfig()} />);
     expect(await axe(container)).toHaveNoViolations();
   });
 });

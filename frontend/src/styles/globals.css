@@ -2,4 +2,74 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Design tokens, focus and reduced-motion rules are added in task 4. */
+/*
+ * Design tokens as RGB channels so Tailwind opacity modifiers work. The values must equal
+ * src/styles/tokens.ts; tests/unit/tokens.test.ts checks this.
+ */
+@layer base {
+  :root {
+    --emerald-700: 4 120 87;
+    --emerald-600: 5 150 105;
+    --emerald-900: 6 78 59;
+    --emerald-100: 209 250 229;
+    --green-50: 240 253 244;
+    --slate-50: 248 250 252;
+    --surface: 255 255 255;
+    --slate-900: 15 23 42;
+    --slate-600: 71 85 105;
+    --slate-200: 226 232 240;
+    --slate-500: 100 116 139;
+    --status-success: 21 128 61;
+    --status-success-bg: 220 252 231;
+    --status-warning: 180 83 9;
+    --status-warning-bg: 254 243 199;
+    --status-error: 185 28 28;
+    --status-error-bg: 254 226 226;
+    --status-info: 29 78 216;
+    --status-info-bg: 219 234 254;
+    --focus-ring: 15 23 42;
+    --shadow-card: 0 1px 3px rgb(15 23 42 / 0.08);
+    color-scheme: light;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background font-sans text-foreground antialiased;
+  }
+
+  /* 2 px dark ring with a white inner ring, so it holds 3:1 on emerald and dark surfaces. */
+  :focus-visible {
+    outline: 2px solid rgb(var(--focus-ring));
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px rgb(var(--surface));
+  }
+}
+
+@layer utilities {
+  /* 44 px touch targets on mobile (below the sm breakpoint). */
+  @media (max-width: 639px) {
+    .touch-target {
+      min-height: 2.75rem;
+      min-width: 2.75rem;
+    }
+  }
+
+  /* The only gradient in the interface (Requirement 21.10): the landing page background. */
+  .bg-landing {
+    background-image: linear-gradient(rgb(var(--green-50)), rgb(var(--slate-50)));
+  }
+}
+
+/* No animation or transition when the system prefers reduced motion (Requirement 21.11). */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}

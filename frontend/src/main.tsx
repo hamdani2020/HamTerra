@@ -1,14 +1,10 @@
-import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 
-import { App } from "@/App";
+import { bootstrap } from "@/bootstrap";
 import "@/styles/globals.css";
+import "@/styles/print.css";
 
-const root = document.getElementById("root");
-if (root) {
-  createRoot(root).render(
-    <StrictMode>
-      <App />
-    </StrictMode>,
-  );
+const element = document.getElementById("root");
+if (element) {
+  bootstrap(createRoot(element), import.meta.env);
 }

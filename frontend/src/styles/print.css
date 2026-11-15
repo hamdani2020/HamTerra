@@ -1,0 +1,42 @@
+/*
+ * Print stylesheet (Requirement 15.11). Navigation and controls are hidden, content uses
+ * the full width, and caveats and limitations are always printed.
+ */
+@media print {
+  [data-print="hide"],
+  nav,
+  header,
+  button,
+  [role="dialog"],
+  [data-sonner-toaster] {
+    display: none !important;
+  }
+
+  [data-print="show"] {
+    display: block !important;
+  }
+
+  main,
+  [data-print="content"] {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+
+  section,
+  table,
+  figure,
+  [data-print="keep"] {
+    break-inside: avoid;
+  }
+
+  a[href]::after {
+    content: "";
+  }
+}
