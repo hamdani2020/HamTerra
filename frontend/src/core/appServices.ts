@@ -56,3 +56,8 @@ export function createAppServices(config: PublicConfig, overrides: AppServiceOve
   const api = createEndpoints(createApiClient(guard, auth));
   return { auth, api, queryClient, router };
 }
+
+// Hot updates would re-create the services built once per page load while mounted components keep the old one,
+// so a change to this module (or anything it imports) reloads the page in development.
+// Vite 7 has no `decline`: the module accepts its own update and reloads instead.
+import.meta.hot?.accept(() => window.location.reload());

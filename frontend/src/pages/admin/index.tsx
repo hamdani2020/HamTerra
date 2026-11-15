@@ -11,9 +11,7 @@ export function AdminOverviewPage(): JSX.Element {
 export function AdminUsersPage(): JSX.Element {
   return <PlaceholderPage title={PAGE_TITLE.adminUsers} />;
 }
-export function AdminAreasPage(): JSX.Element {
-  return <PlaceholderPage title={PAGE_TITLE.adminAreas} />;
-}
+export { AdminAreasPage } from "@/features/admin/AdminAreasPage";
 export function AdminRetrievalsPage(): JSX.Element {
   return <PlaceholderPage title={PAGE_TITLE.adminRetrievals} />;
 }

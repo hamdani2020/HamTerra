@@ -59,7 +59,7 @@ describe("role-based navigation (Requirements 1.4 to 1.7, 23.4)", () => {
       ["/areas/a1/timeseries", "NDVI time series"],
       ["/areas/a1/compare", "Date comparison"],
       ["/reports", "Reports"],
-      ["/reports/r1", "Report"],
+      ["/reports/r1", "Prestea: sentinel-2 NDVI"],
     ] as const) {
       await act(async () => {
         await services.router.navigate(path);

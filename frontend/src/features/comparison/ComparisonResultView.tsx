@@ -76,7 +76,16 @@ function WeatherBlock({ title, weather }: { title: string; weather: WeatherConte
  * A comparison exactly as the Backend returned it (Requirement 11.7 to 11.13): values are
  * formatted for display only, and the flag, quality, warnings and summary are not recomputed.
  */
-export function ComparisonResultView({ result, titleAs: Title = "h2" }: { result: ComparisonResult; titleAs?: "h2" | "h3" }): JSX.Element {
+export function ComparisonResultView({
+  result,
+  titleAs: Title = "h2",
+  title = COMPARISON_TEXT.resultTitle,
+}: {
+  result: ComparisonResult;
+  titleAs?: "h2" | "h3";
+  /** A distinct title when several results share a page (the report view). */
+  title?: string;
+}): JSX.Element {
   const signed = formatSigned(result.ndvi_diff, 4);
   const threshold = formatNdvi(result.thresholds_applied.ndvi_diff);
   const weather = result.weather;
@@ -87,7 +96,7 @@ export function ComparisonResultView({ result, titleAs: Title = "h2" }: { result
   return (
     <section aria-labelledby={`${id}-comparison-result`} className="space-y-4">
       <Title id={`${id}-comparison-result`} className="text-lg font-semibold text-foreground">
-        {COMPARISON_TEXT.resultTitle}
+        {title}
       </Title>
       <EvidenceNote kind="aggregate" />
       <div className="grid gap-4 md:grid-cols-2">
@@ -132,24 +141,24 @@ export function ComparisonResultView({ result, titleAs: Title = "h2" }: { result
         </div>
       </div>
 
-      <section aria-labelledby={`${id}-comparison-summary`} className="space-y-2 rounded-lg border bg-card p-4 shadow">
+      <div aria-labelledby={`${id}-comparison-summary`} className="space-y-2 rounded-lg border bg-card p-4 shadow">
         <h3 id={`${id}-comparison-summary`} className="font-semibold text-foreground">
           {COMPARISON_TEXT.summary}
         </h3>
         <VerbatimText text={result.summary_text} className="text-foreground" />
         {!result.spatial_analysis_available && <p className="text-sm text-ink-muted">{EVIDENCE_TEXT.spatialUnavailable}</p>}
-      </section>
+      </div>
 
       <div className="space-y-2">
         <p className="flex flex-wrap items-center gap-2 text-sm">
           <span className="text-ink-muted">{COMPARISON_TEXT.quality}:</span>
           <QualityBadge level={result.quality.level} />
         </p>
-        <WarningBanner title={COMPARISON_TEXT.notices} messages={notices} />
+        <WarningBanner title={title === COMPARISON_TEXT.resultTitle ? COMPARISON_TEXT.notices : `${COMPARISON_TEXT.notices}: ${title}`} messages={notices} />
       </div>
 
       {weather && (weather.a || weather.b || weather.between) && (
-        <section aria-labelledby={`${id}-comparison-weather`} className="space-y-3 rounded-lg border bg-card p-4 shadow">
+        <div aria-labelledby={`${id}-comparison-weather`} className="space-y-3 rounded-lg border bg-card p-4 shadow">
           <h3 id={`${id}-comparison-weather`} className="font-semibold text-foreground">
             {COMPARISON_TEXT.weatherTitle}
           </h3>
@@ -158,10 +167,10 @@ export function ComparisonResultView({ result, titleAs: Title = "h2" }: { result
             <WeatherBlock title={COMPARISON_TEXT.weatherB} weather={weather.b} />
             <WeatherBlock title={COMPARISON_TEXT.weatherBetween} weather={weather.between} />
           </div>
-        </section>
+        </div>
       )}
 
-      <section aria-labelledby={`${id}-comparison-limitations`} className="space-y-2 rounded-lg border bg-card p-4 shadow">
+      <div aria-labelledby={`${id}-comparison-limitations`} className="space-y-2 rounded-lg border bg-card p-4 shadow">
         <h3 id={`${id}-comparison-limitations`} className="font-semibold text-foreground">
           {COMPARISON_TEXT.limitations}
         </h3>
@@ -170,7 +179,7 @@ export function ComparisonResultView({ result, titleAs: Title = "h2" }: { result
             <VerbatimText key={`${i}-${text}`} as="li" text={text} />
           ))}
         </ul>
-      </section>
+      </div>
     </section>
   );
 }

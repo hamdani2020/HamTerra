@@ -1,23 +1,21 @@
 import { type FormEvent, useEffect, useState } from "react";
-import { Link, useLocation, useSearchParams } from "react-router";
+import { useLocation, useSearchParams } from "react-router";
 
-import { ResponsiveTable, type Column } from "@/components/common/DataTable";
+import { ResponsiveTable } from "@/components/common/DataTable";
 import { FormField } from "@/components/common/FormField";
 import { Pagination } from "@/components/common/Pagination";
 import { EmptyState, RegionError, RegionSkeleton } from "@/components/common/RegionState";
-import { StatusBadge } from "@/components/common/StatusBadge";
 import { VerbatimText } from "@/components/common/VerbatimText";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ApiError } from "@/core/api/errors";
+import { AREA_COLUMNS } from "@/features/areas/columns";
 import { AREA_PAGE_SIZE, useAreaList } from "@/features/areas/hooks";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { bboxInputs, EMPTY_BBOX, formatBbox, parseBbox, validateBbox, type BboxErrors, type BboxInputs } from "@/lib/bbox";
-import { formatDate, formatHectares } from "@/lib/format";
 import { AREA_TEXT } from "@/lib/messages";
 import { PAGE_TITLE } from "@/lib/pageTitles";
-import { routeTo } from "@/lib/routes";
-import type { Area, AreaListParams, AreaStatusFilter } from "@/types/api";
+import type { AreaListParams, AreaStatusFilter } from "@/types/api";
 
 export const SEARCH_DEBOUNCE_MS = 300;
 export const SEARCH_MAX_LENGTH = 100;
@@ -28,8 +26,6 @@ const STATUS_OPTIONS: readonly { value: AreaStatusFilter; label: string }[] = [
   { value: "all", label: AREA_TEXT.statusAll },
 ];
 
-const linkClass =
-  "inline-flex min-h-11 items-center rounded-md font-medium text-primary underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:min-h-0";
 const selectClass =
   "flex h-11 w-full rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:h-10";
 
@@ -52,35 +48,6 @@ function extentFrom(state: unknown): [number, number, number, number] | null {
     : null;
 }
 
-export const AREA_COLUMNS: Column<Area>[] = [
-  {
-    id: "name",
-    header: AREA_TEXT.name,
-    cell: (a) => (
-      <Link className={linkClass} to={routeTo.area(a.id)}>
-        {a.name}
-      </Link>
-    ),
-  },
-  { id: "size", header: AREA_TEXT.size, cell: (a) => formatHectares(a.area_ha), align: "right" },
-  {
-    id: "status",
-    header: AREA_TEXT.status,
-    cell: (a) => (
-      <StatusBadge tone={a.status === "active" ? "success" : "neutral"} label={a.status === "active" ? AREA_TEXT.statusActive : AREA_TEXT.statusArchived} />
-    ),
-  },
-  { id: "latest", header: AREA_TEXT.latest, cell: (a) => (a.latest_observation_date ? formatDate(a.latest_observation_date) : AREA_TEXT.noObservations) },
-  {
-    id: "details",
-    header: AREA_TEXT.details,
-    cell: (a) => (
-      <Link className={linkClass} to={routeTo.area(a.id)} aria-label={`${AREA_TEXT.details}: ${a.name}`}>
-        {AREA_TEXT.details}
-      </Link>
-    ),
-  },
-];
 
 /** The monitoring area list (Requirement 12.1 to 12.7). Filters live in the URL. */
 export default function AreaListPage(): JSX.Element {

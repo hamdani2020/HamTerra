@@ -64,6 +64,7 @@ export interface AreaListState {
 /** Router state for the report list: open "Create report" with this area fixed (Requirement 15). */
 export interface ReportListState {
   createForArea?: string;
+  areaName?: string;
 }
 
 /** Router state read by the auth error page. */

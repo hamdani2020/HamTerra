@@ -27,7 +27,8 @@ export interface RequestOptions {
   auth?: boolean;
   /** True for paths outside the API base path (health). */
   root?: boolean;
-  responseType?: "json" | "blob";
+  /** "text" returns the body unparsed, for the report download (Requirement 15.11). */
+  responseType?: "json" | "blob" | "text";
 }
 
 export const DEFAULT_TIMEOUT_MS = 30_000;
@@ -123,6 +124,7 @@ export function createApiClient(
 
       if (response.ok) {
         if (options.responseType === "blob") return (await response.blob()) as T;
+        if (options.responseType === "text") return (await response.text()) as T;
         return (await readBody(response)) as T;
       }
 

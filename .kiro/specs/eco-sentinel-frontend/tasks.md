@@ -360,69 +360,69 @@ Each feature task creates its page module. The router (task 8.3) registers every
     - Debounce sends exactly one request after 300 ms, filter application, pagination, invalid bbox sends no request, empty state, 404 state
     - _Requirements: 12.2, 12.5, 12.7, 12.13, 23.7_
 
-- [ ] 17. Observation refresh
-  - [ ] 17.1 Implement the refresh validator and request builder
+- [x] 17. Observation refresh
+  - [x] 17.1 Implement the refresh validator and request builder
     - `validateRefreshRange` (valid dates, not future, at most 366 days inclusive), `buildRefreshRequest` omitting `sources` when both are selected
     - _Requirements: 13.1, 13.2, 13.3_
 
-  - [ ]* 17.2 Write property test for refresh source selection
+  - [x]* 17.2 Write property test for refresh source selection
     - **Property 22: Refresh source selection**
     - **Validates: Requirements 13.1, 13.3**
 
-  - [ ] 17.3 Implement `RefreshDialog` and refresh mutation
+  - [x] 17.3 Implement `RefreshDialog` and refresh mutation
     - Progress indicator with elapsed counter and "up to two minutes" text, disabled confirm, Escape closes without aborting, success, empty and partial results with counts and warnings, `retrieval_id`, 409, 502 and 504, 130 s timeout message, cache invalidation per design
     - _Requirements: 13.3, 13.4, 13.5, 13.6, 13.7, 13.8, 13.9, 13.10, 13.11_
 
-  - [ ]* 17.4 Write refresh dialog tests
+  - [x]* 17.4 Write refresh dialog tests
     - Success, empty, partial, 409, 502, 130 s timeout with fake timers, no second request while pending, cache invalidated only on success and partial
     - _Requirements: 13.4, 13.5, 13.6, 13.7, 13.8, 13.10, 23.6, 23.7_
 
-- [ ] 18. Admin area management
-  - [ ] 18.1 Implement GeoJSON validation and `diffAreaForm`
+- [x] 18. Admin area management
+  - [x] 18.1 Implement GeoJSON validation and `diffAreaForm`
     - `validateGeoJsonInput` (JSON parse with position, Polygon, MultiPolygon, Feature, single-feature collection, coordinate ranges only), file size and extension checks, `diffAreaForm`
     - _Requirements: 14.2, 14.4, 14.5, 14.6, 14.11_
 
-  - [ ]* 18.2 Write property test for the GeoJSON client check
+  - [x]* 18.2 Write property test for the GeoJSON client check
     - **Property 23: GeoJSON client check**
     - **Validates: Requirements 14.2, 14.4, 14.6**
 
-  - [ ]* 18.3 Write property test for the area form diff
+  - [x]* 18.3 Write property test for the area form diff
     - **Property 24: Area form diff**
     - **Validates: Requirements 14.11**
 
-  - [ ] 18.4 Implement `AdminAreasPage` and `AreaForm`
+  - [x] 18.4 Implement `AdminAreasPage` and `AreaForm`
     - Table with `status=all`, create and edit form with preview map and coordinate-order note, file load, pending progress state, error mapping (`GEOMETRY_OUTSIDE_GHANA`, `AREA_OUT_OF_RANGE`, `CONFLICT`, 502, 504) with values kept, geometry-change confirmation, archive and restore confirmations, failure handling, write controls only for `admin`, cache invalidation
     - Replaces the placeholder admin areas page
     - _Requirements: 14.1, 14.2, 14.3, 14.7, 14.8, 14.9, 14.10, 14.11, 14.12, 14.13, 14.14, 14.15, 14.16, 14.17_
 
-  - [ ]* 18.5 Write admin area tests
+  - [x]* 18.5 Write admin area tests
     - Pasted GeoJSON create success, invalid JSON and file rejection send no request, Backend errors keep values, no-change edit sends nothing, archive failure leaves status, restore 409
     - _Requirements: 14.4, 14.5, 14.8, 14.9, 14.11, 14.14, 14.15, 23.7_
 
-- [ ] 19. Reports
-  - [ ] 19.1 Implement the report form validator
+- [x] 19. Reports
+  - [x] 19.1 Implement the report form validator
     - `validateReportForm` (range up to 1826 days, title up to 200, up to 10 pairs, no equal dates, earlier first)
     - _Requirements: 15.1, 15.2_
 
-  - [ ]* 19.2 Write property test for report form validation
+  - [x]* 19.2 Write property test for report form validation
     - **Property 25: Report form validation**
     - **Validates: Requirements 15.1, 15.2**
 
-  - [ ] 19.3 Implement the create-report dialog and `ReportListPage`
+  - [x] 19.3 Implement the create-report dialog and `ReportListPage`
     - Dialog reachable from the area page (area fixed) and `/reports` (area selectable), `POST /reports` with navigation on 201, `NO_OBSERVATIONS` with refresh link, error handling with values kept; list with 20 rows, `area_id` filter, `created_by` filter for admins, empty state
     - Replaces the placeholder `ReportListPage`
     - _Requirements: 15.1, 15.2, 15.3, 15.4, 15.5, 15.6, 15.15_
 
-  - [ ] 19.4 Implement `ReportViewPage`
+  - [x] 19.4 Implement `ReportViewPage`
     - Single `format=json` request keeping raw text, stored map, chart and table reusing `NdviChart`, summary, comparisons via `ComparisonResultView`, thresholds, weather, always-visible caveats and limitations, snapshot statement, "Download JSON" (raw bytes, file named with report ID), "Print" with print stylesheet, no PDF control, generic 404 state
     - Replaces the placeholder `ReportViewPage`
     - _Requirements: 15.7, 15.8, 15.9, 15.10, 15.11, 15.12, 15.13, 15.14, 20.9_
 
-  - [ ]* 19.5 Write property test for report download
+  - [x]* 19.5 Write property test for report download
     - **Property 26: Report download is unmodified**
     - **Validates: Requirements 15.11**
 
-  - [ ]* 19.6 Write report tests
+  - [x]* 19.6 Write report tests
     - Create success navigates, `NO_OBSERVATIONS`, list empty state, caveats and limitations unchanged, 404 state, no extra data request from the report view
     - _Requirements: 15.3, 15.4, 15.6, 15.8, 15.10, 15.13, 23.8_
 

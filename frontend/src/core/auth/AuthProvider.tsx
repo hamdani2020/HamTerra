@@ -32,3 +32,8 @@ export function useAuthState(): AuthState {
   const auth = useAuth();
   return useSyncExternalStore(auth.subscribe, auth.getState, auth.getState);
 }
+
+// Hot updates would re-create the Auth_Module context while mounted components keep the old one,
+// so a change to this module (or anything it imports) reloads the page in development.
+// Vite 7 has no `decline`: the module accepts its own update and reloads instead.
+import.meta.hot?.accept(() => window.location.reload());

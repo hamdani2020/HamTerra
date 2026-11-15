@@ -118,6 +118,11 @@ export function createEndpoints(client: ApiClient) {
       request<Page<ReportSummary>>("/reports", { query: { ...params }, signal: o.signal }),
     getReport: (reportId: string, format: ReportFormat = "json", o: Signal = {}) =>
       request<Report>(`/reports/${seg(reportId)}`, { query: { format }, signal: o.signal }),
+    /** The JSON report with its raw text kept, so a download is byte for byte (15.11). */
+    getReportJson: async (reportId: string, o: Signal = {}): Promise<{ raw: string; report: Report }> => {
+      const raw = await request<string>(`/reports/${seg(reportId)}`, { query: { format: "json" }, responseType: "text", signal: o.signal });
+      return { raw, report: JSON.parse(raw) as Report };
+    },
 
     // Settings
     getSettings: (o: Signal = {}) => request<PublicSettings>("/settings", { signal: o.signal }),

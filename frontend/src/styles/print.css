@@ -6,6 +6,7 @@
   [data-print="hide"],
   nav,
   header,
+  aside,
   button,
   [role="dialog"],
   [data-sonner-toaster] {

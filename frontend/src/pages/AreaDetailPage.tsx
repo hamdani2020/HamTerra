@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "react-router";
 
 import { EvidenceNote } from "@/components/common/EvidenceNote";
@@ -6,11 +6,16 @@ import { RegionError, RegionSkeleton } from "@/components/common/RegionState";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { VerbatimText } from "@/components/common/VerbatimText";
 import { ApiError } from "@/core/api/errors";
+import { useCurrentPrincipal } from "@/core/auth/principal";
+import { Button } from "@/components/ui/button";
+import { useRefreshObservations } from "@/features/areas/hooks";
 import { ObservationHistory } from "@/features/areas/ObservationHistory";
+import { RefreshDialog } from "@/features/areas/RefreshDialog";
 import { useArea } from "@/features/map/hooks";
 import type { MapController } from "@/features/map/useMap";
 import { formatDate, formatDateTime, formatHectares } from "@/lib/format";
-import { AREA_TEXT } from "@/lib/messages";
+import { AREA_TEXT, REFRESH_TEXT } from "@/lib/messages";
+import { hasPermission, PERMISSION } from "@/lib/permissions";
 import { PAGE_TITLE } from "@/lib/pageTitles";
 import { ROUTES, routeTo, type ReportListState } from "@/lib/routes";
 
@@ -27,6 +32,21 @@ export default function AreaDetailPage(): JSX.Element {
   const [controller, setController] = useState<MapController | null>(null);
   const [historyOpen, setHistoryOpen] = useState(false);
   const onMapReady = useCallback((c: MapController | null) => setController(c), []);
+  const { permissions } = useCurrentPrincipal();
+  const canRefresh = hasPermission(permissions, PERMISSION.refreshObservations);
+  const refresh = useRefreshObservations(areaId);
+  const [refreshOpen, setRefreshOpen] = useState(false);
+  // A result that arrived while the dialog was closed is announced until it is opened.
+  const [resultSeen, setResultSeen] = useState(true);
+  const openRefresh = (open: boolean) => {
+    setRefreshOpen(open);
+    if (open) setResultSeen(true);
+  };
+  const settled = refresh.isSuccess || refresh.isError;
+  useEffect(() => {
+    if (settled && !refreshOpen) setResultSeen(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only when a request settles
+  }, [settled, refresh.submittedAt]);
 
   if (area.isError) {
     if (area.error instanceof ApiError && area.error.status === 404) {
@@ -66,7 +86,7 @@ export default function AreaDetailPage(): JSX.Element {
 
   const a = area.data;
   const archived = a.status === "archived";
-  const reportState: ReportListState = { createForArea: a.id };
+  const reportState: ReportListState = { createForArea: a.id, areaName: a.name };
   return (
     <div className="space-y-6">
       <header className="space-y-2">
@@ -78,6 +98,23 @@ export default function AreaDetailPage(): JSX.Element {
         </div>
         <EvidenceNote kind="aggregate" />
         {/* Kept for archived areas too (Requirement 12.12). */}
+        {canRefresh && (
+          <div className="flex flex-wrap items-center gap-3">
+            <Button type="button" variant="outline" className="h-11 sm:h-10" onClick={() => openRefresh(true)}>
+              {REFRESH_TEXT.open}
+            </Button>
+            {!refreshOpen && refresh.isPending && (
+              <p role="status" className="text-sm text-ink-muted">
+                {REFRESH_TEXT.backgroundRunning}
+              </p>
+            )}
+            {!refreshOpen && !resultSeen && settled && (
+              <p role="status" className="text-sm text-ink-muted">
+                {REFRESH_TEXT.backgroundDone}
+              </p>
+            )}
+          </div>
+        )}
         <nav aria-label={a.name} className="flex flex-wrap gap-x-4 gap-y-1">
           <Link className={linkClass} to={routeTo.areaTimeSeries(a.id)}>
             {AREA_TEXT.timeSeries}
@@ -110,6 +147,8 @@ export default function AreaDetailPage(): JSX.Element {
           <AreaMiniMap area={a} onReady={onMapReady} />
         </Suspense>
       </div>
+
+      {canRefresh && <RefreshDialog open={refreshOpen} onOpenChange={openRefresh} mutation={refresh} />}
 
       <details
         className="rounded-lg border bg-card p-4 shadow"

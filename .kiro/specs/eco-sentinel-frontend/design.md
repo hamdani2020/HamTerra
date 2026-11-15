@@ -763,6 +763,24 @@ Only the preview route draws bitmaps. No satellite or index tiles are requested 
 
 `RefreshDialog` is a Radix dialog with `date_from`, `date_to`, a source checkbox pair (default both) and a confirm button. `validateRefreshRange(from, to, today)` returns field errors for: empty or invalid calendar date, `from > to`, `to > today`, span over 366 days (inclusive span `(to - from) + 1`, so a range of exactly 366 days passes; the Backend rule is "at most 366 days", see Open Items for the inclusive/exclusive ambiguity). When both sources are selected `sources` is omitted. While pending the dialog shows an indeterminate progress bar, an elapsed seconds counter and "The retrieval can take up to two minutes."; confirm and close are disabled except Escape which only closes the dialog without aborting the request (the request keeps running and the result is shown as a toast on completion, so a refresh is never duplicated). Results map to Requirement 13.5 to 13.11: success counts, empty message with zeros, partial warning with counts and warnings, 409 message with a "Try again later" button that closes the dialog, 502 and 504 with "previously stored observations are unchanged", client abort at 130 s with the unknown-result message. The returned `retrieval_id` is shown (Requirement 13.11).
 
+**Implemented in task 17:**
+- **Request.** `lib/refresh.ts` has `buildRefreshRequest`. It checks the range with `validateRefreshRange` against today's UTC date and requires at least one source. It leaves `sources` out when both sensors are selected.
+- **Defaults.** The dialog opens with the last 30 days (today minus 29 to today) and both sensors.
+- **Mutation and closing.** The mutation (`useRefreshObservations`) lives in the area page, not the dialog, so closing the dialog never aborts the request. While it runs:
+  - The confirm button, the footer close button and the corner close button are disabled. `DialogContent` gained a `closeDisabled` prop for the corner button.
+  - Clicking outside is ignored, and Escape closes the dialog.
+  - The page shows "A refresh is running for this area." After the request settles, it shows "The refresh has finished…" until the dialog is reopened, and the dialog then shows the result.
+  - This status line replaces the toast the design proposed. It is simpler, needs no new dependency, and screen readers announce it through `role="status"`.
+- **Progress indicator.** It is a static bar with `role="progressbar"` and no value, plus an "Elapsed: N s" counter. It is not animated, because Requirement 21.10 limits animations to 200 ms.
+- **Results.**
+  - `success`, `empty` and `partial` show the counts and `retrieval_id`. `partial` also shows the incomplete warning and every Backend warning.
+  - A 409 shows the in-progress message and "Try again later", which closes the dialog.
+  - A 502 or 504 shows the provider message plus "Previously stored observations are unchanged".
+  - `ApiTimeoutError` after 130 s shows the result-unknown message.
+  - A 422 puts `date_from`, `date_to` and `sources` field messages next to their inputs.
+- **Invalidation.** Only `success` and `partial` invalidate: `["observations", areaId]` (which includes the comparison date lists), `["timeseries", areaId]` and `["areas"]` (lists, map and area details).
+- **Permission.** The "Refresh observations" button appears only with `observations:refresh`.
+
 #### Time Series Page
 
 - Filters live in the URL: `source`, `date_from`, `date_to`, `max_cloud_coverage`, `include_weather`. The source preselects from the area's latest observation source when known (taken from a `limit=1` observations query), otherwise the page asks the user to choose and sends no request (Requirement 10.3, 10.4).
@@ -830,6 +848,26 @@ Only the preview route draws bitmaps. No satellite or index tiles are requested 
 - No PDF control exists. If code requests `format=pdf` and receives 501 `NOT_IMPLEMENTED` the not-available message is shown (kept only so the path is covered by a test).
 - A 404 shows the generic not-found state, identical for a missing report and another user's report.
 
+**Implemented in task 19:**
+- **Form validation.** `lib/reportForm.ts` has `validateReportForm`:
+  - The area and both dates are required. The inclusive span is at most 1826 days, and the title at most 200 characters.
+  - At most 10 pairs; the add button is disabled at 10.
+  - Each pair goes through `orderDates`, with errors per pair and per date.
+  - The title is trimmed and left out when empty, and `comparisons` is left out when there are none.
+- **Create dialog.**
+  - `CreateReportDialog` defaults to the last 365 days and Sentinel-2.
+  - From the area page, the router state `{createForArea, areaName}` opens it on `/reports` with the area fixed. The state is then cleared so going back does not reopen it.
+  - `NO_OBSERVATIONS` links to the area page, where refresh lives. A 5xx, network failure or timeout shows `RegionError`, whose retry re-submits. Other 4xx responses show the Requirement 5 message, and 422 fields are mapped to the inputs. Values are kept every time.
+- **Raw report text.** The API client gained `responseType: "text"`, and `getReportJson` returns `{raw, report}`. "Download JSON" saves `raw` unchanged as `report-<id>.json` (`lib/download.ts`) and releases the object URL afterwards.
+- **Report view.**
+  - `ReportViewPage` renders only from that response. The stored polygon is drawn on the lazily loaded `AreaMiniMap`; only basemap tiles are fetched for it. A test checks that the report is the only data request.
+  - The `h1` is the report title. The caveats and limitations section comes first, is always visible and is marked `data-print="show"`.
+  - `print.css` now also hides `aside`, the sidebar. The report page avoids `<header>` and `<nav>`, which the print stylesheet hides.
+  - A 404 shows the same text whatever the Backend message says.
+- **`ComparisonResultView`.** It takes `title`; the report passes each comparison's dates. Its inner blocks are `div`s and its notices are labelled with that title, so several results on one page give unique landmarks. The texts "Summary" and "Notices" became "Comparison summary" and "Comparison notices".
+
+**Fixed after task 19 (development only):** Hot module replacement re-ran context modules while mounted components kept the old context, which raised "useCurrentPrincipal must be used below RequirePrincipal". It also kept the `api` object built at page load, so a new endpoint function (`getReportJson`) was missing, and the report view failed with a `TypeError` before it sent a request. The modules that create contexts or long-lived services (`principal.tsx`, `AuthProvider.tsx`, `ApiProvider.tsx`, `ConfigProvider.tsx`, `appServices.ts`) now accept their own update and reload the page (`import.meta.hot?.accept(() => window.location.reload())`; Vite 7 has no `decline`). Production builds are unaffected.
+
 #### Admin Area Management
 
 - `AdminAreasPage` lists with `status=all`, 20 rows per page, with create, edit, archive and restore controls.
@@ -840,6 +878,22 @@ Only the preview route draws bitmaps. No satellite or index tiles are requested 
 - Edit sends `PATCH /admin/areas/{id}` with only changed fields (`diffAreaForm(original, current)` returns an object that is empty when nothing changed, which keeps submit disabled). A changed geometry opens a confirmation first (Requirement 14.12).
 - Archive and restore use a confirmation dialog, then `POST .../archive` or `.../restore`. Failure leaves the displayed status unchanged. Restore `409` shows the duplicate-name message (Requirement 14.15).
 - All write controls render only when the Principal has the `admin` role.
+
+**Implemented in task 18:**
+- **GeoJSON check.** `lib/geojson.ts` has `validateGeoJsonInput`, which returns `{ok:false, check: "json"|"structure"|"type"|"coordinates", position?}`. It reads the position from the engine's `SyntaxError` message ("position N", "line L column C", or end of input). It extracts the geometry from a geometry, a Feature, or a one-feature FeatureCollection, and sends only `{type, coordinates}`. Every ring must be a non-empty array of 2 or 3 finite numbers within range. `checkGeoJsonFile` rejects by extension, then by size over 1 MiB, before the file is read. Files are read with `FileReader`.
+- **Form rules and diff.** `lib/areaForm.ts` checks the name (1 to 100 characters after trimming) and the description (at most 1000). `diffAreaForm` compares the trimmed name, the description with empty treated as null, and the geometry through `lib/stableJson.ts`, so key order does not count as a change.
+- **Form submission.**
+  - The form is a dialog on `/admin/areas`. Edit loads `GET /areas/{id}` for the geometry first.
+  - Create sends `description: null` when it is empty.
+  - Errors keep the form values and re-enable submit:
+    - `GEOMETRY_OUTSIDE_GHANA` and `AREA_OUT_OF_RANGE` (Backend message) appear on the geometry field.
+    - A 409 shows the duplicate-name error on the name field.
+    - A 502 or 504 shows "could not be registered… not saved".
+    - A 422 with fields is mapped to name, description and geometry.
+- **Preview map.** It reuses the lazily loaded `AreaMiniMap`, rebuilt only when the geometry text changes.
+- **Archive and restore.** Each uses an alert dialog. The status shown changes only after the Backend confirms and the list is invalidated. A restore 409 shows the duplicate-name message, and other failures show "The action failed".
+- **Invalidation.** Writes invalidate `["areas"]`, `keys.adminDashboard()`, and for edits or status changes `["observations", areaId]`, because the geometry status may change.
+- **Shared columns.** The area table columns are in `features/areas/columns.tsx`, so the admin chunk does not include the list page.
 
 #### Admin Overview, Users, Retrievals, Activity, Settings
 

@@ -20,6 +20,7 @@ export const ENDPOINT_CALLS: Record<keyof Endpoints, (api: Endpoints) => Promise
     api.createReport({ area_id: "a1", source: "sentinel-2", date_from: "2026-01-01", date_to: "2026-04-30", include_weather: false }),
   listReports: (api) => api.listReports({ limit: 20 }),
   getReport: (api) => api.getReport("r1"),
+  getReportJson: (api) => api.getReportJson("r1"),
   getSettings: (api) => api.getSettings(),
   getAdminSettings: (api) => api.getAdminSettings(),
   putAdminSetting: (api) => api.putAdminSetting("cloud_limit_pct", 15),
