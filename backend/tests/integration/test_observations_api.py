@@ -484,3 +484,53 @@ async def test_preview_provider_errors(ctx: Ctx, failure: Exception, status: int
     r = await ctx.client.get(f"/api/v1/observations/{obs.id}/preview", headers=ctx.h())
     assert r.status_code == status
     assert "agromonitoring" not in r.text
+
+
+# --- hybrid source of values (verified against the real API) ---------------------
+
+
+async def test_cloud_and_coverage_come_from_image_search(ctx: Ctx) -> None:
+    from dataclasses import replace
+
+    ref = "https://api.agromonitoring.test/image/1.0/scene"
+    # History reports 100 for cloud and coverage; the scene carries the real values.
+    ctx.agro.history["sentinel-2"] = [s2(D1, cloud=100, data=100), s2(D2, cloud=100, data=100)]
+    ctx.agro.images["sentinel-2"] = [replace(s2(D1, cloud=4.95, data=98.0, preview=ref), ndvi=None)]
+    body = (await ctx.refresh(sources=["sentinel-2"])).json()
+    assert (body["status"], body["new"]) == ("success", 2)
+    assert ctx.agro.search_calls == ["sentinel-2"]
+    async with get_sessionmaker()() as s:
+        rows = {
+            o.acquired_on: o
+            for o in (
+                await s.scalars(select(Observation).where(Observation.area_id == ctx.area_id))
+            ).all()
+        }
+    matched, unmatched = rows[D1], rows[D2]
+    assert (matched.cloud_coverage, matched.data_coverage) == (Decimal("4.95"), Decimal("98.00"))
+    assert matched.preview_ref == ref
+    assert matched.ndvi_mean == Decimal("0.5000")  # statistics still come from history
+    # No scene: unknown, never a substituted value.
+    assert (unmatched.cloud_coverage, unmatched.data_coverage) == (None, None)
+    detail = (await ctx.client.get(f"/api/v1/observations/{unmatched.id}", headers=ctx.h())).json()
+    assert detail["quality"]["level"] == "poor"
+    codes = [w["code"] for w in detail["quality"]["warnings"]]
+    assert codes == ["INVALID_CLOUD_COVERAGE", "DATA_COVERAGE_UNKNOWN"]
+
+
+async def test_per_image_batches_are_not_searched_again(ctx: Ctx) -> None:
+    from app.integrations.agro.models import NormalizedBatch
+
+    async def per_image_history(*args: Any, **kwargs: Any) -> NormalizedBatch:
+        ctx.agro.history_calls.append("per_image")
+        return NormalizedBatch(items=[s2(D1, cloud=3.0, data=99.0)], scene_metadata=True)
+
+    ctx.agro.ndvi_history = per_image_history  # type: ignore[method-assign]
+    body = (await ctx.refresh(sources=["sentinel-2"])).json()
+    assert body["new"] == 1
+    assert ctx.agro.search_calls == []
+    async with get_sessionmaker()() as s:
+        cloud = await s.scalar(
+            select(Observation.cloud_coverage).where(Observation.area_id == ctx.area_id)
+        )
+    assert cloud == Decimal("3.00")

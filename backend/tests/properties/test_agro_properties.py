@@ -56,8 +56,11 @@ def test_normalisation_is_total_and_valid(items: list[Any], kind: str) -> None:
     assert len(keys) == len(set(keys))
     for item in batch.items:
         assert item.source in ("sentinel-2", "landsat-8")
-        assert 0 <= item.cloud_coverage <= 100
-        assert item.data_coverage is None or 0 <= item.data_coverage <= 100
+        if kind == "history":  # history cl/dc are never used
+            assert item.cloud_coverage is None and item.data_coverage is None
+        else:
+            assert item.cloud_coverage is not None and 0 <= item.cloud_coverage <= 100
+            assert item.data_coverage is None or 0 <= item.data_coverage <= 100
         assert item.ndvi is None or -1 <= item.ndvi.mean <= 1
         if kind == "history":
             assert item.ndvi is not None
@@ -65,17 +68,17 @@ def test_normalisation_is_total_and_valid(items: list[Any], kind: str) -> None:
 
 @given(cl=st.floats(0, 100))
 def test_missing_dc_is_never_derived_from_cloud(cl: float) -> None:
-    raw = {"type": "Sentinel 2", "dt": 1_770_000_000, "cl": cl, "data": {"mean": 0.5}}
-    (item,) = normalize_batch([raw], area_id="a", kind="history").items
+    raw = {"type": "Sentinel 2", "dt": 1_770_000_000, "cl": cl}
+    (item,) = normalize_batch([raw], area_id="a", kind="images").items
     assert item.data_coverage is None
 
 
 @given(a=st.floats(0, 100), b=st.floats(0, 100))
 def test_duplicate_keeps_lower_cloud(a: float, b: float) -> None:
     def raw(cl: float) -> dict[str, Any]:
-        return {"type": "Landsat 8", "dt": 1_770_000_000, "cl": cl, "data": {"mean": 0.1}}
+        return {"type": "Landsat 8", "dt": 1_770_000_000, "cl": cl}
 
-    batch = normalize_batch([raw(a), raw(b)], area_id="a", kind="history")
+    batch = normalize_batch([raw(a), raw(b)], area_id="a", kind="images")
     assert len(batch.items) == 1
     assert batch.skipped_duplicates == 1
     assert batch.items[0].cloud_coverage == min(a, b)

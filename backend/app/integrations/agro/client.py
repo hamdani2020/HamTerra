@@ -165,6 +165,7 @@ class HttpAgroClient:
             else:
                 kept.append(replace(item, ndvi=stats))
         batch.items = kept
+        batch.scene_metadata = True
         return batch
 
     async def _item_stats(self, item: NormalizedObservation) -> NdviStats | None:

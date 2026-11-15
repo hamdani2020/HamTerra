@@ -56,7 +56,7 @@ Base URL: `https://api.agromonitoring.com/agro/1.0` (the public docs show `http:
 | Rate limit | Free tier is reported at 60 calls per minute | Reported by third-party sources, **to validate** |
 | Historical data | The docs state that historical data is not available on the Free account | Confirmed. The owner's plan must allow it. The reference series from January 2026 shows the account can already retrieve history. |
 
-The Agro_Client uses `ndvi/history` for the statistics, `dc` and `cl` (one call per source and range) and `image/search` for the image references. It merges the two by `(source, date)`. This avoids one `stats` call per observation. If the real `ndvi/history` response lacks a field, the client falls back to `image/search` plus the `stats.ndvi` URL per observation. That fallback is implemented behind the same interface and activated by `AGRO_STATS_MODE=per_image`.
+The Agro_Client uses `ndvi/history` for the NDVI statistics (one call per source and range) and `image/search` for `cl`, `dc` and the image references. It merges the two by `(source, date)`. **Revised 2026-11-15 after a live check:** `ndvi/history` returned `cl` and `dc` as 100 for every scene, so those two fields are ignored there and taken only from the matching `image/search` scene. A history item without a matching scene keeps Cloud_Coverage and Data_Coverage null (quality `poor` with `INVALID_CLOUD_COVERAGE` and `DATA_COVERAGE_UNKNOWN`); no value is substituted. The `ndvi/history` means differ from the per-image `stats.ndvi` means by up to 0.0008, so stored means can differ slightly from values read per image. This trade keeps a refresh at two calls per source, inside the 120 s limit. This avoids one `stats` call per observation. If the real `ndvi/history` response lacks a field, the client falls back to `image/search` plus the `stats.ndvi` URL per observation. That fallback is implemented behind the same interface and activated by `AGRO_STATS_MODE=per_image`.
 
 ### U2: Data Coverage
 
@@ -463,9 +463,9 @@ Other 4xx responses raise `AgroClientError(status)` at once with no retry. `Retr
 |---|---|---|
 | `source` | `type` / `source` | "Sentinel 2" to `sentinel-2`, "Landsat 8" to `landsat-8`. Anything else is discarded. |
 | `acquired_on` | `dt` | Unix seconds to UTC date. A non-integer or negative value is discarded. |
-| `cloud_coverage` | `cl` | Required, finite, 0 to 100, else discarded. |
-| `data_coverage` | `dc` | Optional. If present it must be 0 to 100, else discarded. If absent it is `None`. |
-| `ndvi.mean` | `data.mean` | Required, finite, -1 to 1, else discarded. `min`, `max`, `std`, `median` are optional and are set to `None` when missing or non-finite. |
+| `cloud_coverage` | `cl` of the `image/search` scene | Required there, finite, 0 to 100, else discarded. Not read from `ndvi/history`. |
+| `data_coverage` | `dc` of the `image/search` scene | Optional. If present it must be 0 to 100, else discarded. If absent it is `None`. Not read from `ndvi/history`. |
+| `ndvi.mean` | `data.mean` of `ndvi/history` (in `image/search` items `data` holds GeoTIFF URLs and is ignored) | Required, finite, -1 to 1, else discarded. `min`, `max`, `std`, `median` are optional and are set to `None` when missing or non-finite. |
 | `preview_ref` | `image.ndvi` | The URL with the `appid` query parameter removed. Absent means `None`. |
 
 Each discarded item logs one warning with the area ID and the field name. The service returns the count of discarded items as the warning `ITEMS_DISCARDED`. When two items in one batch share `(source, date)`, the one with the lower cloud coverage is kept and the other is counted as skipped. The provider date is used as the acquisition date. This is unusual only if two overpasses fall on one UTC date.
@@ -1404,7 +1404,11 @@ Run against a real PostGIS database created for the run: migrations apply to an 
 
 ### Open Items to Validate Against the Owner's Account
 
-1. Real `ndvi/history` and `image/search` responses (field names, `type` parameter, `dc` presence, MultiPolygon registration, polygon delete call).
+1. Real `ndvi/history` and `image/search` responses. **Checked on 2026-11-15** against the owner's account (Prestea polygon `6aea6f0f4e13cb67dafaf7d0`, 2026-01-01 to 2026-04-30, read-only calls):
+   - `ndvi/history?type=s2` works. Items carry `dt`, `type` (`"s2"`), `zoom`, `dc`, `cl` and `data` (`mean`, `min`, `max`, `median`, `std`, `p25`, `p75`, `num`). There is no `source` field.
+   - In `ndvi/history`, `cl` and `dc` were 100 on every one of the 27 items, including clear dates. They do not match scene cloud cover and must not be used as Cloud_Coverage. Its means differ from the per-image statistics by 0.0003 to 0.0008.
+   - `image/search` items carry `dt`, `type` (`"Sentinel-2"` or `"Landsat 8"`), `dc`, `cl`, `sun` and the URL groups `image`, `tile`, `stats`, `data`. `data` holds GeoTIFF URLs, not statistics. Its `cl` values and the `stats.ndvi` means equal the reference table exactly at 4 decimals.
+   - Still open: MultiPolygon registration and the polygon delete call.
 2. Provider rate limit, polygon count and area totals, and history depth of the plan.
 3. A downloaded GeoTIFF and tile sample (pixel size, CRS, licence) to complete the U3 decision.
 4. Weather provider choice, endpoints, fields, units and limits.

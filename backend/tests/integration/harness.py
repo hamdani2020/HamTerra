@@ -5,7 +5,7 @@ from __future__ import annotations
 import asyncio
 import uuid
 from collections.abc import AsyncIterator, Awaitable, Callable
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import date
 from decimal import Decimal
 from typing import Any
@@ -78,6 +78,7 @@ class FakeAgro:
         self.gate: asyncio.Event | None = None
         self.entered = asyncio.Event()
         self.history_calls: list[str] = []
+        self.search_calls: list[str] = []
         self.fetch_calls: list[str] = []
         self.image: ImageBytes | Exception = ImageBytes(PNG_117, "image/png")
 
@@ -100,7 +101,14 @@ class FakeAgro:
     async def image_search(
         self, polygon_id: str, source: Source, start: date, end: date, *, area_id: str = ""
     ) -> NormalizedBatch:
-        return NormalizedBatch(items=list(self.images.get(source, [])))
+        """Scenes for ``source``. Unless set explicitly, the scenes behind the history items,
+        carrying their cloud, data coverage and preview (as the real API does)."""
+        self.search_calls.append(source)
+        if source in self.images:
+            scenes = self.images[source]
+        else:
+            scenes = [replace(i, ndvi=None) for i in self.history.get(source, [])]
+        return NormalizedBatch(items=[s for s in scenes if start <= s.acquired_on <= end])
 
     async def fetch_image(self, image_ref: str) -> ImageBytes:
         self.fetch_calls.append(image_ref)

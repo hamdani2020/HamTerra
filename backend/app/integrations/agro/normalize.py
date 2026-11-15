@@ -145,12 +145,20 @@ def normalize_item(raw: Any, kind: ItemKind) -> NormalizedObservation:
     return NormalizedObservation(
         source=source,
         acquired_on=_acquired_on(raw),
-        cloud_coverage=_required_percent(raw, "cl"),
-        data_coverage=_optional_percent(raw, "dc"),
-        ndvi=_ndvi(raw, required=kind == "history"),
+        # ndvi/history reports cl and dc as 100 for every scene (verified against the API),
+        # so only image/search scenes supply them; history values are not used.
+        cloud_coverage=_required_percent(raw, "cl") if kind == "images" else None,
+        data_coverage=_optional_percent(raw, "dc") if kind == "images" else None,
+        # In image/search items ``data`` is a group of GeoTIFF URLs, not statistics; their
+        # statistics come from the ``stats.ndvi`` URL instead (verified against the API).
+        ndvi=_ndvi(raw, required=True) if kind == "history" else None,
         preview_ref=_nested_ref(raw, "image"),
         stats_ref=_nested_ref(raw, "stats"),
     )
+
+
+def _cloud_rank(item: NormalizedObservation) -> float:
+    return math.inf if item.cloud_coverage is None else item.cloud_coverage
 
 
 def normalize_batch(raw_items: Iterable[Any], *, area_id: str, kind: ItemKind) -> NormalizedBatch:
@@ -170,7 +178,7 @@ def normalize_batch(raw_items: Iterable[Any], *, area_id: str, kind: ItemKind) -
         key = (item.source, item.acquired_on)
         current = best.get(key)
         batch.skipped_duplicates += current is not None
-        if current is None or item.cloud_coverage < current.cloud_coverage:
+        if current is None or _cloud_rank(item) < _cloud_rank(current):
             best[key] = item
     batch.items = sorted(best.values(), key=lambda i: (i.source, i.acquired_on))
     return batch

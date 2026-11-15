@@ -31,7 +31,7 @@ class NdviStats:
 class NormalizedObservation:
     source: Source
     acquired_on: date
-    cloud_coverage: float
+    cloud_coverage: float | None  # None when no image/search scene reports it
     data_coverage: float | None  # None when the provider did not report it
     ndvi: NdviStats | None  # None for image-search items until statistics are merged
     preview_ref: str | None = None  # provider URL without the key
@@ -50,6 +50,9 @@ class NormalizedBatch:
     items: list[NormalizedObservation] = field(default_factory=list)
     discarded: list[DiscardedItem] = field(default_factory=list)
     skipped_duplicates: int = 0
+    # True when cloud, data coverage and previews already come from image/search scenes
+    # (per-image mode), so the refresh need not search again.
+    scene_metadata: bool = False
 
 
 @dataclass(frozen=True)

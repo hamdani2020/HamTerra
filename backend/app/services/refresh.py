@@ -169,16 +169,33 @@ async def upsert_observations(
     return new, updated, len(items) - new - updated
 
 
-def _merge(
-    history: list[NormalizedObservation], images: list[NormalizedObservation]
-) -> list[NormalizedObservation]:
-    """Statistics come from the history items; previews are attached from image search."""
-    previews = {(i.source, i.acquired_on): i.preview_ref for i in images if i.preview_ref}
+def merge_scene_metadata(
+    history: list[NormalizedObservation], scenes: list[NormalizedObservation]
+) -> tuple[list[NormalizedObservation], int]:
+    """NDVI statistics from ndvi/history; cloud, data coverage and preview from the
+    image/search scene of the same sensor and date.
+
+    A history item without a matching scene keeps cloud and data coverage unknown (None);
+    nothing is substituted. Returns the merged items and the number without a scene.
+    """
+    by_key = {(s.source, s.acquired_on): s for s in scenes}
     merged: list[NormalizedObservation] = []
+    unmatched = 0
     for item in history:
-        ref = item.preview_ref or previews.get((item.source, item.acquired_on))
-        merged.append(replace(item, preview_ref=ref) if ref != item.preview_ref else item)
-    return merged
+        scene = by_key.get((item.source, item.acquired_on))
+        if scene is None:
+            unmatched += 1
+            merged.append(replace(item, cloud_coverage=None, data_coverage=None))
+            continue
+        merged.append(
+            replace(
+                item,
+                cloud_coverage=scene.cloud_coverage,
+                data_coverage=scene.data_coverage,
+                preview_ref=scene.preview_ref,
+            )
+        )
+    return merged, unmatched
 
 
 async def _refresh_source(
@@ -194,10 +211,15 @@ async def _refresh_source(
 ) -> None:
     area_label = str(area.id)
     history = await agro.ndvi_history(polygon, source, start, end, area_id=area_label)
-    images_batch = history
-    if not all(i.preview_ref for i in history.items):
-        images_batch = await agro.image_search(polygon, source, start, end, area_id=area_label)
-    items = _merge(history.items, images_batch.items)
+    items = history.items
+    if not history.scene_metadata:
+        scenes = await agro.image_search(polygon, source, start, end, area_id=area_label)
+        items, unmatched = merge_scene_metadata(history.items, scenes.items)
+        if unmatched:
+            logger.warning(
+                "refresh_scene_metadata_missing",
+                extra={"area_id": area_label, "source": source, "count": unmatched},
+            )
     new, updated, skipped = await upsert_observations(session, area.id, retrieval_id, items)
     await session.commit()
     totals.new += new

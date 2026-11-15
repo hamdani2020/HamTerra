@@ -72,7 +72,9 @@ async def test_ndvi_history_success_adds_key_once_and_filters_sensor() -> None:
     )
     batch = await h.client.ndvi_history("poly1", "sentinel-2", D1, D2, area_id="a1")
     assert [i.source for i in batch.items] == ["sentinel-2"]
-    assert batch.items[0].data_coverage == 99
+    # history cl/dc are not used (the API reports 100 for every scene)
+    assert (batch.items[0].cloud_coverage, batch.items[0].data_coverage) == (None, None)
+    assert batch.scene_metadata is False
     (request,) = h.requests
     assert request.url.params["appid"] == KEY
     assert request.url.params["polyid"] == "poly1"
@@ -102,22 +104,21 @@ async def test_non_json_body_is_upstream_error() -> None:
 
 
 async def test_bad_items_are_discarded_and_logged(caplog: pytest.LogCaptureFixture) -> None:
-    items = [history_item(), history_item(cl=250, dt=TS + 1), "junk", history_item(data={})]
+    items = [history_item(), history_item(dt="x"), "junk", history_item(data={})]
     h = Harness(lambda r: httpx.Response(200, json=items))
     with caplog.at_level(logging.WARNING):
         batch = await h.client.ndvi_history("p", "sentinel-2", D1, D2, area_id="area-9")
     assert len(batch.items) == 1
-    assert {d.field for d in batch.discarded} == {"cl", "item", "data.mean"}
+    assert {d.field for d in batch.discarded} == {"dt", "item", "data.mean"}
     warnings = [r for r in caplog.records if r.message == "provider_item_discarded"]
     assert len(warnings) == 3
     assert all(r.area_id == "area-9" for r in warnings)  # type: ignore[attr-defined]
 
 
 async def test_missing_dc_stays_none() -> None:
-    item = history_item()
-    del item["dc"]
+    item = {"dt": TS, "type": "Sentinel-2", "cl": 3.0}
     h = Harness(lambda r: httpx.Response(200, json=[item]))
-    (obs,) = (await h.client.ndvi_history("p", "sentinel-2", D1, D2)).items
+    (obs,) = (await h.client.image_search("p", "sentinel-2", D1, D2)).items
     assert obs.data_coverage is None
 
 
@@ -306,6 +307,8 @@ async def test_per_image_stats_mode() -> None:
     batch = await h.client.ndvi_history("p", "sentinel-2", D1, D2, area_id="a")
     assert [i.ndvi.mean for i in batch.items if i.ndvi] == [0.42]
     assert len(batch.items) == 1
+    assert batch.scene_metadata is True
+    assert (batch.items[0].cloud_coverage, batch.items[0].data_coverage) == (1, 90)
     assert len(batch.discarded) == 2
     assert all(r.url.params["appid"] == KEY for r in h.requests)
 
@@ -336,3 +339,60 @@ async def test_token_bucket_waits_when_empty() -> None:
 
 def test_redact_helper_still_hides_key() -> None:
     assert KEY not in redact(f"GET {BASE}?appid={KEY}")
+
+
+async def test_image_search_item_with_geotiff_data_group_is_kept() -> None:
+    """Real image/search items carry ``data`` as GeoTIFF URLs (checked against the API)."""
+    item = {
+        "dt": TS,
+        "type": "Sentinel-2",
+        "dc": 100,
+        "cl": 4.95,
+        "sun": {"elevation": 51.0, "azimuth": 138.5},
+        "image": {"ndvi": f"{BASE}/image/ndvi?appid=LEAKED", "truecolor": f"{BASE}/image/tc"},
+        "tile": {"ndvi": f"{BASE}/tile/{{z}}/{{x}}/{{y}}?appid=LEAKED"},
+        "stats": {"ndvi": f"{BASE}/stats/ndvi?appid=LEAKED", "evi": f"{BASE}/stats/evi"},
+        "data": {"ndvi": f"{BASE}/data/ndvi.tiff?appid=LEAKED", "evi": f"{BASE}/data/evi.tiff"},
+    }
+    h = Harness(lambda r: httpx.Response(200, json=[item]))
+    batch = await h.client.image_search("p", "sentinel-2", D1, D2)
+    assert batch.discarded == []
+    (obs,) = batch.items
+    assert (obs.source, obs.cloud_coverage, obs.data_coverage, obs.ndvi) == (
+        "sentinel-2",
+        4.95,
+        100,
+        None,
+    )
+    assert obs.stats_ref is not None and "LEAKED" not in obs.stats_ref
+    assert obs.preview_ref is not None and "LEAKED" not in obs.preview_ref
+
+
+async def test_real_response_shapes_merge_into_correct_values() -> None:
+    """End to end over HTTP with the field shapes seen on the real API (2026-11-15)."""
+    from app.services.refresh import merge_scene_metadata
+
+    history = [
+        {"dt": TS, "type": "s2", "zoom": 13, "dc": 100, "cl": 100,
+         "data": {"mean": 0.5206, "min": 0.3, "max": 0.8, "median": 0.52, "std": 0.05,
+                  "p25": 0.5, "p75": 0.6, "num": 3422}},
+    ]  # fmt: skip
+    scenes = [
+        {"dt": TS + 3600, "type": "Sentinel-2", "dc": 100, "cl": 4.95,
+         "image": {"ndvi": f"{BASE}/image/ndvi?appid=LEAKED"},
+         "stats": {"ndvi": f"{BASE}/stats/ndvi?appid=LEAKED"},
+         "data": {"ndvi": f"{BASE}/data/ndvi.tiff?appid=LEAKED"}},
+    ]  # fmt: skip
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        body = history if request.url.path.endswith("/ndvi/history") else scenes
+        return httpx.Response(200, json=body)
+
+    h = Harness(handler)
+    hist = await h.client.ndvi_history("p", "sentinel-2", D1, D2)
+    found = await h.client.image_search("p", "sentinel-2", D1, D2)
+    (item,), unmatched = merge_scene_metadata(hist.items, found.items)
+    assert unmatched == 0
+    assert (item.cloud_coverage, item.data_coverage) == (4.95, 100)
+    assert item.ndvi is not None and item.ndvi.mean == 0.5206
+    assert item.preview_ref is not None and "LEAKED" not in item.preview_ref
