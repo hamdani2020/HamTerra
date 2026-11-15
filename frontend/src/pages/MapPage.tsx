@@ -83,7 +83,10 @@ export default function MapPage(): JSX.Element {
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_22rem]">
           <div className="min-w-0 space-y-3">
             <div className="relative h-[60vh] min-h-[320px] overflow-hidden rounded-lg border bg-card">
-              <div ref={container} className="absolute inset-0" role="region" aria-label={MAP_TEXT.mapLabel} data-testid="map-container" />
+              {/* Sized with h-full/w-full, not absolute inset-0: MapLibre's CSS sets
+                  `.maplibregl-map { position: relative }` on this element, which overrides
+                  `absolute` and collapsed the map to zero height. */}
+              <div ref={container} className="h-full w-full" role="region" aria-label={MAP_TEXT.mapLabel} data-testid="map-container" />
               <MapControls controller={controller} />
               {(map.status === "loading" || areas.isPending) && !areas.isError && (
                 <p role="status" aria-busy="true" className="absolute right-3 top-3 z-10 rounded-md bg-card px-3 py-2 text-sm text-ink-muted shadow">
