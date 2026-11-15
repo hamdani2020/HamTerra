@@ -17,3 +17,15 @@ module "cognito" {
   refresh_token_validity_days   = var.refresh_token_validity_days
   enable_group_admin_policy     = var.enable_group_admin_policy
 }
+
+module "ec2" {
+  source = "./modules/ec2"
+
+  project_name              = var.project_name
+  environment               = var.environment
+  instance_type             = var.backend_instance_type
+  domain_name               = var.backend_domain_name
+  certbot_email             = var.certbot_email
+  attach_group_admin_policy = var.enable_group_admin_policy
+  group_admin_policy_arn    = module.cognito.group_admin_policy_arn
+}

@@ -210,3 +210,19 @@ variable "tags" {
   description = "Extra tags merged over the default tags."
   default     = {}
 }
+
+variable "backend_domain_name" {
+  type        = string
+  description = "Public host name of the backend on EC2, for example terra.example.com. No default."
+}
+
+variable "certbot_email" {
+  type        = string
+  description = "Email address Let's Encrypt uses for certificate expiry notices. No default."
+}
+
+variable "backend_instance_type" {
+  type        = string
+  description = "EC2 instance type for the backend host."
+  default     = "t3.small"
+}

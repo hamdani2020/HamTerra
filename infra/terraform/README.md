@@ -375,3 +375,31 @@ U1 to U13 come from the requirements. T2 to T6 come from the design, and the des
 
 - **F1 `LITE` with managed login.** Managed login (`managed_login_version = 2`) is available on `ESSENTIALS` and `PLUS` only. The classic hosted UI is available on every plan. The combination `user_pool_tier = "LITE"` with `managed_login_version = 2` is invalid. A variable validation may reject it at plan time. If it does not, the failure appears at apply time. With `LITE`, set `managed_login_version = 1` (see section 7).
 - **F2 `head-bucket` errors other than 404.** A `400` or an unrecognised error can mean the name is unusable. `create-state-bucket.sh` ends with exit code `3` and the raw message in that case. It never tries to create the bucket on an error it does not understand.
+
+## 11. Backend host on EC2 (`modules/ec2`)
+
+The `ec2` module runs the Backend and PostGIS with Docker Compose on one Ubuntu 24.04 instance in the default VPC. It creates:
+
+- one `t3.small` instance (`backend_instance_type`) with an encrypted 30 GiB gp3 root volume and IMDSv2 required,
+- an Elastic IP attached to it (output `backend_public_ip`),
+- a security group with inbound TCP 80 and 443 only. There is no SSH and no key pair; use SSM Session Manager,
+- an instance role with `AmazonSSMManagedInstanceCore` and read access to the SSM Parameter Store path `/<project_name>/<environment>/backend` only (output `backend_ssm_parameter_path`). With `enable_group_admin_policy = true` the Cognito group policy from section 9 is attached to this role as well.
+
+First boot installs Docker with the Compose plugin, nginx, certbot and the AWS CLI, adds 2 GiB of swap, creates the app directory (output `backend_app_dir`), and configures nginx to proxy `backend_domain_name` to `127.0.0.1:8000`.
+
+New required variables: `backend_domain_name` and `certbot_email`.
+
+### Enable HTTPS (once, after the first apply)
+
+1. In Route 53, create an `A` record for `backend_domain_name` with the value of `terraform output -raw backend_public_ip`.
+2. Wait until the name resolves to that address (`dig +short <backend_domain_name>`).
+3. Run the certbot helper on the instance:
+   ```sh
+   aws ssm send-command --instance-ids "$(terraform output -raw backend_instance_id)" \
+     --document-name AWS-RunShellScript --parameters 'commands=["/usr/local/bin/eco-enable-https"]'
+   ```
+   It requests a Let's Encrypt certificate, switches nginx to HTTPS and redirects HTTP to HTTPS. It is safe to run again. The certbot package renews certificates with a systemd timer.
+
+### Data and rebuilds
+
+The PostGIS data lives in a Docker volume on the root volume, as in local development. Terminating or replacing the instance deletes it. Terraform ignores changes to the AMI and the user data, so a new Ubuntu release does not replace the instance; rebuild deliberately with `terraform apply -replace=module.ec2.aws_instance.backend`. There are no automatic backups.

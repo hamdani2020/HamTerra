@@ -426,68 +426,68 @@ Each feature task creates its page module. The router (task 8.3) registers every
     - Create success navigates, `NO_OBSERVATIONS`, list empty state, caveats and limitations unchanged, 404 state, no extra data request from the report view
     - _Requirements: 15.3, 15.4, 15.6, 15.8, 15.10, 15.13, 23.8_
 
-- [ ] 20. Admin overview, users, retrievals, activity and settings
-  - [ ] 20.1 Implement the setting validator and descriptions
+- [x] 20. Admin overview, users, retrievals, activity and settings
+  - [x] 20.1 Implement the setting validator and descriptions
     - `validateSetting(item, raw)` and `SETTING_DESCRIPTIONS` (at most 160 characters for the six known keys)
     - _Requirements: 19.2, 19.3, 19.8_
 
-  - [ ]* 20.2 Write property test for setting validation
+  - [x]* 20.2 Write property test for setting validation
     - **Property 27: Setting value validation**
     - **Validates: Requirements 19.2, 19.3**
 
-  - [ ] 20.3 Implement `AdminOverviewPage`
+  - [x] 20.3 Implement `AdminOverviewPage`
     - Independent cards for dashboard counts, integrations status (text labels, no keys), probe button with 30 s timeout, recent failures (5), recent activity (10), per-card errors with retry, zero shown as 0
     - _Requirements: 16.1, 16.2, 16.3, 16.4, 16.5, 16.6, 16.7, 16.8, 16.9, 21.5_
 
-  - [ ] 20.4 Implement `AdminUsersPage` and role editor
+  - [x] 20.4 Implement `AdminUsersPage` and role editor
     - Filters `role` and `q`, table with "Not available" email, user details, role editor dialog, one in-flight request per user, handling of 200, 501, `SELF_ROLE_CHANGE`, `LAST_ADMIN`, 404, 502 and 504, editor disabled for the signed-in admin, no create, reset or delete controls
     - _Requirements: 17.1, 17.2, 17.3, 17.4, 17.5, 17.6, 17.7, 17.8, 17.9, 17.10, 17.11, 17.12, 17.13_
 
-  - [ ] 20.5 Implement `AdminRetrievalsPage` and `AdminActivityPage`
+  - [x] 20.5 Implement `AdminRetrievalsPage` and `AdminActivityPage`
     - Filters with date validation, page size 1 to 100 (default 25), status badges with text, `error.code` and `error.message` as received, read-only key-value details, empty and error states without stale rows, no edit or delete controls
     - _Requirements: 18.1, 18.2, 18.3, 18.4, 18.5, 18.6, 18.7, 18.8, 18.9, 18.10, 18.11_
 
-  - [ ] 20.6 Implement `AdminSettingsPage`
+  - [x] 20.6 Implement `AdminSettingsPage`
     - Rows with type-matched inputs and range text, synchronous validation within 200 ms, save disabled when invalid or pending, replace row on 200, 422 message with edit kept, 404 reload, 500 and timeout message, unknown keys by name only, reports-unchanged note, invalidate `GET /settings`; researcher pages read `GET /settings` and show "not available" for missing keys
     - _Requirements: 19.1, 19.2, 19.3, 19.4, 19.5, 19.6, 19.7, 19.8, 19.9, 19.10, 19.11_
 
-  - [ ]* 20.7 Write admin page tests
+  - [x]* 20.7 Write admin page tests
     - Role change with 409 and 501, settings edit with 422, invalid setting blocks save, retrievals and activity date errors send no request, overview card failure isolated, probe disabled while pending
     - _Requirements: 16.4, 16.8, 17.7, 17.9, 18.6, 19.3, 19.5, 23.7_
 
-- [ ] 21. Cross-cutting verification
-  - [ ] 21.1 Verify code splitting and cache behaviour wiring
+- [x] 21. Cross-cutting verification
+  - [x] 21.1 Verify code splitting and cache behaviour wiring
     - Confirm admin pages, map, MapLibre and Recharts load only through lazy imports, and that all hooks pass `signal` to `apiRequest`
     - _Requirements: 24.2, 24.3, 24.4_
 
-  - [ ]* 21.2 Write the forbidden-term scan test
+  - [x]* 21.2 Write the forbidden-term scan test
     - Scan `src` text and the rendered text of every page (Backend text replaced by clean fixtures) and fail on any match
     - _Requirements: 20.1, 23.8_
 
-  - [ ]* 21.3 Write axe accessibility tests
+  - [x]* 21.3 Write axe accessibility tests
     - Landing, dashboard, map, time series, comparison, observation detail, error page and one admin page; any violation fails
     - _Requirements: 21.4, 23.14_
 
-  - [ ]* 21.4 Write caching and cancellation tests
+  - [x]* 21.4 Write caching and cancellation tests
     - Identical GETs within 30 s send one request and after 30 s two (fake timers), `GET /me` once per Session, leaving a page aborts in-flight requests without an error state
     - _Requirements: 24.2, 24.3_
 
-  - [ ]* 21.5 Write the chunk smoke test
+  - [x]* 21.5 Write the chunk smoke test
     - Inspect the Vite build manifest and assert the admin pages and the map form separate chunks
     - _Requirements: 24.4_
 
-- [ ] 22. Documentation
-  - [ ] 22.1 Write the frontend README section
+- [x] 22. Documentation
+  - [x] 22.1 Write the frontend README section
     - Commands to start, stop, rebuild, view logs, run tests once (`docker compose exec frontend npm run test -- --run`) and run `npm run check`; polling variable for file-change events; Cognito local settings (callback `http://localhost:5173/auth/callback`, sign-out `http://localhost:5173/signed-out`, allowed origin, public client without secret, Authorization code grant, scopes `openid`, `email`, `profile`, groups `admin` and `researcher`); note that both the Backend `/` and Frontend `/signed-out` sign-out URLs must be registered; re-sign-in needed after group changes; basemap policy note
     - _Requirements: 22.3, 22.8, 22.9, 22.10_
 
-- [ ] 23. Open-item verification (non-blocking)
-  - [ ] 23.1 Verify design open items against the Backend OpenAPI when it is available
+- [x] 23. Open-item verification (non-blocking)
+  - [x] 23.1 Verify design open items against the Backend OpenAPI when it is available
     - Check refresh body fields (`date_from`, `date_to`, `sources`) and the 366-day inclusive rule, the inferred shapes (`RetrievalRecord.requested_range`, `SettingItem.value`, `PUT /admin/settings/{key}` response, user `status`), the sign-out URL (`/` versus `/signed-out`), and whether `PERCENT_DIFFERENCE_UNDEFINED` is emitted
     - Adjust `src/types/api.ts`, MSW handlers and `messages.ts` if they differ; if the OpenAPI document does not exist yet, record the pending items in the README and continue
     - _Requirements: 3.9, 13.2, 13.3, 19.1, 22.10_
 
-- [ ] 24. Final checkpoint - Ensure all tests pass
+- [x] 24. Final checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
 ## Notes

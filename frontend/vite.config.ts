@@ -4,6 +4,7 @@ import react from "@vitejs/plugin-react";
 import { loadEnv } from "vite";
 import { defineConfig } from "vitest/config";
 
+import { chunkCheckPlugin } from "./config/chunkCheck";
 import { assertRequiredEnv } from "./config/requiredEnv";
 
 // Compose passes every VITE_ variable, set or not, so an unset one arrives as "". Vite lets
@@ -27,7 +28,8 @@ export default defineConfig(({ mode }) => {
   Reflect.deleteProperty(process.env, "CHOKIDAR_USEPOLLING");
 
   return {
-    plugins: [react()],
+    // chunkCheckPlugin fails a production build when the admin or map split breaks (24.4).
+    plugins: [react(), chunkCheckPlugin()],
     // MapLibre starts its worker as a module worker, so worker entries are built as ES modules.
     worker: { format: "es" },
     resolve: {

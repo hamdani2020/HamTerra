@@ -57,3 +57,28 @@ output "group_names" {
 output "group_admin_policy_arn" {
   value = module.cognito.group_admin_policy_arn
 }
+
+output "backend_instance_id" {
+  value = module.ec2.instance_id
+}
+
+output "backend_public_ip" {
+  description = "Elastic IP of the backend host. Create the backend domain's A record with it."
+  value       = module.ec2.public_ip
+}
+
+output "backend_domain_name" {
+  value = module.ec2.domain_name
+}
+
+output "backend_instance_role_arn" {
+  value = module.ec2.instance_role_arn
+}
+
+output "backend_ssm_parameter_path" {
+  value = module.ec2.ssm_parameter_path
+}
+
+output "backend_app_dir" {
+  value = module.ec2.app_dir
+}

@@ -20,3 +20,11 @@ export function clampOffset(offset: number): number {
   if (!Number.isFinite(offset)) return 0;
   return Math.max(0, Math.floor(offset));
 }
+
+/** A page size typed by an admin: a whole number from 1 to 100 (Requirements 17.1, 18.1, 18.8), or null. */
+export function parsePageSize(raw: string): number | null {
+  const text = raw.trim();
+  if (!/^\d+$/.test(text)) return null;
+  const value = Number(text);
+  return value >= 1 && value <= 100 ? value : null;
+}

@@ -73,6 +73,29 @@ describe("static guards", () => {
     expect(importers).toEqual(["src/features/map/useMap.ts"]);
   });
 
+  it("imports recharts only in the NDVI chart, which no eager module imports (24.4)", () => {
+    const importers = files.filter((f) => /from\s+["']recharts["']/.test(f.text)).map((f) => f.path);
+    expect(importers).toEqual(["src/features/timeseries/NdviChart.tsx"]);
+  });
+
+  it("loads every protected page lazily (24.4); only the public auth pages are eager", () => {
+    const router = files.find((f) => f.path === "src/router.tsx")?.text ?? "";
+    const eager = [...router.matchAll(/^import\s+\w+\s+from\s+["']@\/pages\/(\w+)["']/gm)].map((m) => m[1]).sort();
+    expect(eager).toEqual(["AuthErrorPage", "CallbackPage", "LandingPage", "NotFoundPage", "SignedOutPage"]);
+    expect(router).not.toMatch(/^import[^;]*["']@\/pages\/(admin|MapPage)/m);
+  });
+
+  it("passes the query signal to the API in every query (24.3)", () => {
+    const offenders = files.flatMap((f) =>
+      [...f.text.matchAll(/queryFn:\s*(async\s*)?\(([^)]*)\)\s*=>([\s\S]{0,400})/g)]
+        .filter((m) => !/\{\s*signal\s*\}/.test(m[2] ?? "") || !/\bsignal\b/.test(m[3] ?? ""))
+        .map(() => f.path),
+    );
+    const total = files.reduce((n, f) => n + (f.text.match(/queryFn:/g)?.length ?? 0), 0);
+    expect(total).toBeGreaterThan(0);
+    expect(offenders, `queryFn without signal in: ${offenders.join(", ")}`).toEqual([]);
+  });
+
   it("detects path literals (self-check of the scanner)", () => {
     expect(apiPathLiterals(`fetch("/areas/" + id); const x = '/admin/users?limit=1';`)).toEqual([
       "/areas/",

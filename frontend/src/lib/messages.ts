@@ -626,6 +626,161 @@ export function snapshotText(createdAt: string): string {
   return `This report is a snapshot created on ${createdAt} and does not change when data is refreshed.`;
 }
 
+export const ADMIN_TEXT = {
+  // Overview
+  countsTitle: "Platform counts",
+  areasActive: "Active areas",
+  observationsTotal: "Observations",
+  reportsTotal: "Reports",
+  usersByRole: "Users by role",
+  retrievalsByStatus: "Retrievals by status",
+  last7Days: "Last 7 days",
+  countsError: "The platform counts could not be loaded.",
+  integrationsTitle: "Data providers",
+  agromonitoring: "AgroMonitoring",
+  weather: "Weather",
+  configured: "Configured",
+  notConfigured: "Not configured",
+  enabled: "Enabled",
+  disabled: "Disabled",
+  lastSuccess: "Last success",
+  lastFailure: "Last failure",
+  failures24h: "Failures in the last 24 hours",
+  lastError: "Last error",
+  never: "Never",
+  probe: "Probe providers",
+  probing: "Probing providers…",
+  probeOk: "Probe succeeded",
+  probeFailed: "Probe failed",
+  probeTimeout: "Probe timed out",
+  probeLatency: "Probe latency",
+  probeError: "The probe could not be completed. The values above are from the last status check.",
+  integrationsError: "The provider status could not be loaded.",
+  failuresTitle: "Recent failures",
+  failuresEmpty: "No failed retrievals.",
+  failuresError: "The recent failures could not be loaded.",
+  activityTitle: "Recent activity",
+  activityEmpty: "No recorded activity.",
+  activityError: "The recent activity could not be loaded.",
+  noArea: "No area",
+  noActor: "System",
+  // Users
+  usersCaption: "Users",
+  role: "Role",
+  anyRole: "Any role",
+  search: "Search by username or email",
+  apply: "Apply filters",
+  username: "Username",
+  email: "Email",
+  roles: "Roles",
+  noRoles: "No role",
+  status: "Status",
+  lastSeen: "Last seen",
+  details: "Details",
+  usersEmpty: "No users match the filters.",
+  usersError: "The users could not be loaded.",
+  userDetails: "User details",
+  userError: "The user could not be loaded.",
+  sub: "User ID",
+  editRoles: "Change roles",
+  roleEditorTitle: "Change roles",
+  roleEditorBody: "Select the roles for this user. The change takes effect after the user signs in again.",
+  roleAdmin: "admin",
+  roleResearcher: "researcher",
+  confirmRoles: "Save roles",
+  savingRoles: "Saving roles…",
+  close: "Close",
+  ownAccount: "You cannot change your own roles. Another administrator must do it.",
+  afterNextLogin: "The change takes effect after the user obtains a new token by signing in again.",
+  notEnabled:
+    "Role changes are not enabled on this server. Change roles in the Cognito console: User pool, Groups, then add or remove the user.",
+  selfChange: "An administrator cannot change their own roles.",
+  lastAdmin: "The last administrator cannot lose the admin role.",
+  userNotFound: "This user was not found.",
+  serviceUnavailable: "The user directory is unavailable. Try again later; nothing was changed.",
+  roleChangeFailed: "The roles could not be changed. Nothing was changed.",
+  // Retrievals
+  retrievalsCaption: "Retrievals",
+  provider: "Provider",
+  anyProvider: "Any provider",
+  areaId: "Area ID",
+  anyStatus: "Any status",
+  dateFrom: "From",
+  dateTo: "To",
+  pageSize: "Rows per page",
+  pageSizeInvalid: "Enter a whole number from 1 to 100.",
+  kind: "Kind",
+  area: "Area",
+  range: "Requested range",
+  items: "Items",
+  duration: "Duration (ms)",
+  started: "Started",
+  error: "Error",
+  noError: "None",
+  retrievalsEmpty: "No retrievals match the filters.",
+  retrievalsError: "The retrievals could not be loaded.",
+  // Activity
+  activityCaption: "Activity",
+  actor: "Actor",
+  action: "Action",
+  time: "Time",
+  targetType: "Target type",
+  targetId: "Target ID",
+  requestId: "Request ID",
+  outcome: "Outcome",
+  activityListEmpty: "No activity matches the filters.",
+  activityListError: "The activity could not be loaded.",
+  // Settings
+  settingsCaption: "Settings",
+  key: "Key",
+  value: "Value",
+  type: "Type",
+  defaultValue: "Default",
+  range_: "Allowed range",
+  updatedBy: "Updated by",
+  updatedAt: "Updated",
+  save: "Save",
+  saving: "Saving…",
+  noLimit: "no limit",
+  on: "On",
+  off: "Off",
+  settingRequired: "Enter a value.",
+  settingNotNumber: "Enter a number.",
+  settingNotInteger: "Enter a whole number.",
+  settingSaved: "Saved. Earlier stored reports are not changed.",
+  settingUnknown: "This setting is unknown to the server. The list was reloaded.",
+  settingFailed: "The update failed. The previous value remains.",
+  settingsError: "The settings could not be loaded.",
+  notAvailable: "not available",
+  notAvailableEmail: "Not available",
+  newValue: "New value",
+} as const;
+
+export const RETRIEVAL_STATUS_LABEL: Record<"running" | "success" | "partial" | "empty" | "failed", string> = {
+  running: "Running",
+  success: "Success",
+  partial: "Partial",
+  empty: "Empty",
+  failed: "Failed",
+};
+
+export const OUTCOME_LABEL: Record<"success" | "failure" | "denied", string> = {
+  success: "Success",
+  failure: "Failure",
+  denied: "Denied",
+};
+
+export function settingRangeText(min: number | null, max: number | null): string {
+  if (min === null && max === null) return ADMIN_TEXT.noLimit;
+  if (min === null) return `up to ${max}`;
+  if (max === null) return `${min} or more`;
+  return `${min} to ${max}`;
+}
+
+export function settingRangeError(min: number | null, max: number | null): string {
+  return `Enter a value from ${settingRangeText(min, max)}.`;
+}
+
 /** "Flagged" is a numeric difference at or above a threshold, never a finding (20.2). */
 export function flagDescription(flag: FlagStatus, difference: string, threshold: string): string {
   return flag === "flagged"
@@ -695,6 +850,11 @@ export function authoredTextCatalogue(): string[] {
     ...Object.values(REFRESH_TEXT),
     ...Object.values(ADMIN_AREA_TEXT),
     ...Object.values(REPORT_TEXT),
+    ...Object.values(ADMIN_TEXT),
+    ...Object.values(RETRIEVAL_STATUS_LABEL),
+    ...Object.values(OUTCOME_LABEL),
+    settingRangeText(0, 100),
+    settingRangeError(1, 30),
     snapshotText("12 Mar 2026, 14:03 UTC"),
     ...Object.values(GEOJSON_CHECK_TEXT),
     jsonPositionText(12),
