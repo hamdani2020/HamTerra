@@ -632,6 +632,16 @@ Fields the Backend design leaves loosely specified (the `requested_range` shape,
 
 It renders: loading skeleton with `aria-busy="true"` within 100 ms (the skeleton renders synchronously when `isPending`), `RegionError` with a retry button (disabled while `isFetching`), an "outdated" badge when `isError && data` exists (Requirement 5.8), the empty state, or the children. On a retry success the error is replaced in the same render pass (Requirement 6.8).
 
+**Implemented in task 10:**
+- **Dates and validators.** `lib/dates.ts` has `isCalendarDate`, UTC span arithmetic (`inclusiveSpanDays`, `addDays`, `todayUtc`) and `orderDates(a, b)`. Missing or invalid dates give an error on the affected field; equal dates give an error on `date_b`. `lib/validators.ts` has `validateDateRange(from, to, {maxSpanDays, today, required})`, with spans counted inclusively, and `validateRefreshRange`. "Today" is the UTC calendar date. `required: false` serves the optional observation and admin filters: empty values pass, and the order check runs only when both dates are present. `MAX_SPAN_DAYS` holds 3660, 366 and 1826. Validator and region texts live in `lib/messages.ts` (`VALIDATION_TEXT`, `REGION_TEXT`, `emptyText`, `rangeText`, `pageText`).
+- **Limiter.** `createLimiter` passes the caller's signal to the task. Aborting a task that is already running is the task's own job; its slot is freed when it settles.
+- **Merge.** `mergeRecentObservations` removes duplicate observation ids and breaks date ties by area name, source and id.
+- **Format.** `lib/format.ts` shows missing NDVI values as "Not available", missing coverage as "Not reported", and a missing percentage difference as "Not defined". Dates are formatted in UTC.
+- **RegionState.** When a retry runs with no earlier data, TanStack Query moves the query back to `pending`, so the region shows the skeleton with `aria-busy` until the request settles. With earlier data, the "Possibly outdated" badge, the error and a retry control that is disabled while fetching stay above the data.
+- **Retry.** A retry control appears only when `describeError` marks the error as retryable, so 403, 404 and validation errors have none.
+- **ResponsiveTable.** It switches at the Tailwind `sm` viewport breakpoint instead of a CSS container query, because the container-query plugin is not installed.
+- **`useDebouncedValue`.** It is in `src/hooks/`, because `lib/` holds only non-React code.
+
 #### Dashboard
 
 ```mermaid

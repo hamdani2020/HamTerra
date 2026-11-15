@@ -78,6 +78,7 @@ export const EVIDENCE_TEXT = {
   trendLabel: "Linear trend (NDVI per 30 days)",
   notAvailable: "Not available",
   notReported: "Not reported",
+  notDefined: "Not defined",
 } as const;
 
 /**
@@ -155,6 +156,48 @@ export const SHELL_TEXT = {
   placeholder: "This screen is not available yet.",
 } as const;
 
+/** Field errors from the Frontend validators (Requirements 10.18, 11.3, 12.10, 13.2, 15.2). */
+export const VALIDATION_TEXT = {
+  dateMissing: "Select a date.",
+  dateInvalid: "Enter a valid date (YYYY-MM-DD).",
+  datesEqual: "Select two different dates.",
+  fromAfterTo: "The start date must be on or before the end date.",
+  toInFuture: "The end date cannot be in the future.",
+} as const;
+
+/** "The range can be at most N days." */
+export function spanTooLongText(maxSpanDays: number): string {
+  return `The range can be at most ${maxSpanDays.toLocaleString("en-GB")} days.`;
+}
+
+/** Text for the common data-region states (Requirement 6). */
+export const REGION_TEXT = {
+  loading: "Loading…",
+  retry: "Try again",
+  retrying: "Trying again…",
+  requestId: "Request ID",
+  outdated: "Possibly outdated",
+  outdatedBody: "The latest update failed, so the data shown may be out of date.",
+  previous: "Previous",
+  next: "Next",
+  pagination: "Pagination",
+} as const;
+
+export function emptyText(noun: string): string {
+  return `No ${noun} to show.`;
+}
+
+export function pageText(page: number, pages: number): string {
+  return `Page ${page.toLocaleString("en-GB")} of ${pages.toLocaleString("en-GB")}`;
+}
+
+export function rangeText(total: number, limit: number, offset: number): string {
+  if (total === 0) return "Showing 0 of 0";
+  const first = Math.min(offset + 1, total);
+  const last = Math.min(offset + limit, total);
+  return `Showing ${first.toLocaleString("en-GB")}–${last.toLocaleString("en-GB")} of ${total.toLocaleString("en-GB")}`;
+}
+
 /** "Flagged" is a numeric difference at or above a threshold, never a finding (20.2). */
 export function flagDescription(flag: FlagStatus, difference: string, threshold: string): string {
   return flag === "flagged"
@@ -211,6 +254,11 @@ export function authoredTextCatalogue(): string[] {
     ...Object.values(AUTH_TEXT),
     ...Object.values(NOTICE_TEXT),
     ...Object.values(SHELL_TEXT),
+    ...Object.values(VALIDATION_TEXT),
+    ...Object.values(REGION_TEXT),
+    spanTooLongText(366),
+    emptyText("areas"),
+    rangeText(95, 20, 20),
     ...Object.values(QUALITY_LABEL),
     ...Object.values(FLAG_LABEL),
     flagDescription("flagged", "+0.1739", "0.1"),

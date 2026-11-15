@@ -210,36 +210,36 @@ Each feature task creates its page module. The router (task 8.3) registers every
 - [x] 9. Checkpoint - Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 10. Shared helpers and common region states
-  - [ ] 10.1 Implement `lib/dates.ts` and date-range validators
+- [x] 10. Shared helpers and common region states
+  - [x] 10.1 Implement `lib/dates.ts` and date-range validators
     - Calendar-date check, UTC span arithmetic, `orderDates`, `validateDateRange(from, to, {maxSpanDays, today?})`
     - _Requirements: 10.18, 11.2, 11.3, 12.10, 13.2, 15.2, 18.6, 18.9_
 
-  - [ ]* 10.2 Write property test for date range validation
+  - [x]* 10.2 Write property test for date range validation
     - **Property 11: Date range validation**
     - **Validates: Requirements 10.18, 11.3, 12.10, 13.2, 15.2, 18.6, 18.9**
 
-  - [ ]* 10.3 Write property test for comparison date ordering
+  - [x]* 10.3 Write property test for comparison date ordering
     - **Property 12: Comparison date ordering**
     - **Validates: Requirements 11.2, 11.3, 15.1**
 
-  - [ ] 10.4 Implement `lib/limiter.ts`, `lib/merge.ts` and `lib/format.ts`
+  - [x] 10.4 Implement `lib/limiter.ts`, `lib/merge.ts` and `lib/format.ts`
     - FIFO `createLimiter(max)` with abort support, `mergeRecentObservations` (max 10, date descending), `formatSigned`, number and date formatters
     - _Requirements: 7.2, 7.4, 11.8, 24.6_
 
-  - [ ]* 10.5 Write property test for the concurrency limiter
+  - [x]* 10.5 Write property test for the concurrency limiter
     - **Property 14: Concurrency limiter**
     - **Validates: Requirements 7.2, 24.6**
 
-  - [ ]* 10.6 Write property test for the recent observations merge
+  - [x]* 10.6 Write property test for the recent observations merge
     - **Property 13: Recent observations merge**
     - **Validates: Requirements 7.4**
 
-  - [ ] 10.7 Build common state and table components
+  - [x] 10.7 Build common state and table components
     - `RegionState` (skeleton with `aria-busy` within 100 ms, `RegionError` with retry disabled while fetching, empty state, outdated badge), `DataTable`, `ResponsiveTable` (cards on mobile), `Pagination` (`total`, `limit`, `offset`), `useDebouncedValue`, `ChartContainer`, `Legend`, `KeyValueList`
     - _Requirements: 5.8, 5.14, 6.1, 6.2, 6.3, 6.4, 6.6, 6.8, 21.7, 24.7_
 
-  - [ ]* 10.8 Write component tests for states and tables
+  - [x]* 10.8 Write component tests for states and tables
     - Data table with pagination, chart container and legend, loading, empty and error states, retry replaces error within one render
     - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.8, 23.1, 23.10_
 
