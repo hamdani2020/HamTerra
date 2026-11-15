@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 
 import { EvidenceNote } from "@/components/common/EvidenceNote";
 import { RegionError } from "@/components/common/RegionState";
@@ -12,7 +12,7 @@ import { useMap } from "@/features/map/useMap";
 import { usePreviewOverlay } from "@/features/map/usePreviewOverlay";
 import { MAP_TEXT, REGION_TEXT } from "@/lib/messages";
 import { PAGE_TITLE } from "@/lib/pageTitles";
-import { ROUTES } from "@/lib/routes";
+import { ROUTES, type AreaListState } from "@/lib/routes";
 
 const linkClass =
   "inline-flex min-h-11 items-center rounded-md font-medium text-primary underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:min-h-0";
@@ -57,8 +57,19 @@ export default function MapPage(): JSX.Element {
     remove();
   }, [selectedId, remove]);
 
+  const navigate = useNavigate();
+  // The list link carries the visible extent, so the list can offer "Use map extent".
   const listLink = (
-    <Link className={linkClass} to={ROUTES.areas}>
+    <Link
+      className={linkClass}
+      to={ROUTES.areas}
+      onClick={(event) => {
+        if (!controller) return;
+        event.preventDefault();
+        const state: AreaListState = { extent: controller.getBounds() };
+        void navigate(ROUTES.areas, { state });
+      }}
+    >
       {MAP_TEXT.areaListLink}
     </Link>
   );

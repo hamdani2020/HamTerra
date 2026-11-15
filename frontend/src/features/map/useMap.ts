@@ -48,6 +48,8 @@ export interface MapController {
   setPreviewOpacity(opacity: number): void;
   removePreview(): void;
   hasPreview(): boolean;
+  /** The visible extent, for "Use map extent" on the area list (Requirement 12.4). */
+  getBounds(): BBox;
 }
 
 export type MapState = { status: "loading" } | { status: "ready"; controller: MapController } | { status: "unsupported" };
@@ -57,6 +59,8 @@ export interface UseMapOptions {
   basemapTileUrl: string;
   onSelect?: (id: string | null) => void;
   onBasemapFailure?: () => void;
+  /** False for the area page's mini map: no pan, zoom or selection. */
+  interactive?: boolean;
 }
 
 /** A keyless raster basemap over a plain background that shows if the tiles fail. */
@@ -165,6 +169,12 @@ function createController(map: MapLibreMap): MapController & { disposed: boolean
     hasPreview() {
       return !controller.disposed && map.getSource(PREVIEW_SOURCE) !== undefined;
     },
+    getBounds(): BBox {
+      const [[west, south], [east, north]] = map.getBounds().toArray() as [[number, number], [number, number]];
+      const round = (v: number) => Math.round(v * 1e6) / 1e6;
+      // Clamp to the ranges the bounding-box filter accepts.
+      return [round(Math.max(-180, west)), round(Math.max(-90, south)), round(Math.min(180, east)), round(Math.min(90, north))];
+    },
   };
   return controller;
 }
@@ -178,7 +188,7 @@ export function useMap(containerRef: RefObject<HTMLElement | null>, options: Use
   const [state, setState] = useState<MapState>({ status: "loading" });
   const callbacks = useRef(options);
   callbacks.current = options;
-  const { basemapTileUrl } = options;
+  const { basemapTileUrl, interactive = true } = options;
 
   useEffect(() => {
     const container = containerRef.current;
@@ -192,6 +202,7 @@ export function useMap(containerRef: RefObject<HTMLElement | null>, options: Use
         fitBoundsOptions: { padding: FIT_PADDING },
         attributionControl: false,
         fadeDuration: 0,
+        interactive,
       });
     } catch {
       setState({ status: "unsupported" });
@@ -238,7 +249,7 @@ export function useMap(containerRef: RefObject<HTMLElement | null>, options: Use
       map.remove();
       setState({ status: "loading" });
     };
-  }, [containerRef, basemapTileUrl]);
+  }, [containerRef, basemapTileUrl, interactive]);
 
   return state;
 }

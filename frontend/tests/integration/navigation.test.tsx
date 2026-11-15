@@ -55,7 +55,7 @@ describe("role-based navigation (Requirements 1.4 to 1.7, 23.4)", () => {
     for (const [path, title] of [
       ["/map", "Map"],
       ["/areas", "Areas"],
-      ["/areas/a1", "Area details"],
+      ["/areas/a1", "Eco-Sentinel Prestea Test"],
       ["/areas/a1/timeseries", "NDVI time series"],
       ["/areas/a1/compare", "Date comparison"],
       ["/reports", "Reports"],
@@ -96,7 +96,8 @@ describe("role-based navigation (Requirements 1.4 to 1.7, 23.4)", () => {
   it("marks only the current item active with aria-current", async () => {
     const user = userEvent.setup();
     await renderSignedIn("/areas/a1", { roles: ["admin"] });
-    await screen.findByRole("heading", { level: 1, name: "Area details" });
+    // The area page heads with the area name (default contract fixture).
+    await screen.findByRole("heading", { level: 1, name: "Eco-Sentinel Prestea Test" });
     let links = await sidebarLinks();
     expect(links.filter((l) => l.getAttribute("aria-current") === "page").map((l) => l.textContent)).toEqual(["Areas"]);
     expect(links.find((l) => l.textContent === "Areas")).toHaveClass("bg-primary");

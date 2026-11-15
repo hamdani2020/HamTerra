@@ -337,26 +337,26 @@ Each feature task creates its page module. The router (task 8.3) registers every
     - Date ordering sent as `date_a` and `date_b`, equal-date prevention, cross-sensor error, 404 date message, selections kept, summary text unchanged
     - _Requirements: 11.2, 11.3, 11.4, 11.5, 11.9, 23.7, 23.8_
 
-- [ ] 16. Monitoring area list and details
-  - [ ] 16.1 Implement the bounding-box validator
+- [x] 16. Monitoring area list and details
+  - [x] 16.1 Implement the bounding-box validator
     - `validateBbox` and bbox formatting and parsing
     - _Requirements: 12.4, 12.5_
 
-  - [ ]* 16.2 Write property test for bounding box validation
+  - [x]* 16.2 Write property test for bounding box validation
     - **Property 21: Bounding box validation**
     - **Validates: Requirements 12.4, 12.5**
 
-  - [ ] 16.3 Implement `AreaListPage`
+  - [x] 16.3 Implement `AreaListPage`
     - Filters in the URL, 300 ms debounced `q` (max 100 chars), status filter, bbox filter with optional map extent, 20 rows per page, empty state with reset, 422 message with filters kept
     - Replaces the placeholder `AreaListPage`
     - _Requirements: 12.1, 12.2, 12.3, 12.4, 12.5, 12.6, 12.7_
 
-  - [ ] 16.4 Implement `AreaDetailPage`
+  - [x] 16.4 Implement `AreaDetailPage`
     - Area fields, archived badge, mini map (dynamic import), collapsible observation history with filters and validation, 20 rows per page, observation detail loading, 404 state, links to time series, comparison and create report, refresh button
     - Replaces the placeholder `AreaDetailPage`
     - _Requirements: 12.8, 12.9, 12.10, 12.11, 12.12, 12.13, 12.14, 20.3_
 
-  - [ ]* 16.5 Write area list and detail tests
+  - [x]* 16.5 Write area list and detail tests
     - Debounce sends exactly one request after 300 ms, filter application, pagination, invalid bbox sends no request, empty state, 404 state
     - _Requirements: 12.2, 12.5, 12.7, 12.13, 23.7_
 

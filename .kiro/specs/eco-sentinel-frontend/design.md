@@ -742,6 +742,23 @@ Only the preview route draws bitmaps. No satellite or index tiles are requested 
 - **Hook.** `useObservation(id)` loads `GET /observations/{id}`.
 - **Wiring.** The area detail page (task 16) wires `ObservationDetail` with its small map and the overlay hook.
 
+**Implemented in task 16:**
+- **Validators.**
+  - `lib/bbox.ts` has `validateBbox` (plain decimals, longitudes -180 to 180, latitudes -90 to 90, each minimum strictly below its maximum, errors per field), `formatBbox` and `parseBbox`. Values use `String(n)` so they round-trip exactly. The query value is `minLon,minLat,maxLon,maxLat`, the format the Backend parses. The Backend accepts equal minimum and maximum; the Frontend rule is stricter, following Requirement 12.5.
+  - `validateObservationFilters` in `lib/validators.ts` accepts optional dates in order, and cloud and data coverage as numbers from 0 to 100.
+- **Area list.**
+  - `status` (default `active`, left out of the URL), `q`, `bbox` and `page` live in the URL. Any filter change returns to page 1. The search is sent once typing has paused for 300 ms.
+  - "Use map extent" appears only when the router state carries `extent`. The map's list link sets it from the new `MapController.getBounds()`, clamped to the valid ranges.
+  - A 422 shows the Backend message unchanged and keeps the inputs. A failed refetch shows the error above the table it keeps on screen.
+- **Area page.**
+  - The `h1` is the area name; "Area details" shows only while it loads or when it fails.
+  - The mini map is `features/areas/AreaMiniMap.tsx`, loaded with `React.lazy`. It calls `useMap` with the new `interactive: false` option and passes its controller up, so `ObservationDetail` can show the preview on it.
+  - The build puts MapLibre in one shared `useMap` chunk (about 1.06 MB) used only by the map page and the mini map.
+  - The history is a `<details>` section whose content, and therefore its query, is mounted only while it is open.
+  - "Create report" links to `/reports` with router state `{createForArea}`. The report list (task 19) opens its dialog with that area fixed.
+  - The "Refresh observations" button is added with its dialog in task 17.
+- **`useDebouncedValue`.** It starts no timer when the value has already settled, which also removes a React act warning in tests.
+
 #### Refresh Dialog
 
 `RefreshDialog` is a Radix dialog with `date_from`, `date_to`, a source checkbox pair (default both) and a confirm button. `validateRefreshRange(from, to, today)` returns field errors for: empty or invalid calendar date, `from > to`, `to > today`, span over 366 days (inclusive span `(to - from) + 1`, so a range of exactly 366 days passes; the Backend rule is "at most 366 days", see Open Items for the inclusive/exclusive ambiguity). When both sources are selected `sources` is omitted. While pending the dialog shows an indeterminate progress bar, an elapsed seconds counter and "The retrieval can take up to two minutes."; confirm and close are disabled except Escape which only closes the dialog without aborting the request (the request keeps running and the result is shown as a toast on completion, so a refresh is never duplicated). Results map to Requirement 13.5 to 13.11: success counts, empty message with zeros, partial warning with counts and warnings, 409 message with a "Try again later" button that closes the dialog, 502 and 504 with "previously stored observations are unchanged", client abort at 130 s with the unknown-result message. The returned `retrieval_id` is shown (Requirement 13.11).

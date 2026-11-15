@@ -149,6 +149,12 @@ export class FakeMap {
     return this;
   }
 
+  /** The visible extent; tests can set it. */
+  bounds: [[number, number], [number, number]] = [[-3.3, 4.7], [1.3, 11.2]];
+  getBounds(): { toArray: () => [[number, number], [number, number]] } {
+    return { toArray: () => this.bounds };
+  }
+
   zoomIn(...args: unknown[]): this {
     this.camera.push({ method: "zoomIn", args });
     return this;

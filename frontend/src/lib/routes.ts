@@ -56,6 +56,16 @@ export interface LandingState {
   notice?: "session_expired";
 }
 
+/** Router state from the map's list link: the visible extent for "Use map extent" (12.4). */
+export interface AreaListState {
+  extent?: [number, number, number, number];
+}
+
+/** Router state for the report list: open "Create report" with this area fixed (Requirement 15). */
+export interface ReportListState {
+  createForArea?: string;
+}
+
 /** Router state read by the auth error page. */
 export interface AuthErrorState {
   error: string;
