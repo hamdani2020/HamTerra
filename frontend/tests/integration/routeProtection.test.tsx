@@ -52,9 +52,9 @@ describe("route protection (Requirements 1.8, 4.3)", () => {
   });
 
   it("shows a loading state until GET /me completes, then the shell", async () => {
-    const view = await renderSignedIn("/dashboard", { username: "researcher1" });
+    const view = await renderSignedIn("/dashboard", { username: "researcher1", email: "researcher1@example.org" });
     expect(await screen.findByRole("heading", { level: 1, name: "Dashboard" })).toBeInTheDocument();
-    expect(screen.getByTestId("principal-username")).toHaveTextContent("researcher1");
+    expect(screen.getByTestId("principal-email")).toHaveTextContent("researcher1@example.org");
     expect(view.pathname()).toBe("/dashboard");
   });
 });

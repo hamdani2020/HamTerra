@@ -114,6 +114,8 @@ describe("header (Requirements 4.6, 4.7)", () => {
   it("shows the Principal email when present", async () => {
     await renderSignedIn("/dashboard", { username: "u1", email: "u1@example.org" });
     expect(await screen.findByTestId("principal-email")).toHaveTextContent("u1@example.org");
+    // The username (an opaque ID with email sign-in) is not shown next to the email.
+    expect(screen.queryByTestId("principal-username")).not.toBeInTheDocument();
   });
 
   it("falls back to the ID-token email claim for display", async () => {

@@ -10,7 +10,11 @@ import { displayEmail, type NavItem } from "@/lib/navigation";
 
 import { SidebarNav } from "./Sidebar";
 
-/** Username, email when known (4.6, 4.7), sign-out, and the drawer menu below 640 px (1.3). */
+/**
+ * The signed-in user, sign-out, and the drawer menu below 640 px (1.3). The email is shown
+ * when known (4.6); the username only when it is not (4.7). With email sign-in, the Cognito
+ * username is an opaque ID, so it is not shown next to the email.
+ */
 export function Header({ items }: { items: readonly NavItem[] }): JSX.Element {
   const auth = useAuth();
   const { idEmail } = useAuthState();
@@ -35,12 +39,13 @@ export function Header({ items }: { items: readonly NavItem[] }): JSX.Element {
       <p className="truncate font-semibold text-foreground sm:hidden">{AUTH_TEXT.appName}</p>
       <div className="ml-auto flex min-w-0 items-center gap-3">
         <div className="min-w-0 text-right text-sm">
-          <p className="truncate font-medium text-foreground" data-testid="principal-username">
-            {principal.username}
-          </p>
-          {email && (
-            <p className="hidden truncate text-ink-muted sm:block" data-testid="principal-email">
+          {email ? (
+            <p className="truncate font-medium text-foreground" data-testid="principal-email">
               {email}
+            </p>
+          ) : (
+            <p className="truncate font-medium text-foreground" data-testid="principal-username">
+              {principal.username}
             </p>
           )}
         </div>
