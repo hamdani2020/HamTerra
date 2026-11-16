@@ -239,6 +239,18 @@ variable "github_branch" {
   default     = "main"
 }
 
+variable "github_owner_id" {
+  type        = string
+  description = "Numeric GitHub ID of the repository owner (for the immutable-ID OIDC subject)."
+  default     = "56797506"
+}
+
+variable "github_repository_id" {
+  type        = string
+  description = "Numeric GitHub ID of the repository (for the immutable-ID OIDC subject)."
+  default     = "1457721271"
+}
+
 variable "create_github_oidc_provider" {
   type        = bool
   description = "Create the account's GitHub OIDC provider. Set false if it already exists."

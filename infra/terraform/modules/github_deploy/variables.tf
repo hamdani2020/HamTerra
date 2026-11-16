@@ -29,6 +29,26 @@ variable "github_branch" {
   }
 }
 
+variable "github_owner_id" {
+  type        = string
+  description = "Numeric GitHub ID of the repository owner. With github_repository_id, also trusts the immutable-ID subject format."
+  default     = null
+  validation {
+    condition     = var.github_owner_id == null || can(regex("^[0-9]+$", var.github_owner_id))
+    error_message = "github_owner_id must be digits only."
+  }
+}
+
+variable "github_repository_id" {
+  type        = string
+  description = "Numeric GitHub ID of the repository. See github_owner_id."
+  default     = null
+  validation {
+    condition     = var.github_repository_id == null || can(regex("^[0-9]+$", var.github_repository_id))
+    error_message = "github_repository_id must be digits only."
+  }
+}
+
 variable "instance_id" {
   type        = string
   description = "ID of the backend EC2 instance the role may run commands on."

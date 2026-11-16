@@ -1,6 +1,17 @@
 locals {
   name_prefix = "${var.project_name}-${var.environment}"
   oidc_host   = "token.actions.githubusercontent.com"
+  owner       = split("/", var.github_repository)[0]
+  repo        = split("/", var.github_repository)[1]
+  ref         = "ref:refs/heads/${var.github_branch}"
+  # GitHub sends either the classic subject (owner/repo) or, when the repository uses
+  # immutable identifiers, owner@<owner-id>/repo@<repo-id>. Both are exact matches.
+  subjects = compact([
+    "repo:${var.github_repository}:${local.ref}",
+    var.github_owner_id != null && var.github_repository_id != null
+    ? "repo:${local.owner}@${var.github_owner_id}/${local.repo}@${var.github_repository_id}:${local.ref}"
+    : "",
+  ])
   provider_arn = (
     var.create_oidc_provider
     ? aws_iam_openid_connect_provider.github[0].arn
@@ -41,7 +52,7 @@ data "aws_iam_policy_document" "trust" {
     condition {
       test     = "StringEquals"
       variable = "${local.oidc_host}:sub"
-      values   = ["repo:${var.github_repository}:ref:refs/heads/${var.github_branch}"]
+      values   = local.subjects
     }
   }
 }

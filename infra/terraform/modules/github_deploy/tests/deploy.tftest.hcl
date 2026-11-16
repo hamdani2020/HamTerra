@@ -47,6 +47,18 @@ run "creates_provider_by_default" {
   }
 }
 
+run "trusts_immutable_id_subject" {
+  command = plan
+  variables {
+    github_owner_id      = "111"
+    github_repository_id = "222"
+  }
+  assert {
+    condition     = toset(local.subjects) == toset(["repo:owner/repo:ref:refs/heads/main", "repo:owner@111/repo@222:ref:refs/heads/main"])
+    error_message = "Both subject formats must be trusted, exactly."
+  }
+}
+
 run "uses_existing_provider" {
   command = plan
   variables {
