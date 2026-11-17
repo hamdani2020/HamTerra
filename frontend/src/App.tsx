@@ -7,6 +7,7 @@ import { ConfigProvider } from "@/core/ConfigProvider";
 import { createAppServices, type AppServices } from "@/core/appServices";
 import { AuthProvider } from "@/core/auth/AuthProvider";
 import type { PublicConfig } from "@/core/config";
+import { DemoProvider } from "@/core/demo/DemoContext";
 
 export interface AppProps {
   config: PublicConfig;
@@ -15,13 +16,15 @@ export interface AppProps {
 }
 
 export function App({ config, services }: AppProps): JSX.Element {
-  const [{ auth, api, queryClient, router }] = useState(() => services ?? createAppServices(config));
+  const [{ auth, api, queryClient, router, demo }] = useState(() => services ?? createAppServices(config));
   return (
     <ConfigProvider config={config}>
       <QueryClientProvider client={queryClient}>
         <ApiProvider api={api}>
           <AuthProvider auth={auth}>
-            <RouterProvider router={router} />
+            <DemoProvider value={demo}>
+              <RouterProvider router={router} />
+            </DemoProvider>
           </AuthProvider>
         </ApiProvider>
       </QueryClientProvider>

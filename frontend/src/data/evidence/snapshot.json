@@ -1,5 +1,5 @@
 {
- "exported_at": "2026-11-15T23:19:35+00:00",
+ "exported_at": "2026-11-16T02:37:20+00:00",
  "period": {
   "from": "2026-01-01",
   "to": "2026-04-30"
@@ -713,8 +713,8 @@
     },
     "preview": {
      "url": "/api/v1/observations/0069e7a6-2ff3-4fd1-8163-d8132cbd8509/preview",
-     "width_px": null,
-     "height_px": null,
+     "width_px": 117,
+     "height_px": 117,
      "note": "Preview images are low resolution (117 x 117 px in validated tests) and are for visual orientation only."
     },
     "geometry_status": "current"
@@ -807,8 +807,8 @@
     },
     "preview": {
      "url": "/api/v1/observations/310ccd0e-6893-4cf0-b140-16ea958d8a7f/preview",
-     "width_px": null,
-     "height_px": null,
+     "width_px": 117,
+     "height_px": 117,
      "note": "Preview images are low resolution (117 x 117 px in validated tests) and are for visual orientation only."
     },
     "geometry_status": "current"
@@ -893,8 +893,8 @@
     },
     "preview": {
      "url": "/api/v1/observations/310ccd0e-6893-4cf0-b140-16ea958d8a7f/preview",
-     "width_px": null,
-     "height_px": null,
+     "width_px": 117,
+     "height_px": 117,
      "note": "Preview images are low resolution (117 x 117 px in validated tests) and are for visual orientation only."
     },
     "geometry_status": "current"
@@ -922,8 +922,8 @@
     },
     "preview": {
      "url": "/api/v1/observations/2999362e-9a93-4c34-811b-06c68bf3896a/preview",
-     "width_px": null,
-     "height_px": null,
+     "width_px": 117,
+     "height_px": 117,
      "note": "Preview images are low resolution (117 x 117 px in validated tests) and are for visual orientation only."
     },
     "geometry_status": "current"
@@ -951,8 +951,8 @@
     },
     "preview": {
      "url": "/api/v1/observations/712bf87b-70a7-4f58-bd3f-7b74d710db32/preview",
-     "width_px": null,
-     "height_px": null,
+     "width_px": 117,
+     "height_px": 117,
      "note": "Preview images are low resolution (117 x 117 px in validated tests) and are for visual orientation only."
     },
     "geometry_status": "current"
@@ -980,8 +980,8 @@
     },
     "preview": {
      "url": "/api/v1/observations/0069e7a6-2ff3-4fd1-8163-d8132cbd8509/preview",
-     "width_px": null,
-     "height_px": null,
+     "width_px": 117,
+     "height_px": 117,
      "note": "Preview images are low resolution (117 x 117 px in validated tests) and are for visual orientation only."
     },
     "geometry_status": "current"
@@ -1067,8 +1067,8 @@
     },
     "preview": {
      "url": "/api/v1/observations/59245513-35f6-4a6c-b59c-0df81118043c/preview",
-     "width_px": null,
-     "height_px": null,
+     "width_px": 58,
+     "height_px": 59,
      "note": "Preview images are low resolution (117 x 117 px in validated tests) and are for visual orientation only."
     },
     "geometry_status": "current"
@@ -1096,8 +1096,8 @@
     },
     "preview": {
      "url": "/api/v1/observations/fe509dbc-bda0-49d2-be98-bb2e6b7e2080/preview",
-     "width_px": null,
-     "height_px": null,
+     "width_px": 58,
+     "height_px": 59,
      "note": "Preview images are low resolution (117 x 117 px in validated tests) and are for visual orientation only."
     },
     "geometry_status": "current"

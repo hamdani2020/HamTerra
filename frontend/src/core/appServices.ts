@@ -8,6 +8,9 @@ import { createQueryClient } from "@/core/api/queryClient";
 import { createAuthModule, type AuthModule } from "@/core/auth/authModule";
 import { sessionAuthStorage, type AuthStorage } from "@/core/auth/storage";
 import type { PublicConfig } from "@/core/config";
+import { createDemoAuth } from "@/core/demo/demoAuth";
+import { exitDemo, isDemoSession, startDemo } from "@/core/demo/demoMode";
+import { lazyEndpoints } from "@/core/demo/lazyEndpoints";
 import { sessionComparisons } from "@/features/comparison/sessionComparisons";
 import { PUBLIC_ROUTES, ROUTES, type LandingState } from "@/lib/routes";
 import { appRoutes } from "@/router";
@@ -19,6 +22,8 @@ export interface AppServices {
   api: Endpoints;
   queryClient: QueryClient;
   router: AppRouter;
+  /** The sign-in-free demo: a demo Session and saved responses instead of the Backend. */
+  demo: { active: boolean; start: () => void; exit: () => void };
 }
 
 export interface AppServiceOverrides {
@@ -26,6 +31,8 @@ export interface AppServiceOverrides {
   storage?: AuthStorage;
   fetch?: typeof fetch;
   redirect?: (url: string) => void;
+  /** Full-page navigation used to enter and leave the demo. */
+  navigate?: (url: string) => void;
 }
 
 /**
@@ -37,9 +44,20 @@ export function createAppServices(config: PublicConfig, overrides: AppServiceOve
   const guard = createHttpGuard(config);
   const queryClient = createQueryClient();
   const router = (overrides.createRouter ?? ((routes) => createBrowserRouter(routes)))(appRoutes());
+  const storage = overrides.storage ?? sessionAuthStorage();
+  const start = () => startDemo(storage, overrides.navigate);
+  if (isDemoSession(storage)) {
+    const exit = () => {
+      queryClient.clear();
+      sessionComparisons.clear();
+      exitDemo(storage, overrides.navigate);
+    };
+    const api = lazyEndpoints(async () => (await import("@/features/demo/demoApi")).createDemoApi());
+    return { auth: createDemoAuth(exit), api, queryClient, router, demo: { active: true, start, exit } };
+  }
   const auth = createAuthModule(config, {
     guard,
-    storage: overrides.storage ?? sessionAuthStorage(),
+    storage,
     ...(overrides.fetch ? { fetch: overrides.fetch } : {}),
     ...(overrides.redirect ? { redirect: overrides.redirect } : {}),
     onSessionEnded(reason) {
@@ -54,7 +72,7 @@ export function createAppServices(config: PublicConfig, overrides: AppServiceOve
     },
   });
   const api = createEndpoints(createApiClient(guard, auth));
-  return { auth, api, queryClient, router };
+  return { auth, api, queryClient, router, demo: { active: false, start, exit: () => undefined } };
 }
 
 // Hot updates would re-create the services built once per page load while mounted components keep the old one,

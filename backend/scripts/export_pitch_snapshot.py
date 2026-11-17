@@ -1,4 +1,4 @@
-"""Export a read-only evidence snapshot for the public project page (frontend ``/``).
+"""Export read-only evidence snapshots for the public project page and the demo.
 
 The project page cannot call the API (it is public and the API needs a Cognito token), so it
 shows a snapshot of real API responses for one stored area. This script produces it by calling
@@ -14,9 +14,12 @@ Run inside the backend container:
         --preview sentinel-2:2026-04-15 --preview sentinel-2:2026-04-20
 
 Writes ``snapshot.json`` and ``preview-<source>-<date>.png`` files to ``--out``; copy them to
-``frontend/src/features/pitch/data/``. Only GET requests and comparisons (which store nothing)
-are made. The one side effect is the preview proxy's usual one: it records an image's pixel
-size the first time the image is fetched.
+``frontend/src/features/pitch/data/``. With ``--demo`` it also writes ``demo.json`` for the
+sign-in-free demo (``frontend/src/features/demo/``): the observation lists, every observation's
+preview, a comparison for each pair of consecutive observations of one sensor (plus the
+``--compare`` pairs), and the stored reports. Only GET requests and comparisons (which store
+nothing) are made. The one side effect is the preview proxy's usual one: it records an image's
+pixel size the first time the image is fetched.
 """
 
 from __future__ import annotations
@@ -45,7 +48,8 @@ def _principal() -> Principal:
         sub="pitch-snapshot-export",
         username="pitch-snapshot",
         email=None,
-        roles=frozenset({Role.researcher}),
+        # Admin only so that every stored report is listed; every call is a read.
+        roles=frozenset({Role.admin, Role.researcher}),
     )
 
 
@@ -85,9 +89,7 @@ async def export(args: argparse.Namespace) -> tuple[dict[str, Any], dict[str, by
                 )
                 observations[source] = page["items"]
 
-            comparisons = []
-            for spec in args.compare:
-                source, date_a, date_b = spec.split(":")
+            async def compare(source: str, date_a: str, date_b: str) -> dict[str, Any]:
                 response = await client.post(
                     f"{API}/areas/{args.area}/comparisons",
                     json={
@@ -98,7 +100,19 @@ async def export(args: argparse.Namespace) -> tuple[dict[str, Any], dict[str, by
                     },
                 )
                 response.raise_for_status()
-                comparisons.append(response.json())
+                result: dict[str, Any] = response.json()
+                return result
+
+            pairs = [tuple(spec.split(":")) for spec in args.compare]
+            comparisons = [await compare(*pair) for pair in pairs]
+
+            async def preview(observation: dict[str, Any]) -> str:
+                name = f"preview-{observation['source']}-{observation['date']}.png"
+                if name not in images:
+                    response = await client.get(f"{API}/observations/{observation['id']}/preview")
+                    response.raise_for_status()
+                    images[name] = response.content
+                return name
 
             previews = []
             for spec in args.preview:
@@ -106,11 +120,55 @@ async def export(args: argparse.Namespace) -> tuple[dict[str, Any], dict[str, by
                 match = next((o for o in observations[source] if o["date"] == day), None)
                 if match is None:
                     sys.exit(f"no {source} observation on {day}")
-                response = await client.get(f"{API}/observations/{match['id']}/preview")
-                response.raise_for_status()
-                name = f"preview-{source}-{day}.png"
-                images[name] = response.content
-                previews.append({"file": name, "observation": match})
+                previews.append({"file": await preview(match), "observation": match})
+
+            demo: dict[str, Any] | None = None
+            if args.demo:
+                pages: dict[str, Any] = {
+                    "all": await _get(
+                        client, f"/areas/{args.area}/observations", limit=200, offset=0
+                    )
+                }
+                for source in ("sentinel-2", "landsat-8"):
+                    pages[source] = await _get(
+                        client,
+                        f"/areas/{args.area}/observations",
+                        source=source,
+                        limit=200,
+                        offset=0,
+                    )
+                demo_pairs = list(pairs)
+                for source in ("sentinel-2", "landsat-8"):
+                    dates = sorted(o["date"] for o in pages[source]["items"])
+                    for a, b in zip(dates, dates[1:], strict=False):
+                        if (source, a, b) not in demo_pairs:
+                            demo_pairs.append((source, a, b))
+                demo_comparisons = [await compare(*pair) for pair in demo_pairs]
+                files = {o["id"]: await preview(o) for o in pages["all"]["items"]}
+                reports_page = await _get(client, "/reports", area_id=args.area, limit=200)
+                reports = []
+                for summary in reports_page["items"]:
+                    response = await client.get(
+                        f"{API}/reports/{summary['id']}", params={"format": "json"}
+                    )
+                    response.raise_for_status()
+                    reports.append({"summary": summary, "raw": response.text})
+                demo = {
+                    "area": area,
+                    "area_list": await _get(client, "/areas", status="all", limit=200),
+                    "area_map": await _get(client, "/areas/map", status="active"),
+                    "settings": settings,
+                    "observation_pages": pages,
+                    "preview_files": files,
+                    "timeseries": {
+                        source: await _get(
+                            client, f"/areas/{args.area}/ndvi/timeseries", source=source
+                        )
+                        for source in ("sentinel-2", "landsat-8")
+                    },
+                    "comparisons": demo_comparisons,
+                    "reports": reports,
+                }
 
     snapshot = {
         "exported_at": datetime.now(UTC).isoformat(timespec="seconds"),
@@ -121,6 +179,8 @@ async def export(args: argparse.Namespace) -> tuple[dict[str, Any], dict[str, by
         "comparisons": comparisons,
         "previews": previews,
     }
+    if demo is not None:
+        snapshot["demo"] = demo
     return snapshot, images
 
 
@@ -134,14 +194,19 @@ def main() -> None:
     parser.add_argument("--date-to", required=True)
     parser.add_argument("--compare", action="append", default=[], help="source:date_a:date_b")
     parser.add_argument("--preview", action="append", default=[], help="source:date")
+    parser.add_argument("--demo", action="store_true", help="also write demo.json")
     args = parser.parse_args()
     snapshot, images = asyncio.run(export(args))
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
     for name, content in images.items():
         (out / name).write_bytes(content)
+    demo = snapshot.pop("demo", None)
+    exported = {"exported_at": snapshot["exported_at"]}
+    if demo is not None:
+        (out / "demo.json").write_text(json.dumps({**exported, **demo}) + "\n", encoding="utf-8")
     (out / "snapshot.json").write_text(json.dumps(snapshot, indent=1) + "\n", encoding="utf-8")
-    print(f"wrote {out / 'snapshot.json'} and {len(images)} previews")
+    print(f"wrote {out / 'snapshot.json'}, demo={demo is not None}, {len(images)} previews")
 
 
 if __name__ == "__main__":

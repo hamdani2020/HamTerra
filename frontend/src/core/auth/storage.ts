@@ -7,6 +7,8 @@ export const STORAGE_KEYS = {
   state: "eco.pkce.state",
   returnTo: "eco.pkce.returnTo",
   refreshToken: "eco.rt",
+  /** Set while the sign-in-free demo runs in this tab (`core/demo`). */
+  demo: "eco.demo",
 } as const;
 
 export interface AuthStorage {

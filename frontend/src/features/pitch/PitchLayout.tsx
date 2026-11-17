@@ -4,12 +4,13 @@ import { Link } from "react-router";
 
 import { WarningBanner } from "@/components/common/WarningBanner";
 import { SignInButton } from "@/features/auth/SignInButton";
-import { AUTH_TEXT, REGION_TEXT } from "@/lib/messages";
+import { AUTH_TEXT, DEMO_TEXT, REGION_TEXT } from "@/lib/messages";
 import { ROUTES } from "@/lib/routes";
 
 import { PITCH_SECTIONS, PITCH_TEXT } from "./content";
 import { BrandMark, Graticule } from "./decor";
 import { darkFocus, onDarkPrimary } from "./styles";
+import { TryDemoButton } from "./TryDemoButton";
 
 // Sections, data and imagery load as one lazy chunk, so the sign-in control renders at once.
 const PitchSections = lazy(() => import("./PitchSections"));
@@ -92,19 +93,24 @@ export function PitchLayout({ access, notice }: PitchLayoutProps): JSX.Element {
                 {PITCH_TEXT.headline}
               </h1>
               <p className="max-w-xl text-lg leading-relaxed text-brand-100">{PITCH_TEXT.tagline}</p>
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+              <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
                 <div className="sm:w-auto">
                   <PrimaryAction access={access} label={PITCH_TEXT.ctaPlatform} />
                 </div>
+                {access.kind === "sign_in" && <TryDemoButton onDark />}
                 <a
                   href="#evidence"
-                  className={`inline-flex h-11 items-center justify-center gap-2 rounded-md border border-brand-100 px-5 text-sm font-semibold text-surface hover:bg-brand-700 ${darkFocus}`}
+                  className={`inline-flex h-11 items-center justify-center gap-2 whitespace-nowrap rounded-md border border-brand-100 px-5 text-sm font-semibold text-surface hover:bg-brand-700 ${darkFocus}`}
                 >
                   {PITCH_TEXT.ctaEvidence}
                   <ArrowDown aria-hidden="true" className="h-4 w-4" />
                 </a>
               </div>
-              {access.kind === "sign_in" && <p className="text-sm text-brand-100">{PITCH_TEXT.accountNote}</p>}
+              {access.kind === "sign_in" && (
+                <p className="text-sm text-brand-100">
+                  {PITCH_TEXT.accountNote} {DEMO_TEXT.startHint}
+                </p>
+              )}
             </div>
             <Suspense fallback={<div className="aspect-[3/2] w-full rounded-lg border border-brand-700" aria-hidden="true" />}>
               <HeroVisual />

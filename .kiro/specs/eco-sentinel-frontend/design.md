@@ -1385,6 +1385,14 @@ Both unit tests and property-based tests are used and are complementary. Propert
 - Performance pass: route first meaningful content within 2 s against a Backend answering in 500 ms, and a 200-row table render under 200 ms in the React profiler (24.1, 24.7).
 - Real-layout responsive pass at 320, 360, 768, 1280 and 1920 px for horizontal page scrolling (6.5).
 
+### Sign-in-free demo (added after task 24)
+
+**Implemented at the owner's request:** visitors can explore the researcher view without an account. "Try the demo, no sign-in" on the project page sets `sessionStorage` `eco.demo` and reloads into `/dashboard`. On load, `createAppServices` sees the flag and builds a demo Auth_Module (`core/demo/demoAuth.ts`: always signed in, no token, no Cognito call) and demo endpoints (`features/demo/demoApi.ts`, loaded lazily through `core/demo/lazyEndpoints.ts`) instead of the real ones, so every page runs unchanged and nothing reaches the Backend. "Exit demo" in the banner and the header clears the flag and reloads `/`.
+
+- **Data.** `src/data/evidence/demo.json` holds saved Backend responses for the Prestea area (area list and map, observation pages, time series, a comparison for each pair of consecutive observations of one sensor plus the two project-page pairs, the stored report, settings) and `src/data/evidence/previews/` every observation preview. Both are exported by `backend/scripts/export_pitch_snapshot.py --demo`, which calls the API in-process; the project page snapshot shares the same folder.
+- **No computation in the browser.** A request is answered only when the snapshot holds the Backend's answer to it: a saved response, or a saved list sliced by `offset` and `limit`. Other date ranges, cloud or coverage filters, weather, unsaved comparison pairs and changed thresholds return `501 DEMO_NOT_AVAILABLE` with a "not part of the demo" message. Refresh and report creation return `DEMO_READ_ONLY`; admin endpoints return 403.
+- **Researcher only.** The demo principal has the researcher role without `observations:refresh`, so the refresh controls are hidden; report creation is hidden while the demo runs. A banner names the snapshot date and says nothing changes data.
+
 ## Open Items
 
 1. **Refresh body fields.** Requirement 13.3 names `date_from`, `date_to` and `sources`. The Backend design's endpoint index does not list the request body for refresh. Confirm the field names against the Backend implementation and OpenAPI file.

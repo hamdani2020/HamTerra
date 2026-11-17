@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { useAuth, useAuthState } from "@/core/auth/AuthProvider";
 import { useCurrentPrincipal } from "@/core/auth/principal";
-import { AUTH_TEXT, SHELL_TEXT } from "@/lib/messages";
+import { useDemo } from "@/core/demo/DemoContext";
+import { AUTH_TEXT, DEMO_TEXT, SHELL_TEXT } from "@/lib/messages";
 import { displayEmail, type NavItem } from "@/lib/navigation";
 
 import { SidebarNav } from "./Sidebar";
@@ -20,6 +21,7 @@ export function Header({ items }: { items: readonly NavItem[] }): JSX.Element {
   const { idEmail } = useAuthState();
   const principal = useCurrentPrincipal();
   const email = displayEmail(principal.email, idEmail);
+  const demo = useDemo();
   const [open, setOpen] = useState(false);
 
   return (
@@ -50,7 +52,7 @@ export function Header({ items }: { items: readonly NavItem[] }): JSX.Element {
           )}
         </div>
         <Button type="button" variant="outline" className="h-11 sm:h-9" onClick={() => auth.signOut()}>
-          {SHELL_TEXT.signOut}
+          {demo.active ? DEMO_TEXT.exit : SHELL_TEXT.signOut}
         </Button>
       </div>
     </header>

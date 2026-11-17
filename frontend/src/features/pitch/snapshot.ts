@@ -6,7 +6,8 @@
  */
 import type { Area, ComparisonResult, Observation, PublicSettings, Source, TimeSeriesResponse } from "@/types/api";
 
-import raw from "./data/snapshot.json";
+import { PREVIEW_URLS } from "@/data/evidence/previews";
+import raw from "@/data/evidence/snapshot.json";
 
 export interface PitchPreview {
   file: string;
@@ -24,7 +25,6 @@ export interface PitchSnapshot {
   previews: PitchPreview[];
 }
 
-const PREVIEW_URLS = import.meta.glob<string>("./data/previews/*.png", { eager: true, query: "?url", import: "default" });
 
 type RawSnapshot = Omit<PitchSnapshot, "previews"> & { previews: Omit<PitchPreview, "url">[] };
 
@@ -32,7 +32,7 @@ type RawSnapshot = Omit<PitchSnapshot, "previews"> & { previews: Omit<PitchPrevi
 export function loadSnapshot(data: RawSnapshot, urls: Record<string, string>): PitchSnapshot {
   const previews: PitchPreview[] = [];
   for (const p of data.previews) {
-    const url = urls[`./data/previews/${p.file}`];
+    const url = urls[p.file];
     if (url) previews.push({ ...p, url });
   }
   return { ...data, previews };

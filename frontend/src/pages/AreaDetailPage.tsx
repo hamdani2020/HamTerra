@@ -7,6 +7,7 @@ import { StatusBadge } from "@/components/common/StatusBadge";
 import { VerbatimText } from "@/components/common/VerbatimText";
 import { ApiError } from "@/core/api/errors";
 import { useCurrentPrincipal } from "@/core/auth/principal";
+import { useDemo } from "@/core/demo/DemoContext";
 import { Button } from "@/components/ui/button";
 import { useRefreshObservations } from "@/features/areas/hooks";
 import { ObservationHistory } from "@/features/areas/ObservationHistory";
@@ -33,6 +34,7 @@ export default function AreaDetailPage(): JSX.Element {
   const [historyOpen, setHistoryOpen] = useState(false);
   const onMapReady = useCallback((c: MapController | null) => setController(c), []);
   const { permissions } = useCurrentPrincipal();
+  const demo = useDemo();
   const canRefresh = hasPermission(permissions, PERMISSION.refreshObservations);
   const refresh = useRefreshObservations(areaId);
   const [refreshOpen, setRefreshOpen] = useState(false);
@@ -87,6 +89,8 @@ export default function AreaDetailPage(): JSX.Element {
   const a = area.data;
   const archived = a.status === "archived";
   const reportState: ReportListState = { createForArea: a.id, areaName: a.name };
+  // The demo is read-only, so it offers no report creation.
+  const canCreateReport = !demo.active;
   return (
     <div className="space-y-6">
       <header className="space-y-2">
@@ -122,9 +126,11 @@ export default function AreaDetailPage(): JSX.Element {
           <Link className={linkClass} to={routeTo.areaCompare(a.id)}>
             {AREA_TEXT.compare}
           </Link>
-          <Link className={linkClass} to={ROUTES.reports} state={reportState}>
-            {AREA_TEXT.createReport}
-          </Link>
+          {canCreateReport && (
+            <Link className={linkClass} to={ROUTES.reports} state={reportState}>
+              {AREA_TEXT.createReport}
+            </Link>
+          )}
         </nav>
       </header>
 

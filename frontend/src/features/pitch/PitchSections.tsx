@@ -5,6 +5,7 @@ import {
   CloudOff,
   CodeXml,
   ExternalLink,
+  FlaskConical,
   GitBranch,
   ChartLine,
   Microscope,
@@ -30,7 +31,7 @@ import { SignInButton } from "@/features/auth/SignInButton";
 import { ComparisonResultView } from "@/features/comparison/ComparisonResultView";
 import { NdviChart } from "@/features/timeseries/NdviChart";
 import { formatCoverage, formatDate, formatDateTime, formatDays, formatHectares, formatInteger, formatNdvi, formatSigned } from "@/lib/format";
-import { SOURCE_LABEL, warningText } from "@/lib/messages";
+import { DEMO_TEXT, SOURCE_LABEL, warningText } from "@/lib/messages";
 import { ROUTES } from "@/lib/routes";
 import { chartPoints } from "@/lib/timeseries";
 import { cn } from "@/lib/utils";
@@ -41,6 +42,7 @@ import { FrameCorners } from "./decor";
 import type { PitchAccess } from "./PitchLayout";
 import { boundingBoxCentre, formatCoordinate, fullyCloudyCount, observationCounts, previewFor, SNAPSHOT, SOURCES, type PitchPreview } from "./snapshot";
 import { cardClass, kickerClass, linkClass, sectionClass, titleClass } from "./styles";
+import { TryDemoButton } from "./TryDemoButton";
 import { Reveal, useInView } from "./useInView";
 
 const AreaMiniMap = lazy(() => import("@/features/areas/AreaMiniMap"));
@@ -48,6 +50,12 @@ const AreaMiniMap = lazy(() => import("@/features/areas/AreaMiniMap"));
 const pixelated = "[image-rendering:pixelated]";
 const CENTRE = boundingBoxCentre(SNAPSHOT.area);
 const COUNTS = observationCounts(SNAPSHOT);
+
+/** "1 Jan – 30 Apr 2026"; the first year is left out when both dates share it. */
+function periodText(from: string, to: string): string {
+  const first = formatDate(from);
+  return `${from.slice(0, 4) === to.slice(0, 4) ? first.replace(/ \d{4}$/, "") : first} – ${formatDate(to)}`;
+}
 
 function SectionHeading({ id, kicker, title, children }: { id: string; kicker: string; title: string; children?: ReactNode }): JSX.Element {
   return (
@@ -119,8 +127,8 @@ export function HeroVisual(): JSX.Element {
         {[
           [PITCH_TEXT.areaObservations, formatInteger(COUNTS.total)],
           [PITCH_TEXT.areaSize, formatHectares(SNAPSHOT.area.area_ha)],
-          [PITCH_TEXT.sensorPicker, `${SOURCES.length}`],
-          [PITCH_TEXT.areaPeriod, `${formatDate(SNAPSHOT.period.from)} – ${formatDate(SNAPSHOT.period.to)}`],
+          [PITCH_TEXT.sensors, `${SOURCES.length}`],
+          [PITCH_TEXT.areaPeriod, periodText(SNAPSHOT.period.from, SNAPSHOT.period.to)],
         ].map(([term, value]) => (
           <div key={term} className="bg-brand-900 px-3 py-3">
             <dt className="text-xs text-brand-100">{term}</dt>
@@ -600,6 +608,11 @@ function Demo({ access }: { access: PitchAccess }): JSX.Element {
           )}
           {access.kind === "sign_in" && <p className="mt-2 text-xs text-ink-muted">{PITCH_TEXT.accountNote}</p>}
         </DemoCard>
+        {access.kind === "sign_in" && (
+          <DemoCard icon={FlaskConical} title={PITCH_TEXT.demoTry} text={DEMO_TEXT.startHint}>
+            <TryDemoButton />
+          </DemoCard>
+        )}
         <DemoCard icon={CodeXml} title={PITCH_TEXT.demoSource} text={PITCH_TEXT.demoSourceText}>
           <ExternalAnchor href={PITCH_LINKS.source}>{PITCH_TEXT.demoSourceLink}</ExternalAnchor>
         </DemoCard>

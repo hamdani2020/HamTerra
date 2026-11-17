@@ -8,6 +8,7 @@ import { EmptyState, RegionError, RegionSkeleton } from "@/components/common/Reg
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useCurrentPrincipal } from "@/core/auth/principal";
+import { useDemo } from "@/core/demo/DemoContext";
 import { CreateReportDialog } from "@/features/reports/CreateReportDialog";
 import { REPORT_PAGE_SIZE, useReportAreas, useReportList } from "@/features/reports/hooks";
 import { formatDate, formatDateTime } from "@/lib/format";
@@ -46,6 +47,8 @@ const COLUMNS: Column<ReportSummary>[] = [
 export default function ReportListPage(): JSX.Element {
   const { roles } = useCurrentPrincipal();
   const admin = isAdmin(roles);
+  // The demo is read-only, so it offers no report creation.
+  const canCreate = !useDemo().active;
   const location = useLocation();
   const navigate = useNavigate();
   const [offset, setOffset] = useState(0);
@@ -98,9 +101,11 @@ export default function ReportListPage(): JSX.Element {
         <h1 tabIndex={-1} className="text-2xl font-semibold text-foreground">
           {PAGE_TITLE.reports}
         </h1>
-        <Button type="button" className="h-11 sm:h-10" onClick={() => setDialog({ open: true })}>
-          {REPORT_TEXT.create}
-        </Button>
+        {canCreate && (
+          <Button type="button" className="h-11 sm:h-10" onClick={() => setDialog({ open: true })}>
+            {REPORT_TEXT.create}
+          </Button>
+        )}
       </div>
 
       <div className="grid gap-4 rounded-lg border bg-card p-4 shadow sm:grid-cols-2">
@@ -140,12 +145,14 @@ export default function ReportListPage(): JSX.Element {
         {body}
       </section>
 
+      {canCreate && (
       <CreateReportDialog
         key={dialog.fixed?.id ?? "any"}
         open={dialog.open}
         onOpenChange={(open) => setDialog((d) => ({ ...d, open }))}
         fixedArea={dialog.fixed}
       />
+      )}
     </div>
   );
 }

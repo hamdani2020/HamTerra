@@ -18,9 +18,11 @@ import { server } from "../msw/server";
 export async function renderApp(path: string) {
   const config = buildPublicConfig();
   const redirect = vi.fn<(url: string) => void>();
+  const navigate = vi.fn<(url: string) => void>();
   const services = createAppServices(config, {
     createRouter: (routes) => createMemoryRouter(routes, { initialEntries: [path] }),
     redirect,
+    navigate,
   });
   let view!: ReturnType<typeof render>;
   await act(async () => {
@@ -30,7 +32,7 @@ export async function renderApp(path: string) {
       </StrictMode>,
     );
   });
-  return { ...view, services, redirect, config, pathname: () => services.router.state.location.pathname };
+  return { ...view, services, redirect, navigate, config, pathname: () => services.router.state.location.pathname };
 }
 
 /**

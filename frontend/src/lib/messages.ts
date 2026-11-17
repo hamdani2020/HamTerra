@@ -756,6 +756,26 @@ export const ADMIN_TEXT = {
   newValue: "New value",
 } as const;
 
+/** The sign-in-free demo (`core/demo`, `features/demo`). */
+export const DEMO_TEXT = {
+  start: "Try the demo, no sign-in",
+  startHint: "Explore the researcher view with saved data from the Prestea area.",
+  bannerTitle: "Demo",
+  exit: "Exit demo",
+  username: "Demo visitor",
+  readOnly: "The demo is read-only. Refreshing observations, creating reports and administration need a platform account.",
+  notSaved:
+    "This request is not part of the demo snapshot. The demo holds the saved responses for the full observation period, without extra filters or weather context.",
+  comparisonNotSaved:
+    "This comparison is not part of the demo snapshot. The demo has saved comparisons for each pair of consecutive observations of one sensor, with the default thresholds and without weather context.",
+  notFound: "This item is not part of the demo snapshot.",
+  forbidden: "Administration is not part of the demo.",
+} as const;
+
+export function demoBannerText(savedAt: string): string {
+  return `You are viewing a read-only snapshot of real platform responses for one monitoring area, saved on ${savedAt}. Nothing you do here changes data.`;
+}
+
 export const RETRIEVAL_STATUS_LABEL: Record<"running" | "success" | "partial" | "empty" | "failed", string> = {
   running: "Running",
   success: "Success",
@@ -851,6 +871,8 @@ export function authoredTextCatalogue(): string[] {
     ...Object.values(ADMIN_AREA_TEXT),
     ...Object.values(REPORT_TEXT),
     ...Object.values(ADMIN_TEXT),
+    ...Object.values(DEMO_TEXT),
+    demoBannerText("16 Nov 2026"),
     ...Object.values(RETRIEVAL_STATUS_LABEL),
     ...Object.values(OUTCOME_LABEL),
     settingRangeText(0, 100),
